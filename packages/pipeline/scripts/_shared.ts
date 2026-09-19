@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { communityGeo, type CommunityGeo } from '@living-city/contracts'
 import { communities, seedPosts } from '@living-city/fixtures'
 
@@ -12,7 +13,16 @@ import { communities, seedPosts } from '@living-city/fixtures'
  * posts, absent on the near-misses. Log rejection rate and corrections."
  */
 
-export const OUT_DIR = resolve('packages/pipeline/out')
+/**
+ * Repo-anchored paths, derived from this file rather than from the cwd. The
+ * package scripts run with the package as the cwd and a person typing the
+ * command runs it from the repo root; both have to find the same fixtures and
+ * write to the same `out/`.
+ */
+export const fromRepoRoot = (...parts: string[]): string =>
+  resolve(fileURLToPath(new URL('../../..', import.meta.url)), ...parts)
+
+export const OUT_DIR = fromRepoRoot('packages/pipeline/out')
 
 export const writeJson = (relativePath: string, value: unknown): string => {
   const path = resolve(OUT_DIR, relativePath)

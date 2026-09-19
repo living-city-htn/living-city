@@ -12,6 +12,8 @@ export default defineConfig({
       '@living-city/contracts': resolve(__dirname, '../contracts/src/index.ts'),
       '@living-city/fixtures/store': resolve(__dirname, '../fixtures/src/store.ts'),
       '@living-city/fixtures': resolve(__dirname, '../fixtures/src/index.ts'),
+      // Reached through the fixtures store, which loads Map's real city.
+      '@living-city/map': resolve(__dirname, '../map/src/index.ts'),
     },
   },
   test: {

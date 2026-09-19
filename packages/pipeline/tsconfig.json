@@ -6,7 +6,8 @@
     "paths": {
       "@living-city/contracts": ["../contracts/src/index.ts"],
       "@living-city/fixtures": ["../fixtures/src/index.ts"],
-      "@living-city/fixtures/store": ["../fixtures/src/store.ts"]
+      "@living-city/fixtures/store": ["../fixtures/src/store.ts"],
+      "@living-city/map": ["../map/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]

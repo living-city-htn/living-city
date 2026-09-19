@@ -22,7 +22,9 @@ import {
   planningInputHash, resolveImage, zoningDefaultPlan,
   type AggregatablePost, type CallARequest, type CommunityCycleState,
 } from '../src/index'
-import { arg, die, has, loadCity, loadPosts, writeJson, type SeedPost } from './_shared'
+import {
+  arg, die, fromRepoRoot, has, loadCity, loadPosts, writeJson, type SeedPost,
+} from './_shared'
 
 const MOCK_ANALYSES = 'packages/fixtures/data/post-analysis.mock.json'
 
@@ -90,7 +92,7 @@ const run = async () => {
   console.log('1. post analysis')
   let analyses: Map<string, PostAnalysis>
   if (offline) {
-    analyses = readAnalyses(MOCK_ANALYSES)
+    analyses = readAnalyses(fromRepoRoot(MOCK_ANALYSES))
     console.log(`  loaded ${analyses.size} hand-written analyses from ${MOCK_ANALYSES}`)
   } else if (replay) {
     analyses = readAnalyses(replay)
@@ -98,7 +100,7 @@ const run = async () => {
   } else {
     analyses = await analyseWithModel(posts, city, taxonomy.version)
   }
-  if (analyses.size === 0) die('no analyses available; run with --offline or set GEMINI_API_KEY')
+  if (analyses.size === 0) die('no analyses available; run with --offline or set OPENAI_API_KEY')
 
   // ---- 2. aggregate, 3. plan ---------------------------------------------
   console.log('\n2. aggregation and 3. planning')

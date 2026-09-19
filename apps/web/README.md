@@ -79,7 +79,7 @@ development:
 | `DATABASE_URL` (plus Neon's `POSTGRES_*` aliases) | Neon, Vercel Marketplace |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob store `living-city-photos`, public access |
 | `USE_FIXTURES`, `CITY_ID` | set by hand |
-| `GEMINI_API_KEY` | **not set yet** — Pipeline owns it, needs billing enabled |
+| `OPENAI_API_KEY` | **not set yet** — Pipeline owns it, needs billing enabled |
 
 The blob store is public because post photos are shown in the feed, the block
 panel and the government page; private storage would mean signed URLs on every

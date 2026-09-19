@@ -72,9 +72,9 @@ const run = async () => {
 
   if (!provider.available()) {
     die(
-      'GEMINI_API_KEY is not set.\n'
+      `no API key for provider "${provider.name}".\n`
       + '  Copy .env.example to .env.local, fill in the key, then:\n'
-      + '    GEMINI_API_KEY=... npm --workspace @living-city/pipeline run check:schema',
+      + '    OPENAI_API_KEY=... npm --workspace @living-city/pipeline run check:schema',
     )
   }
 

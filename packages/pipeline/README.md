@@ -5,14 +5,14 @@ The two AI calls and everything deterministic around them. Pipeline-owned
 
 ```
 photo + caption
-     |  Call A   Gemini Flash, vision, temperature 0, response schema
+     |  Call A   OpenAI small tier, vision, temperature 0, strict schema
      v
 PostAnalysis  ->  validator  ->  stored per post, incident extracted
      |
      |  aggregator   deterministic: weights, decay, baseline, trend, sufficiency
      v
 SemanticState + PlanningInput
-     |  Call B   Gemini Pro, temperature 0, response schema
+     |  Call B   OpenAI full tier, temperature 0, strict schema
      v
 CommunityPlan  ->  VALIDATOR  ->  the JSON the renderer builds a block from
 ```
@@ -30,7 +30,7 @@ deterministic code.
 # hand-written analyses in packages/fixtures/data/post-analysis.mock.json.
 npm --workspace @living-city/pipeline run run:all -- --offline
 
-# The real thing. Needs GEMINI_API_KEY.
+# The real thing. Needs OPENAI_API_KEY.
 npm --workspace @living-city/pipeline run run:all
 
 # Call A over the seed set, with the Gate 1 incident report.
@@ -118,10 +118,30 @@ used until 3D lands `taxonomy.v1.json`. Drop their file at
 `packages/modeling/data/taxonomy.v1.json` (or set `TAXONOMY_PATH`) and it is
 picked up with no code change.
 
-## What is not here
+## The provider
 
-A second provider. `docs/04` Stage 4 item 7 and not before: an untested
-fallback is not a fallback. The stage-time fuse for an outage is the operator's
-preset plan button and the fallback video. The adapter interface in
-`src/provider/types.ts` keeps a second implementation to one file when the time
-comes.
+OpenAI is the single critical-path provider for both calls
+(`integration/EVENT-FACTS.md` decision 3). `src/provider/openai.ts` uses
+Structured Outputs with `strict: true`, so the API enforces the shape rather
+than the prompt asking nicely, and passes the photo inline as a data URL.
+
+The response schemas in `src/call-a/schema.ts` and `src/call-b/schema.ts` stay
+written in the OpenAPI subset, and `toStrictSchema` in the adapter translates
+them: `nullable: true` becomes a type union with `"null"`, `propertyOrdering` is
+dropped, every object gets `additionalProperties: false`, and Call A's root
+array is wrapped in an object and unwrapped again on the way back, because
+Structured Outputs requires an object at the root. One schema source, generated
+from the contracts enums, so the Zod contract and the API schema still cannot
+drift.
+
+Model defaults are the deterministic tiers (`gpt-4.1-mini` for Call A,
+`gpt-4.1` for Call B), overridable with `OPENAI_MODEL_CALL_A` and
+`OPENAI_MODEL_CALL_B`. The reasoning tiers are not the default on purpose: they
+reject `temperature`, which docs/03 principle 7 needs at 0 for the replay set
+to mean anything, and they spend the output budget on reasoning tokens.
+
+Gemini is built (`src/provider/gemini.ts`) and reachable with
+`AI_PROVIDER=gemini`, but it is the documented alternate, not a runtime
+fallback. Nothing fails over automatically: an untested fallback is not a
+fallback, and the stage-time fuse for an outage is the operator's preset plan
+button and the fallback video.

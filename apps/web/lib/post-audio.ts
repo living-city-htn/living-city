@@ -126,6 +126,22 @@ export const recorderMessage = (state: RecorderState): string => {
   }
 }
 
+/**
+ * The clip as a `data:` URL, for the existing POST /api/posts body.
+ *
+ * Audio rides in the request the post already makes rather than going to an
+ * upload endpoint of its own, because T3 forbids a new route in the demo flow.
+ * A 30 second Opus clip is ~120 KB, ~160 KB once base64'd, which is far inside
+ * the body limit. The server is what moves it to Blob storage.
+ */
+export const toDataUrl = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Could not read the recording.'))
+    reader.onload = () => resolve(String(reader.result))
+    reader.readAsDataURL(blob)
+  })
+
 export type RecorderHandle = {
   stop: () => void
   cancel: () => void

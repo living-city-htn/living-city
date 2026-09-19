@@ -5,6 +5,7 @@ import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } f
 import { nearestCommunity } from '@/lib/post-location'
 import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
+import { VOICE_POSTS, storeAudio, type StoredAudio } from '@/lib/voice-blob'
 
 // GET /api/posts?community=&scope=  -> analyzed, unhidden posts only
 export async function GET(req: Request) {
@@ -49,6 +50,19 @@ export async function POST(req: Request) {
     })
     return { post, balance: balance(user.id), points_earned: balance(user.id) - before }
   })
+
+  // Voice work is fenced behind a flag AND the presence of a clip, so a photo
+  // or text post does not execute one extra await. That is the latency
+  // guarantee in T3, and it is structural rather than measured.
+  let audio: StoredAudio | null = null
+  if (VOICE_POSTS && body.audio_url) {
+    audio = await storeAudio(created.post.id, body.audio_url)
+    console.info(JSON.stringify({
+      at: 'voice.upload', post_id: created.post.id,
+      stored: audio ? (audio.key ? 'blob' : 'inline') : 'rejected',
+      bytes: audio?.bytes ?? 0,
+    }))
+  }
 
   if (!pipelineEnabled()) return json(created, 201)
 

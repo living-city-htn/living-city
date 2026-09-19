@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@living-city/contracts": "workspace:*",
+    "@vercel/blob": "^0.27.0",
     "@living-city/fixtures": "workspace:*",
     "@living-city/modeling": "workspace:*",
     "@living-city/pipeline": "workspace:*",

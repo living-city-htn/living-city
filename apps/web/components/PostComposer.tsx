@@ -21,7 +21,7 @@ import { preparePhoto } from '@/lib/post-photo'
 import { nearestCommunity } from '@/lib/post-location'
 import {
   VOICE_POSTS, checkRecording, createRecorder, formatDuration, recorderMessage,
-  secondsRemaining, type Recording, type RecorderHandle, type RecorderState,
+  secondsRemaining, toDataUrl, type Recording, type RecorderHandle, type RecorderState,
 } from '@/lib/post-audio'
 
 export type PostLocation = { community_id?: string; lon?: number; lat?: number; label: string }
@@ -164,11 +164,17 @@ export default function PostComposer({
     setError('')
     setUncertain(false)
     try {
+      // Only a post that carries a voice note pays for one. A clip that cannot
+      // be read is dropped here and the caption posts without it.
+      let audio: string | null = null
+      if (VOICE_POSTS && recording) {
+        audio = await toDataUrl(recording.blob).catch(() => null)
+      }
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.trim(), image_url: withoutPhoto ? null : photo,
+          text: text.trim(), image_url: withoutPhoto ? null : photo, audio_url: audio,
           community_id: location.community_id, lon: location.lon, lat: location.lat,
         }),
       })

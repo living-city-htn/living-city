@@ -1,0 +1,269 @@
+{
+  "_readme": [
+    "Call B inputs, Pipeline-owned (docs/roles/pipeline.md Stage 0). The three",
+    "scenarios from docs/03 section 6 that between them exercise every hard rule",
+    "in the validator:",
+    "",
+    "  rich_event      6.4  an event on top of a stable identity. Archetype must",
+    "                       NOT change: consecutive_windows_supporting_change is",
+    "                       1 and rule 11 needs 2. The spike must come out as",
+    "                       effects, decorations, activity and lighting instead",
+    "                       (rule 13, temporal_mix.moment 0.62).",
+    "  sparse_previous 6.5  data_sufficiency low with a previous plan. Reproduce",
+    "                       it, change_magnitude none, confidence about 35.",
+    "  empty_no_plan   6.6  no posts, no previous plan. Zoning default, density",
+    "                       at most 2, mood serene, no effects, confidence 20.",
+    "",
+    "Each block is a complete PlanningInput except `taxonomy`, which the runner",
+    "injects at call time from the live taxonomy so these files never go stale",
+    "against the asset library. docs/03 section 2.3.",
+    "",
+    "Use them to check a prompt edit without spending a run over the whole city."
+  ],
+  "rich_event": {
+    "schema_version": "1.0",
+    "taxonomy_version": "1.0",
+    "community": {
+      "community_id": "kw:uptown-waterloo",
+      "city_id": "kw",
+      "name": "Uptown Waterloo",
+      "source": "neighborhood",
+      "area_km2": 0.4,
+      "adjacent_ids": ["kw:university-district", "kw:midtown-ion"],
+      "relative_position": { "bearing_from_center": "N", "distance_km_from_center": 3.2 },
+      "land_use_hints": {
+        "park_ratio": 0.05, "water_adjacent": false, "major_road": true,
+        "transit_stations": 1, "campus": false, "dominant_zoning": "mixed"
+      },
+      "capacity": { "lot_count": 40, "max_height_tier": 4 }
+    },
+    "window": {
+      "start": "2026-09-16T00:00:00-04:00",
+      "end": "2026-09-18T23:59:00-04:00",
+      "post_count": 143,
+      "distinct_authors": 97,
+      "data_sufficiency": "high"
+    },
+    "current": {
+      "dimensions": {
+        "energy": 78, "social": 74, "creativity": 66, "stress": 18, "calm": 22,
+        "nature": 15, "nightlife": 71, "food": 69, "commerce": 52, "culture": 48, "fitness": 12
+      },
+      "valence": 62,
+      "top_tags": [
+        { "tag": "live_music", "share": 0.31 },
+        { "tag": "patio", "share": 0.27 },
+        { "tag": "street_art", "share": 0.22 },
+        { "tag": "food_truck", "share": 0.14 },
+        { "tag": "crowded", "share": 0.12 }
+      ],
+      "top_keywords": [
+        { "kw": "king st", "share": 0.22 },
+        { "kw": "live band", "share": 0.18 },
+        { "kw": "patio season", "share": 0.11 }
+      ],
+      "activity_mix": { "socializing": 0.41, "eating": 0.24, "performing": 0.18, "shopping": 0.11, "sightseeing": 0.06 },
+      "place_mix": { "street": 0.38, "bar": 0.22, "restaurant": 0.2, "cafe": 0.12, "plaza": 0.08 },
+      "time_mix": { "morning": 0.1, "afternoon": 0.3, "evening": 0.35, "night": 0.25 },
+      "temporal_mix": { "moment": 0.62, "recurring": 0.25, "persistent": 0.13 }
+    },
+    "baseline": {
+      "dimensions": {
+        "energy": 60, "social": 58, "creativity": 68, "stress": 20, "calm": 35,
+        "nature": 18, "nightlife": 45, "food": 66, "commerce": 55, "culture": 52, "fitness": 10
+      },
+      "valence": 55,
+      "top_tags": [
+        { "tag": "street_art", "share": 0.29 },
+        { "tag": "coffee", "share": 0.2 },
+        { "tag": "patio", "share": 0.18 }
+      ],
+      "top_keywords": [{ "kw": "king st", "share": 0.19 }],
+      "activity_mix": { "socializing": 0.33, "eating": 0.27, "shopping": 0.2, "relaxing": 0.12, "performing": 0.08 },
+      "place_mix": { "street": 0.34, "cafe": 0.24, "restaurant": 0.2, "bar": 0.14, "shop": 0.08 },
+      "time_mix": { "morning": 0.18, "afternoon": 0.34, "evening": 0.3, "night": 0.18 },
+      "temporal_mix": { "moment": 0.38, "recurring": 0.4, "persistent": 0.22 }
+    },
+    "trend": { "energy": 18, "social": 16, "creativity": -2, "stress": -2, "calm": -13, "nature": -3, "nightlife": 26, "food": 3, "commerce": -3, "culture": -4, "fitness": 2 },
+    "previous_plan": {
+      "schema_version": "1.0",
+      "taxonomy_version": "1.0",
+      "community_id": "kw:uptown-waterloo",
+      "plan_id": "kw:uptown-waterloo:2026-09-11T23:59:00-04:00",
+      "summary": "A low-rise creative main street of patios, coffee and painted walls.",
+      "archetype": "creative_quarter",
+      "identity_tags": ["colorful", "bohemian", "brick"],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 30, "retail": 30, "cafe_bar": 25,
+        "office": 0, "cultural_civic": 15, "campus_industrial": 0
+      },
+      "vegetation": { "level": 1, "types": ["planters", "street_trees"] },
+      "activity": {
+        "pedestrian_density": 3, "crowd_clusters": 2, "vehicle_traffic": 2,
+        "behaviors": ["walking", "dining", "sitting"]
+      },
+      "decorations": [
+        { "tag": "mural", "prominence": 3 },
+        { "tag": "outdoor_seating", "prominence": 2 },
+        { "tag": "benches", "prominence": 1 }
+      ],
+      "mood": "cozy",
+      "palette": "brick_red",
+      "lighting": {
+        "signature_time": "golden_hour", "intensity": 3, "color_temp": "warm",
+        "accents": ["streetlamps_warm", "window_glow"]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": ["archetype", "density", "height_profile"],
+        "reasons": ["street_art 0.29 share sustained over 4 windows"]
+      },
+      "confidence": 80
+    },
+    "consecutive_windows_supporting_change": 1,
+    "taxonomy": null
+  },
+  "sparse_previous": {
+    "schema_version": "1.0",
+    "taxonomy_version": "1.0",
+    "community": {
+      "community_id": "kw:victoria-park",
+      "city_id": "kw",
+      "name": "Victoria Park",
+      "source": "neighborhood",
+      "area_km2": 0.45,
+      "adjacent_ids": ["kw:downtown-kitchener"],
+      "relative_position": { "bearing_from_center": "SW", "distance_km_from_center": 0.9 },
+      "land_use_hints": {
+        "park_ratio": 0.72, "water_adjacent": true, "major_road": false,
+        "transit_stations": 0, "campus": false, "dominant_zoning": "green"
+      },
+      "capacity": { "lot_count": 10, "max_height_tier": 2 }
+    },
+    "window": {
+      "start": "2026-09-16T00:00:00-04:00",
+      "end": "2026-09-18T23:59:00-04:00",
+      "post_count": 4,
+      "distinct_authors": 2,
+      "data_sufficiency": "low"
+    },
+    "current": {
+      "dimensions": {
+        "energy": 15, "social": 8, "creativity": null, "stress": null, "calm": 82,
+        "nature": 80, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": 71,
+      "top_tags": [
+        { "tag": "quiet", "share": 0.62 },
+        { "tag": "waterfront", "share": 0.31 },
+        { "tag": "garden", "share": 0.28 }
+      ],
+      "top_keywords": [{ "kw": "herons", "share": 0.3 }, { "kw": "bench", "share": 0.25 }],
+      "activity_mix": { "relaxing": 1.0 },
+      "place_mix": { "park": 0.58, "waterfront": 0.42 },
+      "time_mix": { "morning": 0.55, "afternoon": 0.45, "evening": 0, "night": 0 },
+      "temporal_mix": { "moment": 0.8, "recurring": 0.2, "persistent": 0 }
+    },
+    "baseline": {
+      "dimensions": {
+        "energy": 18, "social": 12, "creativity": null, "stress": null, "calm": 78,
+        "nature": 82, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": 25
+      },
+      "valence": 68,
+      "top_tags": [{ "tag": "quiet", "share": 0.55 }, { "tag": "garden", "share": 0.3 }],
+      "top_keywords": [{ "kw": "lake", "share": 0.22 }],
+      "activity_mix": { "relaxing": 0.72, "exercising": 0.28 },
+      "place_mix": { "park": 0.66, "waterfront": 0.34 },
+      "time_mix": { "morning": 0.4, "afternoon": 0.4, "evening": 0.2, "night": 0 },
+      "temporal_mix": { "moment": 0.5, "recurring": 0.4, "persistent": 0.1 }
+    },
+    "trend": { "energy": -3, "social": -4, "calm": 4, "nature": -2 },
+    "previous_plan": {
+      "schema_version": "1.0",
+      "taxonomy_version": "1.0",
+      "community_id": "kw:victoria-park",
+      "plan_id": "kw:victoria-park:2026-09-11T23:59:00-04:00",
+      "summary": "A lake at the centre of a lawn, with paths, old trees and very little else.",
+      "archetype": "green_retreat",
+      "identity_tags": ["family", "wood"],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35, "retail": 10, "cafe_bar": 15,
+        "office": 0, "cultural_civic": 40, "campus_industrial": 0
+      },
+      "vegetation": { "level": 5, "types": ["mature_trees", "park_lawn", "flower_beds"] },
+      "activity": {
+        "pedestrian_density": 2, "crowd_clusters": 1, "vehicle_traffic": 0,
+        "behaviors": ["walking", "sitting", "dog_walking"]
+      },
+      "decorations": [
+        { "tag": "benches", "prominence": 2 },
+        { "tag": "fountain", "prominence": 2 }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "dawn", "intensity": 2, "color_temp": "neutral",
+        "accents": ["streetlamps_warm"]
+      },
+      "effects": ["birds"],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": ["archetype", "density", "height_profile", "building_composition"],
+        "reasons": ["park_ratio 0.72 and nature 82 baseline; identity is the park"]
+      },
+      "confidence": 62
+    },
+    "consecutive_windows_supporting_change": 0,
+    "taxonomy": null
+  },
+  "empty_no_plan": {
+    "schema_version": "1.0",
+    "taxonomy_version": "1.0",
+    "community": {
+      "community_id": "kw:midtown-ion",
+      "city_id": "kw",
+      "name": "Midtown ION",
+      "source": "synthetic",
+      "area_km2": 0.28,
+      "adjacent_ids": ["kw:uptown-waterloo", "kw:downtown-kitchener"],
+      "relative_position": { "bearing_from_center": "CENTER", "distance_km_from_center": 1.4 },
+      "land_use_hints": {
+        "park_ratio": 0.04, "water_adjacent": false, "major_road": true,
+        "transit_stations": 2, "campus": false, "dominant_zoning": "mixed"
+      },
+      "capacity": { "lot_count": 18, "max_height_tier": 2 }
+    },
+    "window": {
+      "start": "2026-09-18T00:00:00-04:00",
+      "end": "2026-09-18T23:59:00-04:00",
+      "post_count": 0,
+      "distinct_authors": 0,
+      "data_sufficiency": "none"
+    },
+    "current": {
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": null,
+      "top_tags": [],
+      "top_keywords": [],
+      "activity_mix": {},
+      "place_mix": {},
+      "time_mix": { "morning": 0, "afternoon": 0, "evening": 0, "night": 0 },
+      "temporal_mix": { "moment": 0, "recurring": 0, "persistent": 0 }
+    },
+    "baseline": null,
+    "trend": {},
+    "previous_plan": null,
+    "consecutive_windows_supporting_change": 0,
+    "taxonomy": null
+  }
+}

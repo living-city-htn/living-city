@@ -20,7 +20,7 @@ export default function AppHeader({ title, context, balance }: {
         <h1>{title}</h1>
         <p>{context}</p>
       </div>
-      <span className="app-header-balance" aria-label={balance === null ? 'Points balance loading' : `${balance} points`}>
+      <span className="app-header-balance" role="status" aria-label={balance === null ? 'Points balance loading' : `${balance} points`}>
         <span className="points-coin" aria-hidden="true">✦</span>
         <span>{balance === null ? '—' : balance}<span className="points-label"> points</span></span>
       </span>

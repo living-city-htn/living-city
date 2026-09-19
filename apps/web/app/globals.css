@@ -6,7 +6,7 @@
 :root {
   --paper: #F5F8FC; --surface: #fff; --sheet: #fff;
   --ink: #18324B; --label: #52687C; --hair: #DAE4ED; --fill: #EAF0F6;
-  --accent: #2878D0; --leaf: #347855; --sunshine: #F4C95D;
+  --lake: #2878D0; --accent: #246FBE; --leaf: #347855; --sunshine: #F4C95D;
   --r-card: 18px; --r-sheet: 24px;
   --mono: 'Nunito Sans', sans-serif;
   --ease: cubic-bezier(.22,.61,.36,1); --fast: 140ms; --base: 220ms; --slow: 320ms;

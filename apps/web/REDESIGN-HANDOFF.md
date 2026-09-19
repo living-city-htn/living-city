@@ -16,3 +16,13 @@ Known dependency: the local scene export is still the flat fallback. The 3D team
 Full-page Feed keeps its cards mounted across refresh/navigation so pending likes retain their guard. Community buttons open City. Shop shows balance and a confirmed-purchase Decorate action. Composer keeps drafts, adds Close/Back and keyboard-accessible file controls. Post receipts distinguish saving from city replanning and use only confirmed points. No API route/schema changes.
 
 Next: scene selectors, compact inspectors/inventory, and final responsive/demo checks. Merge foundation first, then journey. Production deployment remains merge-driven.
+
+## Part 3 — City controls and final verification
+
+City has a community selector plus a compact mobile inspector with explicit expansion and a desktop right inspector. My City has a compact inventory tray, Shop CTA, selected-community slot buttons, progress/errors, and keyboard interaction. Empty slots show only for the selected community; placed items remain visible throughout the personal view. Public mode exposes no personal markers. The existing CityScene contract and apps/web/scene are unchanged.
+
+Review fixes: feed rows reconcile fresh likes while preserving pending mutations; map picking can confirm a previously selected community; action blue is slightly darker than the brand lake blue for readable white text; short desktop navigation scrolls.
+
+Validation: all three committed PR versions build independently; final web suite50/50. Browser checks at320,390,768,1024,1440px found no horizontal overflow in Feed/Shop/Post. Tested text and photo posting against local fixture data, draft retention, permission-denied fallback, community selection, confirmed rewards, purchase→preselected item→placement, public/private visibility, Feed retry and purchase failure. Keyboard block selection, collapsed/expanded inspector, reduced motion, and accessibility audit checked. Automated browser checks are Chromium; actual iOS camera/system permissions and the real3D integration still require team rehearsal.
+
+No production data was modified. Local test server uses fixtures and no database URL. Production deploys only after Bryan merges. Merge the three PRs in order; later PRs target the preceding branch until it is merged. Never archive Claude's session. Continue from the latest merged main, keeping the Product/3D boundary intact.

@@ -7,7 +7,7 @@
  * from Blob once Pipeline's upload lands), so a missing image collapses to
  * nothing rather than showing a broken tile.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PostRow } from '@/lib/api'
 import { toggleLike } from '@/lib/api'
 
@@ -25,6 +25,14 @@ function Post({ post, onLiked, community, onCommunity }: { post: PostRow; onLike
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const inFlight = useRef(false)
+
+  // A feed refresh can reflect a like made from the community inspector.
+  // Keep optimistic state until this row’s own request is confirmed.
+  useEffect(() => {
+    if (inFlight.current) return
+    setLiked(post.liked)
+    setLikes(post.likes)
+  }, [post])
 
   const like = async () => {
     if (inFlight.current) return

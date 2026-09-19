@@ -4,18 +4,17 @@
  * Demo moment 5, second half: "place it on the block in my city. Switch to
  * public view: it is gone."
  *
- * Pick an owned item here, then tap a slot on any block. Tapping a filled slot
- * takes the item back. The sheet is the inventory and the instructions; the
- * slots themselves live on the map, because PRD 8.12 wants the touch target to
- * be the slot marker, not a control in a list.
+ * Pick an owned item and a community, then place it using a map slot or its
+ * equivalent touch-sized control. Filled slots return the item to inventory.
  *
  * Nothing on this screen can change a public plan or a block's geometry
  * (AGENTS.md, "Respect the two layers").
  */
 import { useEffect, useRef } from 'react'
-import type { ShopItem } from '@living-city/fixtures'
+import type { ShopItem, DecorationSlot } from '@living-city/fixtures'
 import type { MyCitySnapshot } from '@/lib/placement'
 import ItemDrawing from './ItemDrawing'
+import './city-controls.css'
 
 export default function MyCityPanel({
   active,
@@ -29,7 +28,15 @@ export default function MyCityPanel({
   onRefresh,
   needsRefresh,
   onHeight,
+  onBrowseShop,
+  selectedName,
+  slots = [],
+  onSlotTap,
 }: {
+  onBrowseShop?: () => void
+  selectedName?: string
+  slots?: DecorationSlot[]
+  onSlotTap?: (communityId: string, slotId: string) => void
   active: boolean
   snapshot: MyCitySnapshot | null
   catalog: ShopItem[]
@@ -53,11 +60,11 @@ export default function MyCityPanel({
       return
     }
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) onHeight(entry.contentRect.height)
+      if (entry) onHeight(node.getBoundingClientRect().height)
     })
     observer.observe(node)
     onHeight(node.getBoundingClientRect().height)
-    return () => observer.disconnect()
+    return () => { observer.disconnect(); onHeight(0) }
   }, [active, onHeight])
 
   const label = (tag: string) =>
@@ -69,10 +76,10 @@ export default function MyCityPanel({
   const placed = snapshot?.placements.length ?? 0
 
   return (
-    <section ref={ref} className="sheet mycity-sheet" aria-label="My City" style={!active ? { display: 'none' } : undefined}>
+    <section ref={ref} className="inventory-panel" aria-label="My City" style={!active ? { display: 'none' } : undefined}>
       <header className="sheet-head">
         <div>
-          <h2>My City</h2>
+          <h2>Your decorations</h2>
           <p className="sheet-sub">
             {placed === 0
               ? 'Only you can see what you place here.'
@@ -93,27 +100,26 @@ export default function MyCityPanel({
         {message && !error && <p className="shop-feedback" role="status">{message}</p>}
 
         {!snapshot ? (
-          <p className="muted" role="status">Loading your city…</p>
+          !error && <p className="muted" role="status">Loading your city…</p>
         ) : owned.length === 0 ? (
-          <p className="muted">
+          <div className="inventory-empty"><p className="muted">
             {placed > 0
-              ? 'Everything you own is placed. Tap a filled slot on a block to take it back.'
-              : 'Nothing to place yet. Earn points by posting and liking, then buy something in the Shop.'}
-          </p>
+              ? 'All your items are placed.'
+              : 'Earn points by sharing, then choose your first decoration.'}
+          </p>{onBrowseShop && <button className="form-button inventory-shop" onClick={onBrowseShop}>Browse shop</button>}</div>
         ) : (
           <>
             <p className="shop-explainer">
               {selectedTag
-                ? `Tap an empty slot on a block to place your ${label(selectedTag).toLowerCase()}.`
-                : 'Pick an item, then tap an empty slot on a block.'}
+                ? `Place your ${label(selectedTag).toLowerCase()} in an empty slot.`
+                : 'Pick an item, then an empty slot.'}
             </p>
-            <ul className="tray" role="listbox" aria-label="Your items">
+            <ul className="tray" aria-label="Your items">
               {owned.map(([tag, qty]) => (
                 <li key={tag}>
                   <button
                     className="tray-item"
-                    role="option"
-                    aria-selected={selectedTag === tag}
+                    aria-pressed={selectedTag === tag}
                     data-selected={selectedTag === tag}
                     disabled={busy || needsRefresh}
                     onClick={() => onSelect(selectedTag === tag ? null : tag)}
@@ -128,9 +134,18 @@ export default function MyCityPanel({
           </>
         )}
 
-        {placed > 0 && (
-          <p className="muted mycity-hint">Tap a filled slot to take that item back.</p>
-        )}
+        {snapshot && <div className="placement-controls">
+          <h3>{selectedName || 'Choose a community on the map'}</h3>
+          {selectedName && slots.length > 0 && <div className="placement-slots" role="group" aria-label={`Decoration slots in ${selectedName}`}>
+            {slots.map((slot, index) => {
+              const item = snapshot.placements.find((p) => p.community_id === slot.community_id && p.slot_id === slot.slot_id)
+              return <button key={slot.slot_id} className="placement-slot" disabled={busy || needsRefresh || (!item && !selectedTag)} onClick={() => onSlotTap?.(slot.community_id, slot.slot_id)} aria-label={item ? `Take back ${label(item.item_tag)} from slot ${index + 1}` : `Place ${selectedTag ? label(selectedTag) : 'item'} in slot ${index + 1}`}>
+                <span>Slot {index + 1}</span><strong>{item ? label(item.item_tag) : 'Empty'}</strong><small>{item ? 'Take back' : selectedTag ? 'Place here' : 'Select an item'}</small>
+              </button>
+            })}
+          </div>}
+          {busy && <p role="status">Saving your decoration…</p>}
+        </div>}
       </div>
     </section>
   )

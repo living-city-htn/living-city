@@ -13,8 +13,6 @@
  * fakes 3D. Those are 3D's Gate 1 items (docs/roles/3d.md) and building them in
  * SVG would be throwaway work on a component designed to be thrown away.
  *
- * Look: near-monochrome, per the one art rule in apps/web/DESIGN.md. The colour
- * belongs to the city, and the city's real colour is 3D's to set.
  */
 import { useMemo, useState } from 'react'
 import type { CitySceneProps } from './types'
@@ -67,11 +65,13 @@ const CSS = `
   pointer-events: none; animation: lc-march 1s linear infinite; }
 @keyframes lc-march { to { stroke-dashoffset: -18; } }
 .lc-label { fill: var(--label); font: 500 15px -apple-system, system-ui, sans-serif;
-  text-anchor: middle; pointer-events: none; user-select: none; }
+  text-anchor: middle; pointer-events: none; user-select: none; paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round; }
 .lc-slot { fill: none; stroke: var(--label); stroke-width: 2; stroke-dasharray: 3 3; cursor: pointer;
   /* The whole marker is the target, not its outline (PRD 8.12). */
   pointer-events: all; }
 .lc-slot[data-filled="true"] { fill: var(--ink); stroke: none; stroke-dasharray: none; }
+.lc-block:focus-visible, .lc-slot:focus-visible { outline: none; stroke: var(--mark); stroke-width: 5; }
+@media (prefers-reduced-motion: reduce) { .lc-block { transition: none; } .lc-planning { animation: none; } }
 .lc-slot-label { fill: var(--label); font: 500 11px -apple-system, system-ui, sans-serif;
   text-anchor: middle; pointer-events: none; user-select: none; }
 `
@@ -126,7 +126,7 @@ export default function FlatCityScene({
     <svg
       className="lc-scene"
       viewBox={`0 0 ${projection.width.toFixed(0)} ${projection.height.toFixed(0)}`}
-      role="img"
+      role="group"
       aria-label="Kitchener-Waterloo, one shape per community"
       /**
        * Tap empty space to deselect (docs/01 section 8.12). This sits on the
@@ -156,6 +156,16 @@ export default function FlatCityScene({
               data-dim={selectedId !== null && selectedId !== id}
               style={{ fill: PALETTE[plan?.palette ?? ''] ?? 'var(--block-neutral)' }}
               role="button"
+              tabIndex={0}
+              aria-pressed={selectedId === id}
+              onFocus={() => hover(id)}
+              onBlur={() => hover(null)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                event.preventDefault()
+                onBlockSelect?.(id)
+                onBlockPick?.(id, projection.toLonLat(geom.cx, geom.cy))
+              }}
               aria-label={community.name}
               onMouseEnter={() => hover(id)}
               onMouseLeave={() => hover(null)}
@@ -178,7 +188,7 @@ export default function FlatCityScene({
         No <title> on the blocks: that renders as the browser's own tooltip, and
         hover feedback belongs in the UI (PRD 8.12), not in an OS popup.
       */}
-      {blocks.map(({ community, geom }) => (
+      {blocks.filter(({ community }) => community.community_id === (hoveredId ?? selectedId)).map(({ community, geom }) => (
         <text className="lc-label" key={community.community_id} x={geom.cx} y={geom.cy + 5}>
           {community.name}
         </text>
@@ -188,7 +198,7 @@ export default function FlatCityScene({
       {mode === 'mine' &&
         blocks.map(({ community, geom }) =>
           city.slots
-            .filter((s) => s.community_id === community.community_id)
+            .filter((s) => s.community_id === community.community_id && (community.community_id === selectedId || placedIn.has(`${community.community_id}/${s.slot_id}`)))
             .map((slot) => {
               const x = geom.cx + slot.x * geom.halfW * 0.7
               const y = geom.cy - slot.y * geom.halfH * 0.7
@@ -202,6 +212,13 @@ export default function FlatCityScene({
                     r={12}
                     data-filled={Boolean(item)}
                     role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') return
+                      event.preventDefault()
+                      event.stopPropagation()
+                      onSlotTap?.(community.community_id, slot.slot_id)
+                    }}
                     aria-label={
                       item
                         ? `${community.name}, ${slot.slot_id}, holds ${item.replace(/_/g, ' ')}`

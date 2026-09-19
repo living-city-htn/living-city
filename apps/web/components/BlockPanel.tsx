@@ -4,8 +4,8 @@
  * Demo moment 2: "Tap two contrasting blocks. Read their summaries. Open the
  * why panel on one." (docs/04 section 2).
  *
- * A bottom sheet over the map, not a full-screen push, so the city stays
- * visible while you read about it (apps/web/DESIGN.md, "Panels").
+ * A compact mobile preview expands into details; desktop uses a right-side
+ * inspector beside the scene.
  *
  * Summary, mood and tags are the plan's own words; "Why it looks like this" is
  * the plan's `stability.reasons`, which the validator requires to be
@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { BlockState, PostRow } from '@/lib/api'
 import { getBlockPosts, getBlockState } from '@/lib/api'
 import PostList from './PostList'
+import './city-controls.css'
 
 export default function BlockPanel({
   communityId,
@@ -44,7 +45,7 @@ export default function BlockPanel({
     const node = ref.current
     if (!node) return
     const observer = new ResizeObserver(([entry]) => {
-      if (entry) onHeight(entry.contentRect.height)
+      if (entry) onHeight(node.getBoundingClientRect().height)
     })
     observer.observe(node)
     onHeight(node.getBoundingClientRect().height)
@@ -57,10 +58,15 @@ export default function BlockPanel({
   const [state, setState] = useState<BlockState | null>(null)
   const [posts, setPosts] = useState<PostRow[]>([])
   const [why, setWhy] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => setExpanded(false), [communityId])
 
   useEffect(() => {
     let live = true
     setState(null)
+    setError('')
     setPosts([])
     setWhy(false)
     Promise.all([getBlockState(communityId), getBlockPosts(communityId)])
@@ -69,14 +75,14 @@ export default function BlockPanel({
         setState(s)
         setPosts(p)
       })
-      .catch(() => {})
+      .catch(() => { if (live) setError('Could not load this community. Try again.') })
     return () => {
       live = false
     }
-  }, [communityId, planId])
+  }, [communityId, planId, attempt])
 
   return (
-    <section ref={ref} className="sheet block-sheet" aria-label={`${name} details`}>
+    <section ref={ref} className="city-inspector" data-expanded={expanded} aria-label={`${name} details`}>
       <header className="sheet-head">
         <div>
           <h2>{name}</h2>
@@ -95,12 +101,14 @@ export default function BlockPanel({
       </header>
 
       <div className="sheet-body">
-        {!state ? (
-          <p className="muted">Loading…</p>
+        {error ? <div role="alert"><p>{error}</p><button className="form-button" onClick={() => setAttempt((n) => n + 1)}>Try again</button></div> : !state ? (
+          <p className="muted" role="status">Loading community…</p>
         ) : (
           <>
             <p className="summary">{state.summary}</p>
 
+            <button className="inspector-toggle form-button" aria-expanded={expanded} aria-controls="community-expanded-details" onClick={() => setExpanded((v) => !v)}>{expanded ? 'Show less' : 'Explore this community'}</button>
+            <div className="inspector-details" id="community-expanded-details">
             {state.top_tags.length > 0 && (
               <ul className="tags">
                 {state.top_tags.map((t) => (
@@ -129,6 +137,7 @@ export default function BlockPanel({
 
             <h3 className="section-label">Recent posts</h3>
             <PostList posts={posts} onLiked={onLiked} empty="No posts from this block yet." />
+            </div>
           </>
         )}
       </div>

@@ -19,6 +19,7 @@ import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
 import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
+import { e7EventLabel, isE7FestivalLive } from './e7-event'
 import { blockVisualState } from './visual-state'
 import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
@@ -251,8 +252,57 @@ const EFFECT_LOOK: Record<string, { colour: string; rise: number; spin: number; 
   steam: { colour: '#dfe4e8', rise: 0.3, spin: 0.3, size: 0.07 },
   fog: { colour: '#d8dde2', rise: 0.05, spin: 0.2, size: 0.1 },
   birds: { colour: '#5b6472', rise: 0.08, spin: 1.1, size: 0.05 },
-  fireworks: { colour: '#ffd166', rise: 0.7, spin: 2.8, size: 0.06 },
   heart_particles: { colour: '#ff7f9e', rise: 0.34, spin: 1.5, size: 0.055 },
+}
+
+/** A burst keeps the fireworks recognisable from across the room. */
+function Fireworks({ spread, seed }: { spread: number; seed: string }) {
+  const reducedMotion = useReducedMotion()
+  const sparks = useRef<THREE.InstancedMesh>(null)
+  const particles = useMemo(() => {
+    const random = seeded(`fireworks:${seed}`)
+    return Array.from({ length: 54 }, (_, index) => {
+      const burst = Math.floor(index / 18)
+      const angle = random() * Math.PI * 2
+      const up = random() * 1.35 - 0.45
+      const horizontal = Math.sqrt(1 - Math.min(0.95, up * up))
+      return {
+        center: [
+          (burst - 1) * spread * 0.24 + (random() - 0.5) * spread * 0.08,
+          1.35 + random() * 0.35,
+          (random() - 0.5) * spread * 0.34,
+        ] as [number, number, number],
+        direction: [Math.cos(angle) * horizontal, up, Math.sin(angle) * horizontal] as [number, number, number],
+        phase: burst / 3,
+        size: 0.028 + random() * 0.02,
+      }
+    })
+  }, [seed, spread])
+
+  useFrame(({ clock }) => {
+    const time = reducedMotion ? 0.58 : clock.elapsedTime * 0.32
+    particles.forEach((particle, index) => {
+      const progress = (time + particle.phase) % 1
+      const bloom = Math.min(1, progress / 0.16)
+      const fade = progress > 0.72 ? 1 - (progress - 0.72) / 0.28 : 1
+      const distance = spread * 0.4 * bloom
+      dummy.position.set(
+        particle.center[0] + particle.direction[0] * distance,
+        particle.center[1] + particle.direction[1] * distance,
+        particle.center[2] + particle.direction[2] * distance,
+      )
+      dummy.rotation.set(progress * 5, index, 0)
+      dummy.scale.setScalar(particle.size * Math.max(0.08, fade))
+      dummy.updateMatrix()
+      sparks.current?.setMatrixAt(index, dummy.matrix)
+    })
+    if (sparks.current) sparks.current.instanceMatrix.needsUpdate = true
+  })
+
+  return <instancedMesh ref={sparks} args={[undefined, undefined, particles.length]} raycast={() => {}}>
+    <sphereGeometry args={[1, 6, 6]} />
+    <meshBasicMaterial color="#ffd166" transparent opacity={0.96} />
+  </instancedMesh>
 }
 
 /** Floating particles over a block, one instanced mesh per effect. */
@@ -443,6 +493,15 @@ function CivicHallLabel({ drill, position }: { drill: boolean; position: [number
   </Html>
 }
 
+function E7EventLabel({ effects }: { effects: readonly string[] }) {
+  return <Html transform position={[0, 1.7, 0]} distanceFactor={0.8}>
+    <div className={`${styles.label} ${styles.event}`} role="status">
+      <strong>E7 atrium</strong>
+      <span>{e7EventLabel(effects)}</span>
+    </div>
+  </Html>
+}
+
 function CivicDrillControl({ active, onStart, onStop }: { active: boolean; onStart: () => void; onStop: () => void }) {
   return <Html fullscreen>
     {/*
@@ -595,6 +654,7 @@ function Block({
   const civicHallCell = civicHallIndex >= 0 ? cells[civicHallIndex] : undefined
   const civicHallPosition = civicHallCell ? [civicHallCell.x / SCALE, -civicHallCell.y / SCALE] as [number, number] : null
   const tornadoDrill = isCivicHallDrill(community.community_id, drillActive)
+  const e7Festival = isE7FestivalLive(community.community_id, plan?.mood)
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
@@ -656,14 +716,16 @@ function Block({
           colour={palette.roof}
         />
       )}
-      {(plan?.effects ?? []).slice(0, 3).map((tag) => (
-        <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
-      ))}
+      {(plan?.effects ?? []).slice(0, 3).map((tag) => tag === 'fireworks'
+        ? <Fireworks key={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
+        : <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />,
+      )}
 
       {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
         fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
       {civicHallPosition && <CivicHallLabel drill={tornadoDrill} position={civicHallPosition} />}
       {tornadoDrill && civicHallPosition && <TornadoDrill position={civicHallPosition} />}
+      {e7Festival && <E7EventLabel effects={plan?.effects ?? []} />}
       {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
       {cells.map((cell, i) => {
         if (cell.kind !== 'plaza') return null

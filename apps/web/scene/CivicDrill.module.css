@@ -24,6 +24,12 @@
   color: #7a2f20;
 }
 
+.event {
+  border-color: #d29a26;
+  background: rgba(35, 48, 68, 0.94);
+  color: #fff4cf;
+}
+
 .control {
   position: absolute;
   top: 1rem;

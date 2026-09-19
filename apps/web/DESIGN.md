@@ -1,137 +1,51 @@
-# Product design notes
+# Living City design
 
-Status: draft, Stage 0
-Last updated: 2026-09-19
-Decides: the art direction for the app chrome, the tab structure, and how the
-game loop maps onto the frozen demo script.
+Approved by Product, 2026-09-19. This replaces the earlier monochrome, map-behind-every-panel design. Product owns app chrome and the fallback map; the 3D teammate owns the scene renderer.
 
-Source: `design/app-sketch-v1.png`, drawn by the Product owner at the event.
-Owner: Product. 3D owns everything inside the city viewport; this document
-covers everything around it.
+## Identity
 
-## Assumptions
+Living City is a playful city game built from everyday moments. Use rounded, bold Nunito Sans headings, readable body text, generous spacing, and consistent illustrated controls. The font is bundled locally under the SIL Open Font License in `public/fonts/OFL.txt`.
 
-1. "Apple style" is read as the design language, not as copying any Apple product.
-   Nothing here imitates Apple's own apps, icons or marks.
-
-## Decisions
-
-1. **The fifth tab is Feed, not Settings.** The sketch drew a gear as filler. A
-   settings screen appears nowhere in the frozen script and everything it would
-   contain is on the not-built list in docs/04 section 6. Feed earns the slot:
-   moment 8 has judges post from their own phones and then look for their post,
-   and it is what makes the product read as social rather than as a map viewer.
-   Five slots stay, because a centred camera button needs two tabs either side.
-
-## The one art rule
-
-**The chrome is quiet. The city is the colour.**
-
-The UI around the viewport is near-monochrome, generously spaced and almost
-invisible. Every saturated colour in the frame comes from the city itself: the
-plan's palette, its lighting, its effects. This is what lets "simple and clean"
-and "cartoon miniature" (docs/01 section 8.11) live in the same screen instead of
-fighting. It also protects moment 4 — when a block lights up, nothing in the
-interface competes with it.
-
-If a UI element needs colour to be understood, it is doing too much.
-
-## Art direction
-
-| | Rule |
-|---|---|
-| Type | System stack (`-apple-system`, `SF Pro` on Apple devices). Two weights: regular for body, semibold for titles. No third font. |
-| Spacing | 8pt grid. When unsure, use more space, not less. |
-| Colour | Near-monochrome. The only green in the interface is the header and the particle drift behind the map, both pale. One accent, used only for the primary action. Backgrounds near-white in light mode, near-black in dark. |
-| Depth | Subtle shadow and background blur only. No gradients, no borders where space will do, no skeuomorphism. |
-| Corners | Large radii: 12px on cards, 20px+ on sheets. |
-| Tab bar | Translucent, `backdrop-filter: blur()`, hairline top border, floats over the map. |
-| Motion | One easing curve and three durations (`--fast` 140ms, `--base` 220ms, `--slow` 320ms), smooth rather than springy. Every state change animates; nothing teleports. `prefers-reduced-motion` turns it all off. |
-| Dark mode | Required, not optional. The city has a night lighting mode and the chrome follows it. |
-| Panels | Bottom sheets that slide over the map, not full-screen pushes. The city stays visible. |
-
-The map is full-bleed behind everything. The chrome floats; it never boxes the
-city in.
-
-## The header and the particles
-
-A pale green header names the city (or the selected block), says in one line
-what the current tab is for, and carries the points balance so it is visible
-from every screen rather than only inside the shop.
-
-Behind the map, a slow drift of particles: pollen, or seeds on the wind. It is
-the app's only ambient motion and it is deliberately **not** the plan's
-`effects`. Fireflies, sparkles and music notes belong to 3D, are capped at
-three by docs/04 section 3, and mean something — a block carrying them is a
-block the AI decided was festive. The drift is just air, and it must never be
-mistaken for a plan. It is pale, slow, and behind everything.
-
-## Two layouts
-
-Mobile is the real layout — it is the phone in the judge's hand, and every
-decision above is made for it. Desktop is a considered adaptation of the same
-screen, not a second design:
-
-| | Mobile | Desktop (>= 900px) |
+| Token | Value | Purpose |
 |---|---|---|
-| Navigation | Bottom tab bar, translucent, floating over the map | Left rail, opaque, 232px |
-| Panels | Bottom sheets that slide up | A docked column beside the rail, opaque because a translucent panel over twelve blocks is unreadable |
-| Map | Full width, stops above the tab bar | Fills everything right of the rail |
+| Cloud | `#F5F8FC` | Page canvas |
+| Ink | `#18324B` | Text |
+| Lake blue | `#2878D0` | Primary actions |
+| Leaf green | `#347855` | City identity and active navigation |
+| Sunshine | `#F4C95D` | Rewards and points |
+| White | `#FFFFFF` | Cards and controls |
 
-## Screen structure
+Use 18px card corners, 24px inspector corners, tactile but restrained shadows, and an 8px spacing rhythm. Colour communicates navigation, actions and rewards. Decorative continuous particle motion is removed from the app shell. Scene effects retain their own meaning and ownership. Reduced-motion users receive no interface animations. Light mode remains the explicit demo default.
 
-One screen, five tabs, the map always underneath.
+## Layouts
 
-| Tab | Icon | What it is | Demo moment | Route |
-|---|---|---|---|---|
-| Feed | list | Citywide post feed, analyzed and unhidden only | 8, supports 2 | `GET /api/posts` |
-| City | house | The 3D map. Tap a block for its panel. Default tab. | 1, 2 | `GET /api/city`, `/api/communities/:id/state` |
-| Post | camera | Centre, visually emphasised. Camera, caption, location, submit. | 3, 8 | `POST /api/posts` |
-| Shop | coin | Six items, balance, buy | 5 | `GET /api/shop`, `POST /api/shop/buy` |
-| My City | person | Personal view: own placements in the three slots per block | 5 | `GET/POST /api/me/placements` |
+- **Feed, Shop, Post are full pages**, occupying the entire content canvas below the header and above mobile navigation. Text can have a readable maximum width without reviving the narrow map-side panel.
+- **City and My City are scene destinations.** Their controls must leave the map usable. City uses a compact mobile preview with expanded details and a right inspector on desktop. My City uses an inventory tray.
+- Desktop, from 900px: a branded **208px rail**, header across the remaining width, readable content in the page canvas.
+- Mobile: compact identity/header, clear screen title, points balance, and five bottom destinations with a prominent central Post action.
+- The scene stays mounted across navigation to preserve its camera. On page destinations it is hidden and inert, so keyboard and assistive technology cannot reach invisible controls. Post map-picking temporarily reveals it.
+- Keep component state mounted where drafts or pending requests depend on it. Do not reset a draft, purchase lock or placement operation merely to switch layouts.
 
-Post sits in the centre and is the only element allowed the accent colour. It is
-the one action the whole demo depends on a stranger performing without
-instruction (moment 8).
+## Navigation and demo loop
 
-Public and personal are two **tabs**, not a toggle buried in a menu: City is the
-shared truth, My City is yours. That separation is the architecture's rule
-(docs/02 section 4.5) made visible, and moment 5 depends on a judge seeing their
-decoration vanish when they switch back to City.
+| Destination | Purpose |
+|---|---|
+| Feed | Photo-led citywide posts; community chips lead to the corresponding City block |
+| City | Shared city plans, block stories and updates |
+| Post | Photo or text, explicit location, submit and confirmed rewards |
+| Shop | Readable catalogue, authoritative balance and owned quantities; purchase leads to decorating |
+| My City | Private inventory and placements; empty inventory leads to Shop |
 
-## The loop
+Posts influence the shared city through the existing pipeline. Points purchase personal decorations; placements never change public plans or block geometry. Preserve these separate layers and the existing scene/API contracts.
 
-```
-     post (text or photo, geo attached)
-                  |
-        +---------+---------+
-        |                   |
-    points               geo info
-        |                   |
-      shop            AI: Call A -> aggregate -> Call B -> validator
-        |                   |
-  buy an item         the SHARED city block rebuilds
-        |
-  place it in a slot
-        |
-  YOUR city only
-```
+## Interaction standards
 
-Two currencies of change, and they never touch:
+Show real loading, empty, retry, pending and success states. Do not present an unconfirmed city rebuild as complete. Keep visible Back/Close controls where a subflow needs them; no gesture-only navigation. Controls must have clear accessible names, visible keyboard focus and at least 44px touch targets. Permit browser zoom. No clipped content, horizontal document overflow or hidden focus targets.
 
-- **Posts change the shared city.** Everyone sees it. AI decides intent, the
-  engine builds it.
-- **Points change your city.** Only you see it. No model is involved, and a
-  placement can never alter a public plan or a block's geometry.
+Verify at 320, 390, 768, 1024 and 1440px; include long community names, image posts, empty inventory, failed purchases, denied location access and the complete post → points → purchase → placement journey.
 
-That separation is not a UI choice; it is the architectural rule in `AGENTS.md`.
-The interface has to make it obvious, because "why did the whole city change
-when I bought a bench" would break the demo's story.
+## Delivery and ownership
 
-## Not in this document
+Three PRs: foundation/layout, Feed–Shop–Post journey, then City/My City controls and demo verification. Develop and check locally; Product merges PRs and Vercel production follows the merge. Never deploy production directly as part of this work. Leave a concrete handoff for Claude after every PR and preserve parallel teammate sessions.
 
-Onboarding beyond the greeting line, profile screens, settings, notifications,
-comment threads, ledger history, a separate inventory screen. Several appear
-naturally in a five-tab app and every one of them is on the not-built list in
-docs/04 section 6. The sketch's greeting ("Hello, welcome to…") is a header on
-the City tab, not an onboarding flow.
+The real 3D city is a separate delivery dependency. Do not invent unsupported map controls or a replacement renderer. This redesign adds no social graph, comments, profiles, catalog items or backend systems.

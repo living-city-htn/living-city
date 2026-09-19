@@ -1,16 +1,10 @@
 'use client'
 
 /**
- * One screen, five tabs, the map always underneath (apps/web/DESIGN.md,
- * "Screen structure").
- *
- * The scene stays mounted across every tab: it is the most expensive thing on
- * the page, it holds the camera, and DESIGN.md wants the city visible behind
- * the sheets rather than replaced by them.
- *
- * All state lives here. The scene renders it and never owns it (docs/02
- * section 4.5), which is also what lets 3D's component drop into the same
- * props without touching this file.
+ * Page destinations share state with the city without sharing its layout.
+ * The scene remains mounted to preserve its camera, but hidden scenes are
+ * removed from interaction and the accessibility tree. Drafts and in-flight
+ * requests remain owned by their existing components.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
@@ -20,7 +14,6 @@ import ShopPanel from './ShopPanel'
 import MyCityPanel from './MyCityPanel'
 import TabBar, { type Tab } from './TabBar'
 import AppHeader from './AppHeader'
-import ParticleField from './ParticleField'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
 import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getPlan, getShopCatalog, type PostRow } from '@/lib/api'
@@ -39,13 +32,9 @@ import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '
 const PLANNING_GIVES_UP_AFTER = 45_000
 import type { ShopItem } from '@living-city/fixtures'
 
-/** One line per tab, so the header always says what this screen is for. */
-const HEADER_LINE: Record<Tab, string> = {
-  feed: 'Everything happening across the city',
-  city: 'Tap a block to see what it feels like',
-  post: 'Share where you are right now',
-  shop: 'Spend your points on decorations',
-  mine: 'Your city — only you can see it',
+const SCREEN_TITLE: Record<Tab, string> = {
+  feed: 'City feed', city: 'Explore the city', post: 'Share a moment',
+  shop: 'City shop', mine: 'My City',
 }
 
 export default function AppShell() {
@@ -262,27 +251,19 @@ export default function AppShell() {
 
   const selected = city?.communities.find((c) => c.community_id === selectedId) ?? null
   const mode = tab === 'mine' ? 'mine' : 'public'
+  const sceneVisible = tab === 'city' || tab === 'mine' || (tab === 'post' && pickingLocation)
 
   return (
-    <div className="shell" style={{ ['--sheet-h' as string]: `${Math.round(sheetHeight)}px` }}>
-      {/*
-        In My City the slots on the map are the touch target (PRD 8.12), so the
-        scene's box stops above the sheet instead of running behind it. Any
-        scene fills this box, so 3D's component gets the same behaviour without
-        a change to its props.
-      */}
-      {/*
-        The header always names the city, never the selected block: it was
-        reading "Uptown Waterloo" while you stood in the Shop, and on the City
-        tab it repeated the panel's own title back at you.
-      */}
-      <AppHeader title="Kitchener-Waterloo" subtitle={HEADER_LINE[tab]} balance={balance} />
+    <div className="shell" data-screen={tab} data-picking={pickingLocation && tab === 'post'} style={{ ['--sheet-h' as string]: `${Math.round(sheetHeight)}px` }}>
+      <AppHeader title={SCREEN_TITLE[tab]} context="Kitchener–Waterloo" balance={balance} />
 
       <div
         className="viewport"
+        hidden={!sceneVisible}
+        inert={!sceneVisible}
+        aria-label={mode === 'mine' ? 'Your personal city' : 'Community city'}
         data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}
       >
-        <ParticleField />
         <div className="city-layer">
         {city && (
           <CityScene
@@ -322,7 +303,7 @@ export default function AppShell() {
       )}
 
       {tab === 'feed' && (
-        <section className="sheet" aria-label="Feed">
+        <section className="page-screen feed-page" aria-label="Feed">
           <header className="sheet-head">
             <div>
               <h2>Feed</h2>
@@ -342,7 +323,7 @@ export default function AppShell() {
           onDismiss={() => { setPickingLocation(false); setTab('city') }}
         />
       )}
-      {tab === 'post' && !city && <section className="sheet"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
+      {tab === 'post' && !city && <section className="page-screen"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
       <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance} />
       <MyCityPanel
         active={tab === 'mine'}

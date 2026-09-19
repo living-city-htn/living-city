@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
 import { CityScene, isFallbackScene, type CityPayload, type Placement } from './city'
 import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
+import ShopPanel from './ShopPanel'
 import TabBar, { type Tab } from './TabBar'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
@@ -147,7 +148,7 @@ export default function AppShell() {
       {city && <PostComposer city={city} active={tab === 'post'} location={postLocation} onLocation={setPostLocation}
         picking={pickingLocation} onPick={setPickingLocation} onPosted={posted} />}
       {tab === 'post' && !city && <section className="sheet"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
-      {tab === 'shop' && <section className="sheet" aria-label="Shop"><header className="sheet-head"><div><h2>Shop</h2><p className="sheet-sub">Six items and your balance — next up.</p></div>{balance !== null && <span className="balance">{balance} pts</span>}</header></section>}
+      <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance} />
       {notice && <div className="post-notice" role="status"><span>{notice}</span><button className="form-button" onClick={() => setNotice('')} aria-label="Dismiss confirmation">Dismiss</button></div>}
 
       <TabBar active={tab} onChange={setTab} />

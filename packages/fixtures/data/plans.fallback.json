@@ -428,6 +428,427 @@
         ]
       },
       "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:waterloo-park",
+      "plan_id": "kw:waterloo-park:2026-09-18T12:00:00Z",
+      "summary": "Open lawns and mature trees; a slow green edge to Uptown.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 10,
+        "retail": 5,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 20,
+        "campus_industrial": 60
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "flower_beds"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 0,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 2
+        },
+        {
+          "tag": "playground",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [
+        "birds"
+      ],
+      "hero_asset": {
+        "tag": "giant_tree",
+        "prominence": 2
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:research-tech-park",
+      "plan_id": "kw:research-tech-park:2026-09-18T12:00:00Z",
+      "summary": "Low glass offices set back behind lawns; quiet outside working hours.",
+      "archetype": "campus_hub",
+      "identity_tags": [
+        "modern",
+        "glass"
+      ],
+      "density": 2,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 0,
+        "retail": 5,
+        "cafe_bar": 10,
+        "office": 55,
+        "cultural_civic": 5,
+        "campus_industrial": 25
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "street_trees",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "studying"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "bike_racks",
+          "prominence": 2
+        }
+      ],
+      "mood": "focused",
+      "palette": "soft_grey",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "cool",
+        "accents": [
+          "window_glow"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:columbia-hills",
+      "plan_id": "kw:columbia-hills:2026-09-18T12:00:00Z",
+      "summary": "Quiet student streets; porches, bikes and not much traffic.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "student",
+        "family"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 75,
+        "retail": 5,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 10
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "hedges"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "dog_walking"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "warm",
+        "accents": [
+          "streetlamps_warm",
+          "window_glow"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:civic-centre",
+      "plan_id": "kw:civic-centre:2026-09-18T12:00:00Z",
+      "summary": "Civic buildings around a hard square; busy on weekdays, still at night.",
+      "archetype": "civic_center",
+      "identity_tags": [
+        "historic",
+        "brick"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 10,
+        "retail": 10,
+        "cafe_bar": 10,
+        "office": 25,
+        "cultural_civic": 40,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "queueing",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "flags",
+          "prominence": 2
+        },
+        {
+          "tag": "fountain",
+          "prominence": 2
+        }
+      ],
+      "mood": "elegant",
+      "palette": "brick_red",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "spotlights"
+        ]
+      },
+      "effects": [],
+      "hero_asset": {
+        "tag": "clock_tower",
+        "prominence": 3
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:central-frederick",
+      "plan_id": "kw:central-frederick:2026-09-18T12:00:00Z",
+      "summary": "Old houses, front gardens and a steady walk to Downtown.",
+      "archetype": "residential_lively",
+      "identity_tags": [
+        "historic",
+        "colorful"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 70,
+        "retail": 10,
+        "cafe_bar": 10,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "flower_beds"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "mural",
+          "prominence": 2
+        },
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "playful",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "warm",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [
+        "falling_leaves"
+      ],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:stanley-park",
+      "plan_id": "kw:stanley-park:2026-09-18T12:00:00Z",
+      "summary": "Sports fields and long grass; loudest on a Saturday morning.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 25,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 60
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 0,
+        "behaviors": [
+          "jogging",
+          "walking",
+          "dog_walking"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "sports_court",
+          "prominence": 2
+        },
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 4,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_cool"
+        ]
+      },
+      "effects": [
+        "birds"
+      ],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
     }
   ],
   "preset_festival": {

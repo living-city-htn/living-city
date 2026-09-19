@@ -1,9 +1,16 @@
+'use client'
+
+import { useState } from 'react'
+import { ASSET_ALIASES } from '@living-city/modeling'
+
 /**
- * Small interface symbols for the shop items, not the 3D assets used in the
- * personal city. Shared by the Shop and My City screens so an item looks the
- * same wherever you meet it.
+ * Static renders of the actual placed models. The original symbols remain
+ * available when a preview cannot be loaded.
  */
 export default function ItemDrawing({ tag, size = 48 }: { tag: string; size?: number }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+  const assetId = ASSET_ALIASES[tag]
+  const previewUrl = assetId ? `/assets/previews/${assetId}.png` : null
   const shapes: Record<string, React.ReactNode> = {
     benches: <><path d="M10 17h28v10H10zM7 30h34M12 30v10M36 30v10M15 17v10M33 17v10" /></>,
     planters: <><path d="m14 28 3 13h14l3-13zM12 28h24M24 28V16M24 22c-9 0-11-5-11-9 7 0 11 3 11 9ZM24 18c0-7 5-10 11-10 0 6-4 10-11 10Z" /></>,
@@ -12,6 +19,7 @@ export default function ItemDrawing({ tag, size = 48 }: { tag: string; size?: nu
     fountain: <><path d="M8 34c0 9 32 9 32 0ZM24 34V15M14 24c0-12 10-12 10-3 0-9 10-9 10 3M24 14v-4" /></>,
     sculpture: <><path d="M12 40h24v-5H12zM18 35l-4-16 17-9 4 16-17 9ZM14 19l21 7M31 10l-8 20" /></>,
   }
+  if (previewUrl && failedUrl !== previewUrl) return <img src={previewUrl} alt="" aria-hidden="true" width={size} height={size} style={{ objectFit: 'contain' }} onError={() => setFailedUrl(previewUrl)} />
   return (
     <svg viewBox="0 0 48 48" width={size} height={size} fill="none" stroke="currentColor"
          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

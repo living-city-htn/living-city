@@ -703,6 +703,62 @@
       "status": "analyzed",
       "hidden": false,
       "hidden_reason": null
+    },
+    {
+      "id": "p-046",
+      "user_id": "u-sarah",
+      "text": "Whole park from the air. Silver Lake, the boardwalk, and Uptown right behind it.",
+      "image_url": "/seed/waterloo-park-aerial.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-18T17:05:00-04:00",
+      "community_id": "kw:waterloo-park",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
+    },
+    {
+      "id": "p-047",
+      "user_id": "u-omar",
+      "text": "Hoarding still up around the Public Square platform. Track is in, the shelter is half clad, and you walk the long way round for now.",
+      "image_url": "/seed/uptown-public-square.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-18T08:40:00-04:00",
+      "community_id": "kw:uptown-waterloo",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
+    },
+    {
+      "id": "p-048",
+      "user_id": "u-aisha",
+      "text": "Rails going in past the old church by City Hall. Danger signs, pylons and a strip of snow nobody has cleared.",
+      "image_url": "/seed/kitchener-city-hall.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-18T07:55:00-04:00",
+      "community_id": "kw:civic-centre",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
+    },
+    {
+      "id": "p-049",
+      "user_id": "u-dev",
+      "text": "Platform at the south end is poured but taped off. Barriers, a bench, and no way onto it yet.",
+      "image_url": "/seed/ion-victoria-park.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-17T21:15:00-04:00",
+      "community_id": "kw:midtown-ion",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
     }
   ]
 }

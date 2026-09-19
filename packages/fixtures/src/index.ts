@@ -14,7 +14,7 @@ import plansRaw from '../data/plans.fallback.json'
 import shopRaw from '../data/shop.fallback.json'
 import type {
   CommunityGeo, CommunityPlan, DecorationSlot, SeedPost, SeedUser, ShopItem,
-} from './types.js'
+} from './types'
 
 /** Strip `_note` / `_readme` developer annotations before anything consumes a fixture. */
 const clean = <T>(value: T): T => {
@@ -32,7 +32,7 @@ const clean = <T>(value: T): T => {
 
 export type {
   CommunityGeo, CommunityPlan, DecorationSlot, SeedPost, SeedUser, ShopItem,
-} from './types.js'
+} from './types'
 
 export const communities: CommunityGeo[] = clean(cityRaw.communities) as CommunityGeo[]
 export const slots: DecorationSlot[] = clean(cityRaw.slots) as DecorationSlot[]

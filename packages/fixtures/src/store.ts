@@ -14,7 +14,7 @@ import {
   DEMO_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
   seedPosts, seedUsers, shopItems, slots,
   type CommunityPlan, type SeedPost, type SeedUser,
-} from './index.js'
+} from './index'
 
 export type Incident = {
   id: string

@@ -18,6 +18,7 @@ import { OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
+import { blockVisualState } from './visual-state'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
@@ -414,6 +415,23 @@ function Pond({ cell, scale }: { cell: Cell; scale: number }) {
   </group>
 }
 
+/** A pending post is a quiet blue proposal, never a second kind of city block. */
+function PlanningOutline({ slab }: { slab: THREE.BufferGeometry }) {
+  const reducedMotion = useReducedMotion()
+  const line = useRef<THREE.LineSegments>(null)
+  const geometry = useMemo(() => new THREE.EdgesGeometry(slab), [slab])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+  useFrame(({ clock }) => {
+    const pulse = reducedMotion ? 1 : 1 + (Math.sin(clock.elapsedTime * 3) + 1) * 0.012
+    line.current?.scale.setScalar(pulse)
+  })
+
+  return <lineSegments ref={line} geometry={geometry} position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => {}}>
+    <lineBasicMaterial color="#3d87ff" transparent opacity={0.9} />
+  </lineSegments>
+}
+
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 function Block({
   community, plan, origin, cells, scale, state, planning, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
@@ -472,8 +490,7 @@ function Block({
     () => new THREE.ExtrudeGeometry(shape, { depth: 0.26, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 1 }),
     [shape],
   )
-
-  const festive = plan?.mood === 'festive'
+  const visual = blockVisualState(plan?.mood, planning)
 
   /*
    * How many people to draw. Density carries most of it and clusters add a
@@ -538,11 +555,12 @@ function Block({
           ])
         }}
       >
-        <meshLambertMaterial color={planning ? '#cfe0ff' : palette.ground} />
+        <meshLambertMaterial color={visual.ground ?? palette.ground} />
       </mesh>
+      {visual.showPlanningOutline && <PlanningOutline slab={slab} />}
 
       {/* A festive block lights itself, and only itself. */}
-      {festive && <pointLight position={[0, 1.1, 0]} intensity={2.2} distance={4.5} color="#ffb765" />}
+      {visual.showFestivalGlow && <pointLight position={[0, 1.1, 0]} intensity={3.4} distance={6} color="#ffb765" />}
 
       {/* The people the plan asked for, and the particles over their heads. */}
       {crowdCount > 0 && (

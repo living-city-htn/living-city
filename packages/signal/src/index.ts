@@ -23,3 +23,4 @@ export {
   type EsqlResult,
 } from './client'
 export { log as signalLog } from './log'
+export { MAPPING_VERSION, ensureIndex, indexBody, type EnsureResult } from './mapping'

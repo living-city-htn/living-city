@@ -10,7 +10,9 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "signal:init": "pnpm --filter @living-city/signal signal:init",
+    "signal:backfill": "pnpm --filter @living-city/signal signal:backfill"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

@@ -14,7 +14,7 @@
  * Props and events are exactly docs/roles/3d.md. `blockPick` emits [lon, lat],
  * not scene space, because the post flow uses it as a location (PRD 8.12).
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -69,13 +69,45 @@ function ringOf(c: CommunityGeo): Array<[number, number]> {
 function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
-  useEffect(() => {
+  const framedAt = useRef<number | null>(null)
+
+  /*
+   * Only the first fit moves the camera. Every later one changes magnification
+   * instead, because moving the camera on a resize throws away whatever the
+   * person was looking at — and the viewport resizes constantly: opening a
+   * block's card insets it, and on a phone the URL bar sliding away does too.
+   * Tapping a block used to reset your orbit, your pan and your pinch, which
+   * read on screen as the map lurching.
+   *
+   * `fit` is the distance at which the city exactly fills the frame, so
+   * `framedAt / fit` is the magnification that holds its apparent size through
+   * any change of shape. It is absolute rather than accumulated, so closing the
+   * card returns the zoom to exactly 1 with nothing left drifting.
+   *
+   * This works because nothing else writes `zoom`: OrbitControls dollies a
+   * perspective camera by moving it, and only touches `zoom` for an
+   * orthographic one. If this scene ever goes orthographic, that stops being
+   * true and this has to go back to driving distance. Picking is unaffected —
+   * unprojection runs through the projection matrix, which includes zoom.
+   *
+   * A layout effect, not an effect: React Three Fiber has already written the
+   * new aspect into the camera by this point, and the correction has to land in
+   * the same frame or the city visibly pops before it settles.
+   */
+  useLayoutEffect(() => {
     const cam = camera as THREE.PerspectiveCamera
+    // A collapsed viewport has no aspect worth fitting to; wait for a real one.
+    if (size.width < 2 || size.height < 2) return
     const vFov = (cam.fov * Math.PI) / 180
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (size.width / Math.max(size.height, 1)))
-    const distance = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
-    cam.position.set(0, distance * 0.66, distance * 0.78)
-    cam.lookAt(0, 0, 0)
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (size.width / size.height))
+    const fit = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
+    if (framedAt.current === null) {
+      framedAt.current = fit
+      cam.position.set(0, fit * 0.66, fit * 0.78)
+      cam.zoom = 1
+    } else {
+      cam.zoom = framedAt.current / fit
+    }
     cam.updateProjectionMatrix()
   }, [camera, size.width, size.height, radius])
   return null

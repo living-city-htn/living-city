@@ -23,21 +23,29 @@
 import { NextResponse } from 'next/server'
 import { seedUsers } from '@living-city/fixtures'
 import { getState, likeCount } from '@living-city/fixtures/store'
+import { currentUser as resolveUser, isGovernment, type AppUser } from './identity'
 
 export const USE_FIXTURES = process.env.USE_FIXTURES !== '0'
 
 export const json = (body: unknown, status = 200) => NextResponse.json(body, { status })
 export const badRequest = (message: string) => json({ error: message }, 400)
+export const forbidden = (message = 'government access required') => json({ error: message }, 403)
 export const notFound = (message = 'not found') => json({ error: message }, 404)
 
 /**
  * Identity is Civic's, from Stage 1: a middleware that auto-creates a User per
- * device cookie and exposes currentUser(req). Until then this is the fixed test
- * user Product's contract calls for. Swap the body, keep the signature.
+ * device cookie and exposes currentUser(req). The middleware owns cookie
+ * creation; this adapter keeps the existing route and fixture signatures
+ * stable while Civic's database-backed User row is still pending.
  */
-export const currentUser = () => ({ id: 'u-mei', display_name: 'Mei L.', role: 'resident' as const })
+export const currentUser = (request?: Request): AppUser => resolveUser(request)
 
-export const governmentUser = () => ({ id: 'u-gov', display_name: 'City of Kitchener (Staff)', role: 'government' as const })
+export const governmentUser = (): AppUser => ({ id: 'u-gov', display_name: 'City of Kitchener (Staff)', role: 'government' })
+
+export const requireGovernment = (request: Request): AppUser | Response => {
+  const user = currentUser(request)
+  return isGovernment(user) ? user : forbidden()
+}
 
 export async function readJson<T>(req: Request): Promise<T | null> {
   try { return (await req.json()) as T } catch { return null }
@@ -63,18 +71,17 @@ export type PostWithMeta = {
   [key: string]: unknown
 }
 
-export function withPostMeta<T extends { id: string; user_id: string }>(posts: T[]): Array<T & {
+export function withPostMeta<T extends { id: string; user_id: string }>(posts: T[], viewerId = currentUser().id): Array<T & {
   author_name: string
   likes: number
   liked: boolean
 }> {
   const names = new Map(seedUsers.map((u) => [u.id, u.display_name]))
-  const me = currentUser().id
   const likes = getState().likes
   return posts.map((p) => ({
     ...p,
     author_name: names.get(p.user_id) ?? 'Resident',
     likes: likeCount(p.id),
-    liked: likes.has(`${me}:${p.id}`),
+    liked: likes.has(`${viewerId}:${p.id}`),
   }))
 }

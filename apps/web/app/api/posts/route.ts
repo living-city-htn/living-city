@@ -10,7 +10,8 @@ import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const community = searchParams.get('community') ?? undefined
-  return json({ posts: await read(() => withPostMeta(listPosts({ community }))) })
+  const user = currentUser(req)
+  return json({ posts: await read(() => withPostMeta(listPosts({ community }), user.id)) })
 }
 
 // Product's fixture photo transport; Pipeline replaces it with Blob upload.
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
   }
   if (!communityId) return badRequest('could not assign a community')
 
-  const user = currentUser()
+  const user = currentUser(req)
   const selected = listCommunities().find(c => c.community_id === communityId)
   const assigned = communityId
 

@@ -16,9 +16,9 @@
  * property of the stub, not of this layer.
  */
 import type { Incident, PostAnalysis } from '@living-city/contracts'
-import { listCommunities, likeCount, listIncidents, listPosts } from '@living-city/fixtures/store'
+import { getState, listCommunities, likeCount, listIncidents, listPosts } from '@living-city/fixtures/store'
 import {
-  backfill, indexPost, removePost, setCivicReadPort, signalEnv,
+  backfill, indexPost, removePost, setCivicReadPort, setCivicWritePort, signalEnv,
   type BackfillRow, type EvidenceRecord, type IndexableBlock, type IndexablePost,
 } from '@living-city/signal'
 import { analysisOf } from '@/lib/pipeline'
@@ -147,4 +147,67 @@ setCivicReadPort({
     community: filter?.community,
     status: filter?.status,
   }) as Incident[],
+})
+
+/**
+ * The write port. Every action the agent takes lands here.
+ *
+ * It writes into the same `state.incidents` array that `GET /api/civic/incidents`
+ * reads, through the store's own exported `getState()`, rather than keeping a
+ * second incident list. One store means the government page shows agent rows
+ * and human rows side by side with no merge step, and no chance of the two
+ * drifting. `packages/fixtures` is Product's package, so this reaches for the
+ * exported state rather than adding functions to it - when the migrations land,
+ * this object is the only thing that changes.
+ *
+ * Nothing here can touch a post, a plan, a placement or a block. The port has
+ * no method for it, which is the point.
+ */
+/** The store's own incident row type, which widens `type` to string. */
+type StoreIncident = ReturnType<typeof getState>['incidents'][number]
+
+let agentSeq = 0
+
+setCivicWritePort({
+  getIncident: (id) => (getState().incidents.find((i) => i.id === id) as Incident | undefined) ?? null,
+
+  getIncidentByPost: (postId) =>
+    (getState().incidents.find((i) => i.post_id === postId) as Incident | undefined) ?? null,
+
+  getPost: (postId) => {
+    const post = listPosts({ includeHidden: true }).find((p) => p.id === postId)
+    return post ? toIndexable(post) : null
+  },
+
+  createIncident: (input) => {
+    agentSeq += 1
+    const now = new Date().toISOString()
+    const incident: Incident = {
+      id: `inc-agent-${String(agentSeq).padStart(3, '0')}`,
+      post_id: input.post_id,
+      community_id: input.community_id,
+      type: input.type,
+      severity: input.severity,
+      location_hint: input.location_hint,
+      reported_at: input.reported_at,
+      source: input.source,
+      status: 'reported',
+      staff_note: null,
+      updated_at: now,
+    }
+    // One cast at the boundary: the store's own Incident type widens `type` to
+    // string, contracts keeps it as the enum. Same shape, stricter here.
+    getState().incidents.push(incident as unknown as StoreIncident)
+    return incident
+  },
+
+  patchIncident: (id, patch) => {
+    const incident = getState().incidents.find((i) => i.id === id)
+    if (!incident) return null
+    if (patch.severity !== undefined) incident.severity = patch.severity
+    if (patch.status !== undefined) incident.status = patch.status
+    if (patch.staff_note !== undefined) incident.staff_note = patch.staff_note
+    incident.updated_at = new Date().toISOString()
+    return incident as unknown as Incident
+  },
 })

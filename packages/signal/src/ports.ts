@@ -55,3 +55,41 @@ export const setCivicReadPort = (port: CivicReadPort | null): void => { read = p
  * throwing.
  */
 export const civicRead = (): CivicReadPort | null => read
+
+/**
+ * The write half. Every action the agent takes goes through here.
+ *
+ * `newIncident` deliberately takes the same fields `createInMemoryCivic.record`
+ * builds, so the two stay swappable, and `patchIncident` is narrow on purpose:
+ * the agent may move severity, status, staff_note and nothing else. It cannot
+ * change a post, a plan, a placement or a block - the things planning and the
+ * renderer read - because it must not be able to.
+ */
+export type NewIncident = {
+  post_id: string
+  community_id: string
+  type: Incident['type']
+  severity: Incident['severity']
+  location_hint: string | null
+  reported_at: string
+  source: string
+}
+
+export type IncidentPatch = Partial<Pick<Incident, 'severity' | 'status' | 'staff_note'>>
+
+export type CivicWritePort = {
+  getIncident(id: string): Incident | null
+  getIncidentByPost(postId: string): Incident | null
+  createIncident(input: NewIncident): Incident | null
+  patchIncident(id: string, patch: IncidentPatch): Incident | null
+  /** Used by `file_incident` to check the post exists and is not hidden. */
+  getPost(postId: string): IndexablePost | null
+}
+
+let write: CivicWritePort | null = null
+
+export const setCivicWritePort = (port: CivicWritePort | null): void => { write = port }
+
+/** Null means the agent has no way to act, and every write tool answers with a
+ *  tool error rather than pretending it wrote something. */
+export const civicWrite = (): CivicWritePort | null => write

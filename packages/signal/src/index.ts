@@ -48,3 +48,14 @@ export {
   type BlockTrend, type BlockTrendsResult, type IncidentCluster,
   type IncidentClustersResult, type QueryMetadata, type RisingBlock, type RisingStressResult,
 } from './aggregations'
+export {
+  annotate, annotationOf, finishRun, getAction, listActions, listAnnotations, listRuns,
+  listSuggestions, lockField, markReverted, record, resetSignalStore, resolveSuggestion,
+  runsSince, spentUsd, staffTouched, startRun, suggest,
+  type AgentAction, type AgentActionKind, type AgentRunLog, type AgentSuggestion,
+  type IncidentAnnotation,
+} from './store'
+export {
+  civicWrite, setCivicWritePort,
+  type CivicWritePort, type IncidentPatch, type NewIncident,
+} from './ports'

@@ -79,3 +79,22 @@ The existing fixture store remains in memory and can reset between requests.
 
 Post-route changes require Pipeline-owner review. No contracts were changed.
 Physical iOS/Android camera and installation tests remain Gate 1 checks.
+
+## Shop (Product, Stage 1)
+
+The Shop tab loads the six-item catalog and account together from `/api/shop`
+and `/api/me`. It shows prices, current points and owned quantities inline.
+A confirmed `/api/shop/buy` response updates the displayed balance and adds
+one owned unit. Unaffordable items show the remaining points needed.
+The account and inventory refresh when reopening the shop.
+
+A purchase lock remains active across tab switches and blocks double taps.
+Rejected or uncertain requests do not change the displayed inventory and
+require a refresh before buying again. Purchases are never retried automatically.
+The screen uses existing APIs; no Civic routes or shared contracts were changed.
+Durable inventory still depends on Civic's database-backed game service: the
+current fixture store is only process memory.
+
+Handoff: local mobile-width tests cover buying, double taps, insufficient points,
+failed requests and refresh recovery. Physical-phone checks are still needed
+for Product's Gate 1. After the gate, the next screen is My City placement.

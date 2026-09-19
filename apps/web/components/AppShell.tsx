@@ -88,8 +88,15 @@ export default function AppShell() {
   /**
    * Live update (docs/02 section 10): poll the cheap version endpoint, re-fetch
    * only the plans whose id changed, and clear the "planning" mark on any block
-   * that just got a new plan. Paused while the tab is hidden, because a phone in
-   * a pocket replanning nothing is just battery and requests.
+   * that just got a new plan.
+   *
+   * It polls unconditionally, including while the tab is hidden. An earlier
+   * version paused on `document.hidden` to save a phone's battery, which was an
+   * optimisation nobody asked for and a real demo risk: a city view sitting in a
+   * background tab while a projector shows it would silently stop updating in
+   * the middle of moment 4. The endpoint is a plan-id map, the cost is nothing,
+   * and a missed update on stage is everything. `visibilitychange` still forces
+   * an immediate poll so a laptop waking from sleep catches up at once.
    */
   useEffect(() => {
     if (!city) return
@@ -97,7 +104,7 @@ export default function AppShell() {
     let inFlight = false
 
     const poll = async () => {
-      if (inFlight || document.visibilityState === 'hidden') return
+      if (inFlight) return
       inFlight = true
       try {
         const version = await getCityVersion()
@@ -121,7 +128,10 @@ export default function AppShell() {
     }
 
     const id = setInterval(() => void poll(), POLL_MS)
-    const onVisible = () => void poll()
+    // Catch up at once when a sleeping laptop or a pocketed phone comes back.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void poll()
+    }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       cancelled = true

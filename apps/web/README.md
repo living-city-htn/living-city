@@ -164,11 +164,17 @@ After posting, the poster's block is marked "planning" so they know where to
 look and that it takes a moment. The mark clears when that block's plan id
 actually changes, not on a timer.
 
-Polling pauses while the document is hidden and runs again immediately on
-`visibilitychange`: a phone in a pocket should not be fetching. Note the
-asymmetry with the operator panel, which has **no** visibility guard on
-purpose - its ticker has to keep running when the operator switches tabs,
-because it is the only thing replanning blocks during moment 8.
+Polling runs unconditionally, including while the tab is hidden. An earlier
+version paused on `document.hidden` to spare a phone's battery. That was an
+optimisation nobody asked for and a real demo risk: a city view sitting in a
+background tab while a projector shows it would silently stop updating in the
+middle of moment 4. The endpoint is a plan-id map, the cost is nothing, and a
+missed update on stage is everything. `visibilitychange` still forces an
+immediate poll so a laptop waking from sleep catches up at once.
+
+The operator panel's ticker has never had a visibility guard, for the same
+reason: it has to keep running when the operator switches tabs, because it is
+the only thing replanning blocks during moment 8.
 
 A block missing from a version response is left alone rather than blanked, so a
 partial response can never wipe the block someone is looking at. A failed poll

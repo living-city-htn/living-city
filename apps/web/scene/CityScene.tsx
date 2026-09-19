@@ -18,7 +18,7 @@ import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
-import { civicHallCellIndex, isCivicHallDrill } from './civic-hall'
+import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
 import { blockVisualState } from './visual-state'
 import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
@@ -435,11 +435,25 @@ function PlanningOutline({ slab }: { slab: THREE.BufferGeometry }) {
 }
 
 function CivicHallLabel({ drill, position }: { drill: boolean; position: [number, number] }) {
-  return <Html transform position={[position[0], 1.45, position[1]]} distanceFactor={9}>
+  return <Html transform position={[position[0], 1.45, position[1]]} distanceFactor={0.8}>
     <div className={drill ? `${styles.label} ${styles.alert}` : styles.label} role="status">
       <strong>City Hall</strong>
-      <span>{drill ? 'Tornado drill active' : 'Normal operations'}</span>
+      <span>{drill ? 'Drill in progress' : 'Normal operations'}</span>
     </div>
+  </Html>
+}
+
+function CivicDrillControl({ active, onStart, onStop }: { active: boolean; onStart: () => void; onStop: () => void }) {
+  return <Html fullscreen>
+    <aside className={styles.control} aria-label="City Hall simulation controls">
+      <p className={styles.eyebrow}>City Hall operations</p>
+      <h2>{active ? 'Tornado drill' : 'Normal simulation'}</h2>
+      <p>{active ? 'Local alert, wind path, and debris are visible for this rehearsal.' : 'The city is operating normally. Start the drill when presenting.'}</p>
+      <button type="button" className={active ? `${styles.button} ${styles.stop}` : styles.button} aria-pressed={active} onClick={active ? onStop : onStart}>
+        {active ? 'End drill' : 'Run tornado drill'}
+      </button>
+      <small>Simulation only. No public plan is changed.</small>
+    </aside>
   </Html>
 }
 
@@ -488,7 +502,7 @@ function TornadoDrill({ position }: { position: [number, number] }) {
 
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 function Block({
-  community, plan, origin, cells, scale, state, planning, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
+  community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
 }: {
   scale: number
   community: CommunityGeo
@@ -497,6 +511,7 @@ function Block({
   cells: Cell[]
   state: 'idle' | 'hovered' | 'selected'
   planning: boolean
+  drillActive: boolean
   terrainSlots: Array<{ x: number; y: number }>
   slots: Array<{ slot_id: string; x: number; y: number }>
   placements: Map<string, string>
@@ -569,7 +584,7 @@ function Block({
   const civicHallIndex = civicHallCellIndex(community.community_id, cells)
   const civicHallCell = civicHallIndex >= 0 ? cells[civicHallIndex] : undefined
   const civicHallPosition = civicHallCell ? [civicHallCell.x / SCALE, -civicHallCell.y / SCALE] as [number, number] : null
-  const tornadoDrill = isCivicHallDrill(community.community_id, state)
+  const tornadoDrill = isCivicHallDrill(community.community_id, drillActive)
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
@@ -714,6 +729,11 @@ export default function CityScene({
   const shell = useShellColours()
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const focusActive = useRef(true)
+  const [drillActive, setDrillActive] = useState(false)
+
+  useEffect(() => {
+    if (selectedId !== CIVIC_HALL_COMMUNITY_ID) setDrillActive(false)
+  }, [selectedId])
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(
@@ -814,6 +834,11 @@ export default function CityScene({
         controls={controls}
         active={focusActive}
       />
+      <CivicDrillControl
+        active={drillActive}
+        onStart={() => { setDrillActive(true); onBlockSelect?.(CIVIC_HALL_COMMUNITY_ID) }}
+        onStop={() => setDrillActive(false)}
+      />
 
       {blocks.map(({ community, plan, origin, cells }) => (
         <Block
@@ -825,6 +850,7 @@ export default function CityScene({
           scale={scale}
           state={selectedId === community.community_id ? 'selected' : 'idle'}
           planning={planningIds.includes(community.community_id)}
+          drillActive={drillActive}
           terrainSlots={city.slots.filter((s) => s.community_id === community.community_id)}
           slots={mode === 'mine' ? city.slots.filter((s) => s.community_id === community.community_id) : []}
           placements={held}

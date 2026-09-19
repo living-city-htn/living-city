@@ -17,6 +17,6 @@ export function civicHallCellIndex(communityId: string, cells: readonly Cell[]) 
   return closest
 }
 
-export function isCivicHallDrill(communityId: string, state: 'idle' | 'hovered' | 'selected') {
-  return communityId === CIVIC_HALL_COMMUNITY_ID && state === 'selected'
+export function isCivicHallDrill(communityId: string, drillActive: boolean) {
+  return communityId === CIVIC_HALL_COMMUNITY_ID && drillActive
 }

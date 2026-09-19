@@ -14,9 +14,9 @@ describe('City Hall landmark', () => {
     expect(civicHallCellIndex('kw:columbia', cells)).toBe(-1)
   })
 
-  it('activates the tornado drill only while City Hall is selected', () => {
-    expect(isCivicHallDrill('kw:central', 'selected')).toBe(true)
-    expect(isCivicHallDrill('kw:central', 'idle')).toBe(false)
-    expect(isCivicHallDrill('kw:columbia', 'selected')).toBe(false)
+  it('activates the tornado drill only when City Hall operations start it', () => {
+    expect(isCivicHallDrill('kw:central', true)).toBe(true)
+    expect(isCivicHallDrill('kw:central', false)).toBe(false)
+    expect(isCivicHallDrill('kw:columbia', true)).toBe(false)
   })
 })

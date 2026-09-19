@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getVersion, hidePost, planAll, presetFestival, resetDemo, tick } from './operator'
+import {
+  getQrPaused, getVersion, hidePost, planAll, presetFestival, resetDemo, setQrPaused, tick,
+} from './operator'
 
 const version = { plans: { 'kw:a': 'kw:a:1' }, updated_at: '2026-09-19T00:00:00Z' }
 const respond = (status: number, body: unknown) =>
@@ -64,5 +66,25 @@ describe('the rest of the controls', () => {
   it('resetDemo surfaces a failure instead of pretending the demo was reset', async () => {
     stub(async () => respond(500, {}))
     await expect(resetDemo()).rejects.toThrow()
+  })
+})
+
+describe('the QR page control', () => {
+  it('reads the live paused state rather than assuming its own', async () => {
+    stub(async () => respond(200, { paused: true }))
+    await expect(getQrPaused()).resolves.toBe(true)
+  })
+
+  it('sends the requested state and returns what the server confirmed', async () => {
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) =>
+      respond(200, { paused: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(setQrPaused(true)).resolves.toBe(true)
+    expect(JSON.parse(String((fetchMock.mock.calls[0]?.[1] as RequestInit).body))).toEqual({ paused: true })
+  })
+
+  it('rejects an unreadable response instead of showing a guessed state', async () => {
+    stub(async () => respond(200, { paused: 'yes' }))
+    await expect(getQrPaused()).rejects.toThrow()
   })
 })

@@ -85,3 +85,24 @@ export async function resetDemo(): Promise<CityVersion> {
   if (!record(body) || !isVersion(body.version)) throw new Error('Unreadable reset result')
   return body.version
 }
+
+/**
+ * The QR page's invite state. Volume throttling for moment 8, not a safety
+ * fuse: the fuse for bad content is hide-post. A cold process starts unpaused,
+ * so the panel shows the live value rather than assuming its own.
+ */
+export async function getQrPaused(): Promise<boolean> {
+  const body = await call('/api/operator/qr')
+  if (!record(body) || typeof body.paused !== 'boolean') throw new Error('Unreadable QR state')
+  return body.paused
+}
+
+export async function setQrPaused(paused: boolean): Promise<boolean> {
+  const body = await call('/api/operator/qr', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paused }),
+  })
+  if (!record(body) || typeof body.paused !== 'boolean') throw new Error('Unreadable QR state')
+  return body.paused
+}

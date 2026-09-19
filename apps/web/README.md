@@ -150,8 +150,8 @@ Stage 3 — there is nothing to pause until then.
 Handoff: placement is verified end to end against the stub - buy, place, switch
 to City and see it gone, switch back, take it back. Durable placements still
 wait on Civic's database-backed game service. Physical-phone checks remain open
-for Product's Gate 1. Next on Product's list is the QR page (Stage 3), which
-also brings the operator panel's "pause QR" control.
+for Product's Gate 1. With the QR page in, what is left on Product's list needs
+the team: the fallback video and two rehearsals, both after Gate 2.
 
 ## Live update (Product, Stage 2)
 
@@ -184,3 +184,21 @@ valid.
 The fallback scene maps `sunset_orange`, the festival plan's palette. It was
 falling through to neutral grey, which made the demo block the dullest thing on
 screen at the moment it is supposed to be the loudest.
+
+## QR page (Product, Stage 3)
+
+`/qr`, shown on the laptop or projector for moment 8. The code points at
+`window.location.origin`, so a preview build advertises itself and production
+advertises itself, with nothing hardcoded.
+
+The operator can pause it from `/operator`; the page polls that state every
+5 seconds and swaps the code for a short "back in a moment" card. This is
+**volume throttling, not a safety fuse** - the fuse for a bad post is hide-post,
+which is a real write. The pause flag lives in the same process memory as the
+rest of the stub, so a cold process or a reset starts unpaused. The operator
+panel therefore shows the live value rather than its own idea of it, and the
+operator can see that it flipped back.
+
+Identity is still Civic's: judges land as the stub's fixed user until the
+device-bound account middleware lands. Nothing on this page changes when it
+does.

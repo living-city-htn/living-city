@@ -3,182 +3,38 @@
     {
       "schema_version": "1.0",
       "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:uptown-waterloo",
-      "plan_id": "kw:uptown-waterloo:2026-09-18T12:00:00Z",
-      "summary": "Busy evening street life around a compact retail core.",
+      "community_id": "kw:central",
+      "plan_id": "kw:central:2026-09-18T12:00:00Z",
+      "summary": "Uptown streets stay busy into the evening around a compact retail core.",
       "archetype": "market_street",
       "identity_tags": [
         "modern",
         "brick",
         "upscale"
       ],
-      "density": 4,
-      "height_profile": "mid_high",
-      "building_composition": {
-        "residential": 30,
-        "retail": 25,
-        "cafe_bar": 20,
-        "office": 15,
-        "cultural_civic": 10,
-        "campus_industrial": 0
-      },
-      "vegetation": {
-        "level": 2,
-        "types": [
-          "street_trees",
-          "planters"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 4,
-        "crowd_clusters": 2,
-        "vehicle_traffic": 3,
-        "behaviors": [
-          "walking",
-          "dining",
-          "shopping"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "outdoor_seating",
-          "prominence": 3
-        },
-        {
-          "tag": "string_lights",
-          "prominence": 2
-        }
-      ],
-      "mood": "vibrant",
-      "palette": "warm_pastel",
-      "lighting": {
-        "signature_time": "golden_hour",
-        "intensity": 3,
-        "color_temp": "warm",
-        "accents": [
-          "streetlamps_warm",
-          "window_glow"
-        ]
-      },
-      "effects": [],
-      "hero_asset": null,
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:downtown-kitchener",
-      "plan_id": "kw:downtown-kitchener:2026-09-18T12:00:00Z",
-      "summary": "Dense commercial core with a strong market and mural culture.",
-      "archetype": "commercial_core",
-      "identity_tags": [
-        "historic",
-        "brick",
-        "colorful"
-      ],
-      "density": 5,
-      "height_profile": "mid_high",
-      "building_composition": {
-        "residential": 20,
-        "retail": 30,
-        "cafe_bar": 15,
-        "office": 25,
-        "cultural_civic": 10,
-        "campus_industrial": 0
-      },
-      "vegetation": {
-        "level": 1,
-        "types": [
-          "street_trees"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 4,
-        "crowd_clusters": 2,
-        "vehicle_traffic": 4,
-        "behaviors": [
-          "walking",
-          "shopping",
-          "queueing"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "market_stalls",
-          "prominence": 3
-        },
-        {
-          "tag": "mural",
-          "prominence": 2
-        }
-      ],
-      "mood": "busy",
-      "palette": "brick_red",
-      "lighting": {
-        "signature_time": "day",
-        "intensity": 3,
-        "color_temp": "neutral",
-        "accents": [
-          "streetlamps_cool"
-        ]
-      },
-      "effects": [],
-      "hero_asset": {
-        "tag": "market_hall",
-        "prominence": 2
-      },
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:university-district",
-      "plan_id": "kw:university-district:2026-09-18T12:00:00Z",
-      "summary": "Campus district running late into the night on study and impromptu gatherings.",
-      "archetype": "campus_hub",
-      "identity_tags": [
-        "student",
-        "modern",
-        "minimal"
-      ],
       "density": 3,
       "height_profile": "mid",
       "building_composition": {
         "residential": 25,
-        "retail": 10,
-        "cafe_bar": 15,
-        "office": 5,
+        "retail": 25,
+        "cafe_bar": 20,
+        "office": 15,
         "cultural_civic": 10,
-        "campus_industrial": 35
+        "campus_industrial": 5
       },
       "vegetation": {
         "level": 3,
         "types": [
-          "park_lawn",
-          "mature_trees"
+          "street_trees",
+          "park_lawn"
         ]
       },
       "activity": {
-        "pedestrian_density": 5,
+        "pedestrian_density": 4,
         "crowd_clusters": 3,
-        "vehicle_traffic": 1,
+        "vehicle_traffic": 3,
         "behaviors": [
           "walking",
-          "studying",
           "cycling",
           "sitting"
         ]
@@ -186,300 +42,11 @@
       "decorations": [
         {
           "tag": "benches",
-          "prominence": 2
-        },
-        {
-          "tag": "bike_racks",
-          "prominence": 2
-        }
-      ],
-      "mood": "focused",
-      "palette": "cool_pastel",
-      "lighting": {
-        "signature_time": "night",
-        "intensity": 2,
-        "color_temp": "cool",
-        "accents": [
-          "window_glow",
-          "streetlamps_cool"
-        ]
-      },
-      "effects": [],
-      "hero_asset": {
-        "tag": "university_hall",
-        "prominence": 3
-      },
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:laurier-campus",
-      "plan_id": "kw:laurier-campus:2026-09-18T12:00:00Z",
-      "summary": "Smaller campus with steady outdoor social life on the green.",
-      "archetype": "campus_hub",
-      "identity_tags": [
-        "student",
-        "wood",
-        "cozy"
-      ],
-      "density": 3,
-      "height_profile": "mid",
-      "building_composition": {
-        "residential": 30,
-        "retail": 5,
-        "cafe_bar": 10,
-        "office": 5,
-        "cultural_civic": 15,
-        "campus_industrial": 35
-      },
-      "vegetation": {
-        "level": 4,
-        "types": [
-          "park_lawn",
-          "mature_trees",
-          "hedges"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 3,
-        "crowd_clusters": 2,
-        "vehicle_traffic": 1,
-        "behaviors": [
-          "walking",
-          "sitting",
-          "jogging"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "benches",
-          "prominence": 2
-        },
-        {
-          "tag": "sports_court",
           "prominence": 1
         }
       ],
-      "mood": "playful",
-      "palette": "earthy_green",
-      "lighting": {
-        "signature_time": "golden_hour",
-        "intensity": 3,
-        "color_temp": "warm",
-        "accents": [
-          "streetlamps_warm"
-        ]
-      },
-      "effects": [],
-      "hero_asset": null,
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:victoria-park",
-      "plan_id": "kw:victoria-park:2026-09-18T12:00:00Z",
-      "summary": "Quiet green space used for slow mornings and solitary reading.",
-      "archetype": "green_retreat",
-      "identity_tags": [
-        "historic",
-        "family"
-      ],
-      "density": 1,
-      "height_profile": "low",
-      "building_composition": {
-        "residential": 40,
-        "retail": 5,
-        "cafe_bar": 10,
-        "office": 0,
-        "cultural_civic": 15,
-        "campus_industrial": 30
-      },
-      "vegetation": {
-        "level": 5,
-        "types": [
-          "mature_trees",
-          "park_lawn",
-          "flower_beds"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 1,
-        "crowd_clusters": 0,
-        "vehicle_traffic": 0,
-        "behaviors": [
-          "walking",
-          "sitting",
-          "dog_walking"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "benches",
-          "prominence": 1
-        }
-      ],
-      "mood": "serene",
-      "palette": "earthy_green",
-      "lighting": {
-        "signature_time": "dawn",
-        "intensity": 2,
-        "color_temp": "warm",
-        "accents": []
-      },
-      "effects": [],
-      "hero_asset": {
-        "tag": "fountain_plaza",
-        "prominence": 1
-      },
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:midtown-ion",
-      "plan_id": "kw:midtown-ion:2026-09-18T12:00:00Z",
-      "summary": "Transit spine with steady flow and little reason to linger.",
-      "archetype": "transit_hub",
-      "identity_tags": [
-        "modern",
-        "glass",
-        "minimal"
-      ],
-      "density": 3,
-      "height_profile": "low_mid",
-      "building_composition": {
-        "residential": 35,
-        "retail": 20,
-        "cafe_bar": 10,
-        "office": 20,
-        "cultural_civic": 5,
-        "campus_industrial": 10
-      },
-      "vegetation": {
-        "level": 2,
-        "types": [
-          "street_trees",
-          "planters"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 3,
-        "crowd_clusters": 1,
-        "vehicle_traffic": 4,
-        "behaviors": [
-          "walking",
-          "queueing",
-          "cycling"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "bus_shelter",
-          "prominence": 2
-        },
-        {
-          "tag": "kiosks",
-          "prominence": 1
-        }
-      ],
-      "mood": "busy",
-      "palette": "soft_grey",
-      "lighting": {
-        "signature_time": "dusk",
-        "intensity": 2,
-        "color_temp": "cool",
-        "accents": [
-          "streetlamps_cool"
-        ]
-      },
-      "effects": [],
-      "hero_asset": {
-        "tag": "transit_station",
-        "prominence": 2
-      },
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 50
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:waterloo-park",
-      "plan_id": "kw:waterloo-park:2026-09-18T12:00:00Z",
-      "summary": "Open lawns and mature trees; a slow green edge to Uptown.",
-      "archetype": "green_retreat",
-      "identity_tags": [
-        "family",
-        "cozy"
-      ],
-      "density": 1,
-      "height_profile": "low",
-      "building_composition": {
-        "residential": 10,
-        "retail": 5,
-        "cafe_bar": 5,
-        "office": 0,
-        "cultural_civic": 20,
-        "campus_industrial": 60
-      },
-      "vegetation": {
-        "level": 5,
-        "types": [
-          "park_lawn",
-          "mature_trees",
-          "flower_beds"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 2,
-        "crowd_clusters": 1,
-        "vehicle_traffic": 0,
-        "behaviors": [
-          "walking",
-          "dog_walking",
-          "sitting"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "benches",
-          "prominence": 2
-        },
-        {
-          "tag": "playground",
-          "prominence": 1
-        }
-      ],
-      "mood": "serene",
-      "palette": "earthy_green",
+      "mood": "vibrant",
+      "palette": "warm_pastel",
       "lighting": {
         "signature_time": "day",
         "intensity": 3,
@@ -488,13 +55,8 @@
           "streetlamps_warm"
         ]
       },
-      "effects": [
-        "birds"
-      ],
-      "hero_asset": {
-        "tag": "giant_tree",
-        "prominence": 2
-      },
+      "effects": [],
+      "hero_asset": null,
       "stability": {
         "change_magnitude": "none",
         "retained_from_previous": [],
@@ -507,8 +69,139 @@
     {
       "schema_version": "1.0",
       "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:research-tech-park",
-      "plan_id": "kw:research-tech-park:2026-09-18T12:00:00Z",
+      "community_id": "kw:columbia",
+      "plan_id": "kw:columbia:2026-09-18T12:00:00Z",
+      "summary": "A transit corridor that never quite empties between the stops.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "modern",
+        "glass"
+      ],
+      "density": 3,
+      "height_profile": "mid",
+      "building_composition": {
+        "residential": 30,
+        "retail": 20,
+        "cafe_bar": 10,
+        "office": 25,
+        "cultural_civic": 5,
+        "campus_industrial": 10
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "street_trees",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "soft_grey",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:uw-northwest-campus",
+      "plan_id": "kw:uw-northwest-campus:2026-09-18T12:00:00Z",
+      "summary": "Campus running late into the night on study and impromptu gatherings.",
+      "archetype": "campus_hub",
+      "identity_tags": [
+        "modern",
+        "student",
+        "glass"
+      ],
+      "density": 3,
+      "height_profile": "mid",
+      "building_composition": {
+        "residential": 10,
+        "retail": 5,
+        "cafe_bar": 10,
+        "office": 15,
+        "cultural_civic": 15,
+        "campus_industrial": 45
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "street_trees",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "focused",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:uw-research-and-technology-park",
+      "plan_id": "kw:uw-research-and-technology-park:2026-09-18T12:00:00Z",
       "summary": "Low glass offices set back behind lawns; quiet outside working hours.",
       "archetype": "campus_hub",
       "identity_tags": [
@@ -533,19 +226,19 @@
         ]
       },
       "activity": {
-        "pedestrian_density": 2,
+        "pedestrian_density": 3,
         "crowd_clusters": 1,
         "vehicle_traffic": 2,
         "behaviors": [
           "walking",
           "cycling",
-          "studying"
+          "sitting"
         ]
       },
       "decorations": [
         {
-          "tag": "bike_racks",
-          "prominence": 2
+          "tag": "benches",
+          "prominence": 1
         }
       ],
       "mood": "focused",
@@ -553,9 +246,74 @@
       "lighting": {
         "signature_time": "day",
         "intensity": 3,
-        "color_temp": "cool",
+        "color_temp": "neutral",
         "accents": [
-          "window_glow"
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:lincoln",
+      "plan_id": "kw:lincoln:2026-09-18T12:00:00Z",
+      "summary": "Older commercial strip with workshops behind it and steady traffic.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "brick",
+        "industrial"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 25,
+        "retail": 20,
+        "cafe_bar": 10,
+        "office": 15,
+        "cultural_civic": 10,
+        "campus_industrial": 20
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "brick_red",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
         ]
       },
       "effects": [],
@@ -594,17 +352,17 @@
         "level": 4,
         "types": [
           "street_trees",
-          "hedges"
+          "mature_trees"
         ]
       },
       "activity": {
-        "pedestrian_density": 2,
-        "crowd_clusters": 0,
-        "vehicle_traffic": 1,
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
         "behaviors": [
           "walking",
           "cycling",
-          "dog_walking"
+          "sitting"
         ]
       },
       "decorations": [
@@ -616,158 +374,14 @@
       "mood": "cozy",
       "palette": "warm_pastel",
       "lighting": {
-        "signature_time": "golden_hour",
-        "intensity": 3,
-        "color_temp": "warm",
-        "accents": [
-          "streetlamps_warm",
-          "window_glow"
-        ]
-      },
-      "effects": [],
-      "hero_asset": null,
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 55
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:civic-centre",
-      "plan_id": "kw:civic-centre:2026-09-18T12:00:00Z",
-      "summary": "Civic buildings around a hard square; busy on weekdays, still at night.",
-      "archetype": "civic_center",
-      "identity_tags": [
-        "historic",
-        "brick"
-      ],
-      "density": 3,
-      "height_profile": "low_mid",
-      "building_composition": {
-        "residential": 10,
-        "retail": 10,
-        "cafe_bar": 10,
-        "office": 25,
-        "cultural_civic": 40,
-        "campus_industrial": 5
-      },
-      "vegetation": {
-        "level": 2,
-        "types": [
-          "street_trees",
-          "planters"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 3,
-        "crowd_clusters": 2,
-        "vehicle_traffic": 3,
-        "behaviors": [
-          "walking",
-          "queueing",
-          "sitting"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "flags",
-          "prominence": 2
-        },
-        {
-          "tag": "fountain",
-          "prominence": 2
-        }
-      ],
-      "mood": "elegant",
-      "palette": "brick_red",
-      "lighting": {
         "signature_time": "day",
         "intensity": 3,
         "color_temp": "neutral",
         "accents": [
-          "spotlights"
-        ]
-      },
-      "effects": [],
-      "hero_asset": {
-        "tag": "clock_tower",
-        "prominence": 3
-      },
-      "stability": {
-        "change_magnitude": "none",
-        "retained_from_previous": [],
-        "reasons": [
-          "fallback fixture, not model output"
-        ]
-      },
-      "confidence": 55
-    },
-    {
-      "schema_version": "1.0",
-      "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:central-frederick",
-      "plan_id": "kw:central-frederick:2026-09-18T12:00:00Z",
-      "summary": "Old houses, front gardens and a steady walk to Downtown.",
-      "archetype": "residential_lively",
-      "identity_tags": [
-        "historic",
-        "colorful"
-      ],
-      "density": 2,
-      "height_profile": "low",
-      "building_composition": {
-        "residential": 70,
-        "retail": 10,
-        "cafe_bar": 10,
-        "office": 0,
-        "cultural_civic": 5,
-        "campus_industrial": 5
-      },
-      "vegetation": {
-        "level": 4,
-        "types": [
-          "street_trees",
-          "flower_beds"
-        ]
-      },
-      "activity": {
-        "pedestrian_density": 3,
-        "crowd_clusters": 1,
-        "vehicle_traffic": 1,
-        "behaviors": [
-          "walking",
-          "dog_walking",
-          "cycling"
-        ]
-      },
-      "decorations": [
-        {
-          "tag": "mural",
-          "prominence": 2
-        },
-        {
-          "tag": "benches",
-          "prominence": 1
-        }
-      ],
-      "mood": "playful",
-      "palette": "warm_pastel",
-      "lighting": {
-        "signature_time": "golden_hour",
-        "intensity": 3,
-        "color_temp": "warm",
-        "accents": [
           "streetlamps_warm"
         ]
       },
-      "effects": [
-        "falling_leaves"
-      ],
+      "effects": [],
       "hero_asset": null,
       "stability": {
         "change_magnitude": "none",
@@ -781,23 +395,23 @@
     {
       "schema_version": "1.0",
       "taxonomy_version": "0.0.0-fallback",
-      "community_id": "kw:stanley-park",
-      "plan_id": "kw:stanley-park:2026-09-18T12:00:00Z",
-      "summary": "Sports fields and long grass; loudest on a Saturday morning.",
+      "community_id": "kw:laurelwood",
+      "plan_id": "kw:laurelwood:2026-09-18T12:00:00Z",
+      "summary": "Trails and standing water at the edge of the subdivision. Slow mornings.",
       "archetype": "green_retreat",
       "identity_tags": [
         "family",
-        "minimal"
+        "cozy"
       ],
       "density": 1,
       "height_profile": "low",
       "building_composition": {
-        "residential": 25,
+        "residential": 45,
         "retail": 5,
         "cafe_bar": 0,
         "office": 0,
         "cultural_civic": 10,
-        "campus_industrial": 60
+        "campus_industrial": 40
       },
       "vegetation": {
         "level": 5,
@@ -809,19 +423,276 @@
       },
       "activity": {
         "pedestrian_density": 2,
-        "crowd_clusters": 1,
-        "vehicle_traffic": 0,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
         "behaviors": [
-          "jogging",
           "walking",
-          "dog_walking"
+          "cycling",
+          "sitting"
         ]
       },
       "decorations": [
         {
-          "tag": "sports_court",
-          "prominence": 2
-        },
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:lakeshore",
+      "plan_id": "kw:lakeshore:2026-09-18T12:00:00Z",
+      "summary": "A lake, a loop and the people who walk it before anyone else is up.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 60,
+        "retail": 5,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 20
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:eastbridge",
+      "plan_id": "kw:eastbridge:2026-09-18T12:00:00Z",
+      "summary": "New streets around a wetland boardwalk; school fields and full driveways.",
+      "archetype": "residential_lively",
+      "identity_tags": [
+        "family",
+        "modern"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 70,
+        "retail": 10,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "playful",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:westmount",
+      "plan_id": "kw:westmount:2026-09-18T12:00:00Z",
+      "summary": "Older houses along a busy spine, with a plaza at either end.",
+      "archetype": "residential_lively",
+      "identity_tags": [
+        "historic",
+        "family"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 65,
+        "retail": 15,
+        "cafe_bar": 10,
+        "office": 5,
+        "cultural_civic": 5,
+        "campus_industrial": 0
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "street_trees",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:beechwood",
+      "plan_id": "kw:beechwood:2026-09-18T12:00:00Z",
+      "summary": "Crescents, mature trees and a pool that fills up every evening.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 80,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
         {
           "tag": "benches",
           "prominence": 1
@@ -831,10 +702,1057 @@
       "palette": "earthy_green",
       "lighting": {
         "signature_time": "day",
-        "intensity": 4,
+        "intensity": 3,
         "color_temp": "neutral",
         "accents": [
-          "streetlamps_cool"
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:beechwood-west",
+      "plan_id": "kw:beechwood-west:2026-09-18T12:00:00Z",
+      "summary": "Courts, boulevards and enough quiet to hear the other side of the city.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 80,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:clair-hills",
+      "plan_id": "kw:clair-hills:2026-09-18T12:00:00Z",
+      "summary": "New subdivision against the treeline, with trails cut in behind it.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "modern",
+        "family"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 85,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:west-hill",
+      "plan_id": "kw:west-hill:2026-09-18T12:00:00Z",
+      "summary": "A rise, a sledding hill and a view worth the walk up.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 80,
+        "retail": 5,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:westvale",
+      "plan_id": "kw:westvale:2026-09-18T12:00:00Z",
+      "summary": "Quiet west-end streets with a green edge and plenty of space.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 80,
+        "retail": 5,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:willowdale",
+      "plan_id": "kw:willowdale:2026-09-18T12:00:00Z",
+      "summary": "Gardens, a ravine and children who have built better structures than mine.",
+      "archetype": "residential_lively",
+      "identity_tags": [
+        "family",
+        "colorful"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 70,
+        "retail": 10,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 10,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "playful",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:dearborn",
+      "plan_id": "kw:dearborn:2026-09-18T12:00:00Z",
+      "summary": "A rink in winter, garage sales in summer, and a trail that floods.",
+      "archetype": "residential_lively",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 2,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 75,
+        "retail": 10,
+        "cafe_bar": 5,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 5
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "street_trees",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "playful",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:lexington",
+      "plan_id": "kw:lexington:2026-09-18T12:00:00Z",
+      "summary": "A connector, a plaza and more wild turkeys than anyone expects.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "modern",
+        "minimal"
+      ],
+      "density": 2,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 40,
+        "retail": 20,
+        "cafe_bar": 5,
+        "office": 15,
+        "cultural_civic": 5,
+        "campus_industrial": 15
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "street_trees",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 2,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "soft_grey",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:northland",
+      "plan_id": "kw:northland:2026-09-18T12:00:00Z",
+      "summary": "Plaza parking, big-box frontage and a bus shelter that has seen things.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "brick",
+        "minimal"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 35,
+        "retail": 30,
+        "cafe_bar": 10,
+        "office": 10,
+        "cultural_civic": 5,
+        "campus_industrial": 10
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "brick_red",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:conestoga",
+      "plan_id": "kw:conestoga:2026-09-18T12:00:00Z",
+      "summary": "Retail at the north edge; busy by day and empty by nine.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "modern",
+        "glass"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 20,
+        "retail": 40,
+        "cafe_bar": 10,
+        "office": 15,
+        "cultural_civic": 5,
+        "campus_industrial": 10
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 3,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "soft_grey",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:conservation-meadows",
+      "plan_id": "kw:conservation-meadows:2026-09-18T12:00:00Z",
+      "summary": "Wetland boardwalks and seed heads; the quietest ground in the city.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:beaver-creek-meadows",
+      "plan_id": "kw:beaver-creek-meadows:2026-09-18T12:00:00Z",
+      "summary": "Open field and a creek that takes the low path back every spring.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "minimal",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:country-squire",
+      "plan_id": "kw:country-squire:2026-09-18T12:00:00Z",
+      "summary": "Long drives, honour boxes and a horizon nobody is building on.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:lakeshore-north",
+      "plan_id": "kw:lakeshore-north:2026-09-18T12:00:00Z",
+      "summary": "The north shore: last path cleared, best one to walk.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:erbsville",
+      "plan_id": "kw:erbsville:2026-09-18T12:00:00Z",
+      "summary": "Farm stands, enormous sky and a tractor in the rush hour.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "historic",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:rural-east",
+      "plan_id": "kw:rural-east:2026-09-18T12:00:00Z",
+      "summary": "Stubble fields and a combine working past dark.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "minimal",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:uw-environmental-reserve",
+      "plan_id": "kw:uw-environmental-reserve:2026-09-18T12:00:00Z",
+      "summary": "Creek, boardwalk and second-growth bush between the campuses. Protected land, barely built on.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 0,
+        "retail": 0,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 60,
+        "campus_industrial": 40
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "mature_trees",
+          "wild_meadow",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 0,
+        "behaviors": [
+          "walking",
+          "jogging",
+          "dog_walking"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
         ]
       },
       "effects": [
@@ -854,8 +1772,8 @@
   "preset_festival": {
     "schema_version": "1.0",
     "taxonomy_version": "0.0.0-fallback",
-    "community_id": "kw:victoria-park",
-    "plan_id": "kw:victoria-park:preset-festival",
+    "community_id": "kw:laurelwood",
+    "plan_id": "kw:laurelwood:preset-festival",
     "summary": "Evening festival has taken over the park: lights, a stage, and a crowd.",
     "archetype": "green_retreat",
     "identity_tags": [
@@ -866,12 +1784,12 @@
     "density": 1,
     "height_profile": "low",
     "building_composition": {
-      "residential": 40,
+      "residential": 45,
       "retail": 5,
-      "cafe_bar": 10,
+      "cafe_bar": 0,
       "office": 0,
-      "cultural_civic": 15,
-      "campus_industrial": 30
+      "cultural_civic": 10,
+      "campus_industrial": 40
     },
     "vegetation": {
       "level": 5,

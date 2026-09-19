@@ -53,10 +53,13 @@ describe('assignCommunity', () => {
   })
 
   it('loads the checked-in official areas and mapping for the two-argument contract', () => {
+    // The demo city is Waterloo alone now. Kitchener's planning communities
+    // are still read as official areas, but nothing maps to them, so this
+    // checks a Waterloo district instead of the old downtown-Kitchener block.
     expect(defaultAssignmentData.officialAreas.some(
-      (candidate) => candidate.official_area_id === 'kitchener:1' && candidate.block_id === 'kw:downtown-kitchener',
+      (candidate) => candidate.official_area_id === 'waterloo:W2' && candidate.block_id === 'kw:central',
     )).toBe(true)
-    expect(assignCommunity(-80.491, 43.451)).toBe('kw:downtown-kitchener')
+    expect(assignCommunity(-80.5230, 43.4660)).toBe('kw:central')
   })
 
   it('uses the default nearest block fallback for an unmapped official area', () => {

@@ -54,7 +54,7 @@ export const presetFestivalPlan: CommunityPlan = clean(plansRaw.preset_festival)
 export const shopItems: ShopItem[] = clean(shopRaw.items) as ShopItem[]
 
 /** The block the demo script builds around. Kept sparse on purpose. docs/04 section 8. */
-export const DEMO_COMMUNITY_ID = 'kw:victoria-park'
+export const DEMO_COMMUNITY_ID = 'kw:laurelwood'
 
 /** The venue sits inside this block, so judges' posts land here. docs/04 section 10. */
-export const VENUE_COMMUNITY_ID = 'kw:university-district'
+export const VENUE_COMMUNITY_ID = 'kw:uw-northwest-campus'

@@ -93,7 +93,7 @@ for (const p of allPlans) {
 }
 
 // ---- demo invariants, docs/04 sections 2 and 8 -----------------------------
-const DEMO = 'kw:victoria-park'
+const DEMO = 'kw:laurelwood'
 const demoPosts = seed.posts.filter((p) => p.community_id === DEMO)
 check(demoPosts.length <= 3, `demo block has ${demoPosts.length} posts; it must stay sparse (docs/04 section 8)`)
 const base = plansFile.plans.find((p) => p.community_id === DEMO)

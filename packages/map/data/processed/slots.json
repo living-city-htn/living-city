@@ -1,38 +1,488 @@
 [
-  { "community_id": "kw:uptown-waterloo", "slot_id": "edge-west", "x": -0.7, "y": 0.25 },
-  { "community_id": "kw:uptown-waterloo", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:uptown-waterloo", "slot_id": "edge-east", "x": 0.7, "y": -0.25 },
-  { "community_id": "kw:waterloo-park", "slot_id": "edge-west", "x": -0.65, "y": 0.2 },
-  { "community_id": "kw:waterloo-park", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:waterloo-park", "slot_id": "edge-east", "x": 0.65, "y": -0.2 },
-  { "community_id": "kw:laurier-campus", "slot_id": "edge-west", "x": -0.6, "y": 0.3 },
-  { "community_id": "kw:laurier-campus", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:laurier-campus", "slot_id": "edge-east", "x": 0.6, "y": -0.3 },
-  { "community_id": "kw:university-district", "slot_id": "edge-west", "x": -0.7, "y": 0.25 },
-  { "community_id": "kw:university-district", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:university-district", "slot_id": "edge-east", "x": 0.7, "y": -0.25 },
-  { "community_id": "kw:research-tech-park", "slot_id": "edge-west", "x": -0.65, "y": 0.2 },
-  { "community_id": "kw:research-tech-park", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:research-tech-park", "slot_id": "edge-east", "x": 0.65, "y": -0.2 },
-  { "community_id": "kw:columbia-hills", "slot_id": "edge-west", "x": -0.7, "y": 0.3 },
-  { "community_id": "kw:columbia-hills", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:columbia-hills", "slot_id": "edge-east", "x": 0.7, "y": -0.3 },
-  { "community_id": "kw:midtown-ion", "slot_id": "edge-west", "x": -0.7, "y": 0.2 },
-  { "community_id": "kw:midtown-ion", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:midtown-ion", "slot_id": "edge-east", "x": 0.7, "y": -0.2 },
-  { "community_id": "kw:victoria-park", "slot_id": "edge-west", "x": -0.6, "y": 0.25 },
-  { "community_id": "kw:victoria-park", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:victoria-park", "slot_id": "edge-east", "x": 0.6, "y": -0.25 },
-  { "community_id": "kw:downtown-kitchener", "slot_id": "edge-west", "x": -0.7, "y": 0.25 },
-  { "community_id": "kw:downtown-kitchener", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:downtown-kitchener", "slot_id": "edge-east", "x": 0.7, "y": -0.25 },
-  { "community_id": "kw:civic-centre", "slot_id": "edge-west", "x": -0.6, "y": 0.2 },
-  { "community_id": "kw:civic-centre", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:civic-centre", "slot_id": "edge-east", "x": 0.6, "y": -0.2 },
-  { "community_id": "kw:central-frederick", "slot_id": "edge-west", "x": -0.65, "y": 0.25 },
-  { "community_id": "kw:central-frederick", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:central-frederick", "slot_id": "edge-east", "x": 0.65, "y": -0.25 },
-  { "community_id": "kw:stanley-park", "slot_id": "edge-west", "x": -0.7, "y": 0.25 },
-  { "community_id": "kw:stanley-park", "slot_id": "plaza", "x": 0, "y": 0 },
-  { "community_id": "kw:stanley-park", "slot_id": "edge-east", "x": 0.7, "y": -0.25 }
+  {
+    "community_id": "kw:central",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:central",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:central",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:westmount",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:westmount",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:westmount",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beechwood",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beechwood",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:beechwood",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:columbia-hills",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:columbia-hills",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:columbia-hills",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:conservation-meadows",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:conservation-meadows",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:conservation-meadows",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beaver-creek-meadows",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beaver-creek-meadows",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:beaver-creek-meadows",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:country-squire",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:country-squire",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:country-squire",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lakeshore-north",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lakeshore-north",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:lakeshore-north",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:clair-hills",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:clair-hills",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:clair-hills",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:northland",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:northland",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:northland",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:erbsville",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:erbsville",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:erbsville",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:conestoga",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:conestoga",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:conestoga",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lincoln",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lincoln",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:lincoln",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:west-hill",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:west-hill",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:west-hill",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:westvale",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:westvale",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:westvale",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:columbia",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:columbia",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:columbia",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:willowdale",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:willowdale",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:willowdale",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:dearborn",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:dearborn",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:dearborn",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lexington",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lexington",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:lexington",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beechwood-west",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:beechwood-west",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:beechwood-west",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-northwest-campus",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-northwest-campus",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:uw-northwest-campus",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:eastbridge",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:eastbridge",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:eastbridge",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lakeshore",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:lakeshore",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:lakeshore",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:rural-east",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:rural-east",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:rural-east",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:laurelwood",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:laurelwood",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:laurelwood",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-research-and-technology-park",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-research-and-technology-park",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:uw-research-and-technology-park",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-environmental-reserve",
+    "slot_id": "edge-west",
+    "x": -0.6,
+    "y": 0.5
+  },
+  {
+    "community_id": "kw:uw-environmental-reserve",
+    "slot_id": "plaza",
+    "x": 0,
+    "y": -0.6
+  },
+  {
+    "community_id": "kw:uw-environmental-reserve",
+    "slot_id": "edge-east",
+    "x": 0.6,
+    "y": 0.5
+  }
 ]

@@ -6,8 +6,16 @@ They are placeholders: during the demo the feed fills with real posts.
 ## From the Product owner
 
 `e7-window-broken.jpg`, `e7-grad-decorations.jpg`, `e7-plaza-battery-fire.jpg`,
-`cardill-false-alarm.jpg`, `environmental-reserve.jpg` — taken by the Product owner,
-used with permission. Resized to 1280px for the repo.
+`cardill-false-alarm.jpg`, `environmental-reserve.jpg`, `e7-storm-cloud.jpg`,
+`new-student-ceremony.jpg`, `back-to-uw.jpg` — taken by the Product owner, used
+with permission. Resized to 1280px for the repo.
+
+The three campus photographs (library, arena, storm over E7) are all main
+campus, so they all sit in `kw:university-district`, which takes that block to
+twelve seed posts against the six-to-ten ceiling in docs/04 section 3. Filing a
+library photograph under a neighbourhood it is not in would be worse, and extra
+seed posts cost nothing — unlike the caps on archetypes, assets and slots,
+which exist to stop the build growing.
 
 ## From Wikimedia Commons
 

@@ -759,6 +759,48 @@
       "status": "analyzed",
       "hidden": false,
       "hidden_reason": null
+    },
+    {
+      "id": "p-050",
+      "user_id": "u-mei",
+      "text": "Everyone on the bridge stopped walking. The whole sky went black over campus with one orange strip left under it. Half the crowd had phones up.",
+      "image_url": "/seed/e7-storm-cloud.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-18T19:50:00-04:00",
+      "community_id": "kw:university-district",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
+    },
+    {
+      "id": "p-051",
+      "user_id": "u-dev",
+      "text": "Stands are full for the new students. Purple lights, leaders in white shirts down the front, and it is very loud in here.",
+      "image_url": "/seed/new-student-ceremony.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-17T13:25:00-04:00",
+      "community_id": "kw:university-district",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
+    },
+    {
+      "id": "p-052",
+      "user_id": "u-omar",
+      "text": "First walk back past the library. Same concrete, same arches, clear sky, nobody around yet.",
+      "image_url": "/seed/back-to-uw.jpg",
+      "lon": 0,
+      "lat": 0,
+      "created_at": "2026-09-17T18:10:00-04:00",
+      "community_id": "kw:university-district",
+      "is_incident_report": false,
+      "status": "analyzed",
+      "hidden": false,
+      "hidden_reason": null
     }
   ]
 }

@@ -204,7 +204,11 @@ setCivicWritePort({
   patchIncident: (id, patch) => {
     const incident = getState().incidents.find((i) => i.id === id)
     if (!incident) return null
-    if (patch.severity !== undefined) incident.severity = patch.severity
+    // The other half of the same narrowing as `createIncident`: contracts holds
+    // severity as an int clamped to 0..3, the store holds those four literals.
+    if (patch.severity !== undefined) {
+      incident.severity = patch.severity as StoreIncident['severity']
+    }
     if (patch.status !== undefined) incident.status = patch.status
     if (patch.staff_note !== undefined) incident.staff_note = patch.staff_note
     incident.updated_at = new Date().toISOString()

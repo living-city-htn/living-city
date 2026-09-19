@@ -168,13 +168,15 @@ describe('resolveConflict', () => {
     })
 
     it('breaks an exact tie on distinct authors first', () => {
-      // Two sides at identical total weight: 2 x 0.5 against 1 x 1.0, but the
-      // corroboration factor lifts the two-author side, so force equality by
-      // giving the lone side enough authenticity to match after the multiplier.
+      // Two sides at identical total weight. Two authors at 1.0 each weigh 2.0
+      // and earn the 1.35x two-author factor: 2.7. One person posting three
+      // times at 0.9 weighs 2.7 and earns no factor at all. Breadth wins.
       const verdict = resolveConflict([
-        claim({ post_id: 'p-1', user_id: 'u-1', assertion: 'flooding', authenticity: 50 }),
-        claim({ post_id: 'p-2', user_id: 'u-2', assertion: 'flooding', authenticity: 50 }),
-        claim({ post_id: 'p-3', user_id: 'u-3', assertion: 'none', authenticity: 67.5 }),
+        claim({ post_id: 'p-1', user_id: 'u-1', assertion: 'flooding', authenticity: 100 }),
+        claim({ post_id: 'p-2', user_id: 'u-2', assertion: 'flooding', authenticity: 100 }),
+        claim({ post_id: 'p-3', user_id: 'u-3', assertion: 'none', authenticity: 90 }),
+        claim({ post_id: 'p-4', user_id: 'u-3', assertion: 'none', authenticity: 90 }),
+        claim({ post_id: 'p-5', user_id: 'u-3', assertion: 'none', authenticity: 90 }),
       ], { now: NOW })
       expect(verdict.assertion).toBe('flooding')
       expect(verdict.tie_break).toBe('authors')

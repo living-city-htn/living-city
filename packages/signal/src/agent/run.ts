@@ -201,8 +201,7 @@ export const runAgent = async (options: RunAgentOptions = {}): Promise<AgentRunR
         `${block_id}: verdict "${verdict.assertion}" at confidence ${verdict.confidence} `
         + `(${verdict.authors} author(s), agreement ${Math.round(verdict.agreement * 100)}%, `
         + `permitted action: ${verdict.action}). ${dissent_note} `
-        + `Supporting posts: ${verdict.support.join(', ') || 'none'}.`).join('
-')
+        + `Supporting posts: ${verdict.support.join(', ') || 'none'}.`).join('\n')
 
   const messages: ChatMessage[] = [
     { role: 'system', content: SYSTEM },
@@ -215,8 +214,7 @@ export const runAgent = async (options: RunAgentOptions = {}): Promise<AgentRunR
         '',
         'Conflict resolution has already been computed deterministically. Do not re-derive it:',
         brief,
-      ].join('
-'),
+      ].join('\n'),
     },
   ]
 

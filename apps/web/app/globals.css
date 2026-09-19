@@ -45,8 +45,16 @@
   color-scheme: light dark;
 }
 
+/*
+ * Dark mode is on hold at the Product owner's request: <html data-theme="light">
+ * in layout.tsx pins it. Every dark block is gated on
+ * :root:not([data-theme='light']), so removing that one attribute brings the
+ * whole dark theme back. DESIGN.md still requires it before the demo.
+ */
+:root[data-theme='light'] { color-scheme: light; }
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --paper: #0d0d0f;
     --surface: #151517;
     --sheet: rgba(28, 28, 30, 0.82);
@@ -108,7 +116,7 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 }
 .like:hover { background: var(--fill); }
 .like[data-liked='true'] { color: #e0245e; }
-@media (prefers-color-scheme: dark) { .like[data-liked='true'] { color: #ff6b8e; } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .like[data-liked='true'] { color: #ff6b8e; } }
 
 .muted { color: var(--label); font-size: 15px; margin: 0; }
 
@@ -289,7 +297,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .op-live { color: #1f7a3d; }
 .op-dead { color: #b3261e; }
 @media (prefers-color-scheme: dark) {
-  .op-live { color: #5fd17f; }
+  :root:not([data-theme='light']) .op-live { color: #5fd17f; }
   .op-dead { color: #ff8a80; }
 }
 
@@ -318,7 +326,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .op-btn[data-tone='warn'] { border-color: currentColor; color: #9a6400; }
 .op-btn[data-tone='danger'] { border-color: currentColor; color: #b3261e; }
 @media (prefers-color-scheme: dark) {
-  .op-btn[data-tone='go'] { color: #5fd17f; }
+  :root:not([data-theme='light']) .op-btn[data-tone='go'] { color: #5fd17f; }
   .op-btn[data-tone='warn'] { color: #ffc46b; }
   .op-btn[data-tone='danger'] { color: #ff8a80; }
 }
@@ -459,7 +467,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   font-variant-numeric: tabular-nums;
 }
 @media (prefers-color-scheme: dark) {
-  .app-header-balance { background: rgba(255, 255, 255, 0.08); }
+  :root:not([data-theme='light']) .app-header-balance { background: rgba(255, 255, 255, 0.08); }
 }
 
 /* --- particles ------------------------------------------------------------
@@ -469,6 +477,12 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .particles {
   position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
 }
+/*
+ * The scene sits above the drift. `.particles` is positioned, so without a
+ * stacking context of its own the scene's plain <svg> painted underneath it and
+ * particles crossed in front of the blocks.
+ */
+.city-layer { position: absolute; inset: 0; z-index: 1; }
 .particle {
   position: absolute; bottom: -8%; display: block; border-radius: 999px;
   background: var(--particle);

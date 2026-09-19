@@ -71,7 +71,6 @@ export default function ShopPanel({ active, onBalanceChanged }: {
     <section className="sheet shop-sheet" aria-label="Shop" style={!active ? { display: 'none' } : undefined}>
       <header className="sheet-head">
         <div><h2>Make it yours</h2><p className="sheet-sub">Small touches for your personal city.</p></div>
-        {shop && <span className="balance" aria-label={`${shop.balance} points available`}>{shop.balance} pts</span>}
       </header>
       <div className="sheet-body shop-body" aria-busy={loading}>
         {loading && <p className="muted" role="status">Loading your shop…</p>}

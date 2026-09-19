@@ -251,6 +251,7 @@ export default function AppShell() {
 
       <div className="viewport" data-inset={tab === 'mine' && sheetHeight > 0}>
         <ParticleField />
+        <div className="city-layer">
         {city && (
           <CityScene
             city={city}
@@ -269,6 +270,7 @@ export default function AppShell() {
             onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
           />
         )}
+        </div>
       </div>
 
       {/*
@@ -290,9 +292,8 @@ export default function AppShell() {
           <header className="sheet-head">
             <div>
               <h2>Feed</h2>
-              <p className="sheet-sub">Everything happening across the city</p>
+              <p className="sheet-sub">Newest first, across every block</p>
             </div>
-            {balance !== null && <span className="balance">{balance} pts</span>}
           </header>
           <div className="sheet-body">
             <PostList posts={feed} onLiked={setBalance} empty="No posts yet." />

@@ -45,7 +45,7 @@ const CSS = `
   width: 100%; height: 100%; display: block; background: transparent;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 @media (prefers-color-scheme: dark) {
-  .lc-scene { --ink: #cfe0d4; --hair: #3a3a3e; --paper: #0d0d0f; --label: #8d9a91;
+  :root:not([data-theme='light']) .lc-scene { --ink: #cfe0d4; --hair: #3a3a3e; --paper: #0d0d0f; --label: #8d9a91;
     --block-warm: #3a3229; --block-brick: #3a2c29; --block-cool: #26303c;
     --block-green: #28332a; --block-sunset: #4a3520; --block-neutral: #2a2a2e; --mark: #6ea0f5; }
 }

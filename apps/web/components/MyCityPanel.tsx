@@ -79,7 +79,6 @@ export default function MyCityPanel({
               : `${placed} ${placed === 1 ? 'decoration' : 'decorations'} placed — only you can see them.`}
           </p>
         </div>
-        {snapshot && <span className="balance">{snapshot.balance} pts</span>}
       </header>
 
       <div className="sheet-body" aria-busy={busy}>

@@ -1,6 +1,7 @@
 import { env } from '../env'
 import { log } from '../log'
 import { omniProvider } from '../provider/omni'
+import { fixtureVoiceProvider } from './fixture'
 import { ModelError, type AudioPart, type JsonSchema, type ModelProvider } from '../provider/types'
 
 /**
@@ -128,6 +129,8 @@ const SUPPORTED = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav']
 export const formatSupported = (mimeType: string): boolean =>
   SUPPORTED.includes(mimeType.split(';')[0]?.trim().toLowerCase() ?? '')
 
+export * from './fixture'
+
 export type VoiceRequest = {
   audio: AudioPart
   /** Context, so cues can be read against the scene. Never used to invent speech. */
@@ -135,6 +138,8 @@ export type VoiceRequest = {
   blockName: string | null
   localTime: string
   hasPhoto: boolean
+  /** Names a canned answer when running on fixtures. Ignored by the real call. */
+  scenario?: string | null
 }
 
 /**
@@ -148,7 +153,10 @@ export const analyzeVoice = async (
   options: { provider?: ModelProvider } = {},
 ): Promise<VoiceResult> => {
   const started = Date.now()
-  const provider = options.provider ?? omniProvider()
+  // Fixtures first, so a rehearsal on bad wifi runs the shipping code path
+  // rather than a parallel one.
+  const provider = options.provider
+    ?? (env.voiceFixtures() ? fixtureVoiceProvider() : omniProvider())
 
   if (!provider.available()) {
     log('voice.degraded', { rung: 'disabled', reason: 'no OMNI key configured' })
@@ -164,6 +172,7 @@ export const analyzeVoice = async (
     const response = await provider.complete({
       system: VOICE_SYSTEM_PROMPT,
       payload: {
+        scenario: request.scenario ?? null,
         caption: request.caption.slice(0, 1000),
         block_name: request.blockName,
         local_time: request.localTime,

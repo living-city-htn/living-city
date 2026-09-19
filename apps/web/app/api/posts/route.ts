@@ -35,6 +35,7 @@ export async function GET(req: Request) {
 
 // Product's fixture photo transport; Pipeline replaces it with Blob upload.
 export async function POST(req: Request) {
+  const requestStarted = Date.now()
   const parsed = parsePostInput(await readJson<unknown>(req), listCommunities().map(c => c.community_id))
   if (!parsed.ok) return badRequest(parsed.error)
   const body = parsed.value
@@ -74,12 +75,15 @@ export async function POST(req: Request) {
   // or text post does not execute one extra await. That is the latency
   // guarantee in T3, and it is structural rather than measured.
   let audio: StoredAudio | null = null
+  let uploadMs = 0
   if (VOICE_POSTS && body.audio_url) {
+    const uploadStarted = Date.now()
     audio = await storeAudio(created.post.id, body.audio_url)
+    uploadMs = Date.now() - uploadStarted
     console.info(JSON.stringify({
       at: 'voice.upload', post_id: created.post.id,
       stored: audio ? (audio.key ? 'blob' : 'inline') : 'rejected',
-      bytes: audio?.bytes ?? 0,
+      bytes: audio?.bytes ?? 0, ms: uploadMs,
     }))
   }
 
@@ -87,7 +91,9 @@ export async function POST(req: Request) {
   // A's payload. Never throws: every failure is a rung with a log line and a
   // notice, and the post carries on with its caption.
   let voice: VoiceResult | null = null
+  let voiceMs = 0
   if (audio) {
+    const voiceStarted = Date.now()
     voice = await analyzeVoice({
       audio: { mimeType: audio.mimeType, data: audio.base64 },
       caption: body.text,
@@ -95,6 +101,7 @@ export async function POST(req: Request) {
       localTime: created.post.created_at,
       hasPhoto: Boolean(body.image_url),
     })
+    voiceMs = Date.now() - voiceStarted
     // Retention, honoured the moment the transcript exists. Not awaited: the
     // judge is standing there, and a slow delete must not hold the response.
     void discardAudio(audio)
@@ -117,6 +124,7 @@ export async function POST(req: Request) {
     ? scoreText(gateText(body.text, voice?.analysis?.transcript ?? null))
     : Promise.resolve(null)
 
+  const callAStarted = Date.now()
   const analysis = analyzeNewPost(created.post, voice)
   const deadline = analysis.then(() => null, () => null)
 
@@ -129,6 +137,28 @@ export async function POST(req: Request) {
   const verdict = verdictResult.value
   const score = scoreResult.status === 'fulfilled' ? scoreResult.value : null
   setAuthenticity(created.post.id, score)
+
+  /**
+   * Step 8 of T3, measured on every post rather than once in rehearsal.
+   *
+   * `added_ms` is what voice cost this post beyond what it would have cost
+   * without one: the upload plus the OMNI call. The gate contributes nothing by
+   * construction, because it is abandoned when Call A finishes.
+   *
+   * For a photo or text post `added_ms` is 0, and it is 0 because neither
+   * branch above executed, not because the numbers happened to cancel.
+   */
+  console.info(JSON.stringify({
+    at: 'post.latency',
+    post_id: created.post.id,
+    voice: Boolean(audio),
+    upload_ms: uploadMs,
+    omni_ms: voiceMs,
+    added_ms: uploadMs + voiceMs,
+    call_a_ms: Date.now() - callAStarted,
+    total_ms: Date.now() - requestStarted,
+    gate: AUTHENTICITY_GATE ? (score ? 'scored' : 'lost_or_null') : 'off',
+  }))
 
   // The row above is detached once the write commits, so the verdict is applied
   // by id against freshly loaded state.

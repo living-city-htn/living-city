@@ -50,6 +50,11 @@ export const env = {
   omniTimeoutMs: () => num('OMNI_TIMEOUT_MS', 8000),
   /** One retry, then give up. docs/08 section 5. */
   omniMaxAttempts: () => num('OMNI_MAX_ATTEMPTS', 2),
+  /**
+   * Answer the voice call from canned fixtures instead of the network. Read
+   * only when no OMNI key is set, so it cannot shadow a real call by accident.
+   */
+  voiceFixtures: () => process.env.VOICE_FIXTURES === '1' && !process.env.OMNI_API_KEY,
 
   /**
    * Call A is high volume and short: the small tier. Call B runs rarely and

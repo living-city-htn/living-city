@@ -36,7 +36,7 @@ export default function FeedPage({ communities, onCommunity, onLiked, active = t
   }, [active, refresh, refreshKey])
   const names = Object.fromEntries(communities.map(c => [c.community_id, c.name]))
   return <section className="page-screen feed-page" aria-label="Feed" style={!active ? { display: 'none' } : undefined}>
-    <header className="page-heading"><div><p className="eyebrow">Around the neighbourhood</p><h2>Little moments. A living city.</h2><p>See what your neighbours are sharing, then explore their blocks.</p></div>
+    <header className="page-heading"><div><h2>Recent posts</h2><p>From across Kitchener–Waterloo.</p></div>
       <button className="form-button" disabled={loading} onClick={() => void refresh()}>Refresh feed</button>
     </header>
     <div className="feed-layout"><div className="feed-stream" aria-busy={loading}>
@@ -44,6 +44,6 @@ export default function FeedPage({ communities, onCommunity, onLiked, active = t
       {error && <div className="journey-state"><p role="alert">We couldn’t load the latest posts. Check your connection and try again.</p><button className="form-button" onClick={() => void refresh()}>Try again</button></div>}
       {(posts.length > 0 || (!loading && !error)) && <PostList posts={posts} onLiked={onLiked} communities={names} onCommunity={onCommunity} empty="Your city’s story starts here. Share a moment from the Post tab." />}
     </div>
-    <aside className="community-directory" aria-label="Explore communities"><h2>Explore your city</h2><p>Every block has a story.</p><ul>{communities.map(c => <li key={c.community_id}><button onClick={() => onCommunity(c.community_id)}><span>{c.name}</span><span aria-hidden="true">↗</span></button></li>)}</ul></aside></div>
+    <aside className="community-directory" aria-label="Explore communities"><h2>Communities</h2><ul>{communities.map(c => <li key={c.community_id}><button onClick={() => onCommunity(c.community_id)}><span>{c.name}</span><span aria-hidden="true">›</span></button></li>)}</ul></aside></div>
   </section>
 }

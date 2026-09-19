@@ -38,14 +38,14 @@ const PARTICLES = [
 export default function ParticleField() {
   return (
     <div className="particles" aria-hidden="true">
-      {PARTICLES.map((p, i) => (
+      {PARTICLES.filter((_, i) => i % 2 === 0).map((p, i) => (
         <span
           key={i}
           className="particle"
           style={{
             left: `${p.x}%`,
-            width: p.size,
-            height: p.size,
+            width: Math.min(p.size, 3),
+            height: Math.min(p.size, 3),
             animationDelay: `-${p.delay}s`,
             animationDuration: `${p.duration}s`,
             ['--drift' as string]: `${p.drift}px`,

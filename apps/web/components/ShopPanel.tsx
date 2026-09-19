@@ -75,8 +75,8 @@ export default function ShopPanel({ active, onBalanceChanged, onDecorate }: {
   return (
     <section className="page-screen shop-page" aria-label="Shop" style={!active ? { display: 'none' } : undefined}>
       <header className="page-heading">
-        <div><p className="eyebrow">Your next little upgrade</p><h2>Make it yours</h2><p>Small touches. A city that feels like you.</p></div>
-        {shop && <div className="shop-wallet" aria-label={`${shop.balance} points available`}><span aria-hidden="true">✦</span><strong>{shop.balance}</strong><span>points to spend</span></div>}
+        <div><h2>Decorations</h2><p>For your personal city.</p></div>
+        {shop && <div className="shop-wallet" aria-label={`${shop.balance} points available`}><strong>{shop.balance}</strong><span>points to spend</span></div>}
       </header>
       <div className="shop-body" aria-busy={loading}>
         {loading && <p className="muted" role="status">Loading your shop…</p>}

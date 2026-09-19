@@ -158,12 +158,12 @@ export default function PostComposer({
       className="composer page-screen"
       aria-label="Create a post"
     >
-      <div className="composer-topbar"><span className="eyebrow">A moment for your city</span><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
+      <div className="composer-topbar"><span /><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
 
       {step === 'choose' ? (
         <div className="composer-body capture">
           <div className="capture-lead">
-            <span className="capture-illustration" aria-hidden="true">✦</span><h2>Share a moment</h2>
+            <h2>Create a post</h2>
             <p>The places, people, and little things that make your neighbourhood yours.</p>
           </div>
 

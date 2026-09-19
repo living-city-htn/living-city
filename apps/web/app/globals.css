@@ -1,24 +1,20 @@
 /* Living City visual foundation. See ../DESIGN.md for ownership and layout. */
-@font-face {
-  font-family: 'Nunito Sans'; font-style: normal; font-weight: 200 1000;
-  font-display: swap; src: url('/fonts/nunito-sans-variable.ttf') format('truetype');
-}
 :root {
-  --paper: #F5F8FC; --surface: #fff; --sheet: #fff;
-  --ink: #18324B; --label: #52687C; --hair: #DAE4ED; --fill: #EAF0F6;
-  --lake: #2878D0; --accent: #246FBE; --leaf: #347855; --sunshine: #F4C95D;
-  --r-card: 18px; --r-sheet: 24px;
-  --mono: 'Nunito Sans', sans-serif;
+  --paper: #FFFFFF; --surface: #fff; --sheet: #fff;
+  --ink: #1D1D1F; --label: #6E6E73; --hair: #E5E5EA; --fill: #F5F5F7;
+  --accent: #0066CC; --leaf: #1D1D1F;
+  --r-card: 12px; --r-sheet: 16px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(.22,.61,.36,1); --fast: 140ms; --base: 220ms; --slow: 320ms;
   --tabbar-h: calc(72px + env(safe-area-inset-bottom)); --rail-w: 0px;
-  --header-h: calc(104px + env(safe-area-inset-top));
+  --header-h: calc(92px + env(safe-area-inset-top));
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body {
   margin: 0; height: 100%; background: var(--paper); color: var(--ink);
-  font: 400 16px/1.5 'Nunito Sans', system-ui, sans-serif;
+  font: 400 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased; overscroll-behavior: none;
 }
 button, input, textarea, select { font: inherit; color: inherit; }
@@ -47,7 +43,7 @@ select {
   padding-right: 36px;
 }
 
-h1, h2, h3 { font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 
 /* --- posts ------------------------------------------------------------- */
 
@@ -107,31 +103,18 @@ h1, h2, h3 { font-weight: 800; margin: 0; letter-spacing: -0.01em; }
 .mood { text-transform: capitalize; }
 .icon-btn { margin-left: auto; flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--fill); color: var(--ink); cursor: pointer; }
 
-/* Branding and points remain visible on every destination. */
-.app-header {
-  position: absolute; top: 0; left: var(--rail-w); right: 0; z-index: 5;
-  display: grid; grid-template-columns: 1fr auto; align-content: center; gap: 4px 16px;
-  height: var(--header-h); padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
-  background: var(--surface); border-bottom: 1px solid var(--hair);
-}
-.city-mark { width: 40px; height: 40px; flex: 0 0 auto; color: var(--leaf); }
-.mobile-brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; }
-.mobile-brand .city-mark { width: 28px; height: 28px; }
-.app-header-text { min-width: 0; grid-column: 1; }
-.app-header h1 { font-size: 20px; line-height: 1.25; }
-.app-header p { margin: 2px 0 0; font-size: 11px; color: var(--label); }
-.app-header-balance { grid-column: 2; grid-row: 1 / 3; display: flex; align-items: center; gap: 7px; align-self: center; padding: 8px 10px; border-radius: 16px; background: #FFF3C9; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.points-coin { display: grid; place-items: center; width: 24px; height: 24px; background: var(--sunshine); color: #674B12; border-radius: 50%; }
-.points-label { font-size: 12px; font-weight: 600; }
-
-.tabbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); height: var(--tabbar-h); padding: 6px 6px env(safe-area-inset-bottom); gap: 3px; background: var(--surface); border-top: 1px solid var(--hair); }
-.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; min-height: 48px; margin: 2px 0 6px; padding: 6px 2px; border: 0; border-radius: 14px; background: transparent; color: var(--label); font-weight: 800; font-size: 11px; cursor: pointer; transition: background var(--fast), color var(--fast); }
-.tab[data-active='true'] { background: #E9F3ED; color: var(--leaf); }
-.tab[data-accent='true'] { background: var(--accent); color: #fff; box-shadow: 0 3px 0 #17559C; }
-.tab[data-accent='true'][data-active='true'] { background: #17559C; }
-.tab:hover { background: var(--fill); color: var(--ink); }
-.tab[data-accent='true']:hover { background: #17559C; color: white; }
-.rail-brand, .rail-footer { display: none; }
+/* Quiet app chrome; the city has an introduction, not a header band. */
+.app-header { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 16px; height: var(--header-h); padding: calc(16px + env(safe-area-inset-top)) 24px 16px; background: var(--surface); border-bottom: 1px solid var(--hair); }
+.scene-intro { border: 0; background: transparent; pointer-events: none; }
+.app-header-text { min-width: 0; }
+.app-header h1 { font-size: 22px; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; }
+.app-header p { margin: 6px 0 0; font-size: 13px; color: var(--label); }
+.app-header-balance { flex-shrink: 0; color: var(--label); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.points-label { font-size: inherit; }
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; display: grid; grid-template-columns: repeat(5, minmax(0, 120px)); justify-content: center; height: var(--tabbar-h); padding: 6px 6px env(safe-area-inset-bottom); gap: 3px; background: var(--surface); border-top: 1px solid var(--hair); }
+.tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; min-height: 48px; margin: 2px 0 6px; padding: 6px 2px; border: 0; border-radius: 8px; background: transparent; color: var(--label); font-weight: 400; font-size: 11px; cursor: pointer; }
+.tab[data-active='true'] { color: var(--accent); }
+.tab:hover { background: var(--fill); }
 
 .summary { margin: 0 0 14px; font-size: 16px; }
 
@@ -388,32 +371,17 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 
 
 @media (min-width: 900px) {
-  :root { --rail-w: 208px; --tabbar-h: 0px; --header-h: 88px; }
-  .tabbar { top: 0; right: auto; width: var(--rail-w); height: auto; display: flex; flex-direction: column; gap: 8px; padding: 28px 16px 24px; border-top: 0; border-right: 1px solid var(--hair); }
-  .rail-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 36px; font-size: 23px; font-weight: 900; line-height: .95; }
-  .rail-brand-caption { display: block; font-size: 9px; line-height: 1.5; font-weight: 600; color: var(--label); margin-top: 8px; white-space: nowrap; }
-  .rail-brand .city-mark { width: 44px; height: 44px; }
-  .tab { flex-direction: row; justify-content: flex-start; gap: 12px; margin: 0; padding: 13px 16px; font-size: 15px; min-height: 52px; }
-  .tab[data-accent='true'] { margin-block: 8px; }
-  .rail-footer { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding: 20px 12px 0; }
-  .rail-footer-icon { color: var(--leaf); font-size: 27px; }
-  .rail-footer strong { font-size: 20px; line-height: 1.2; }
-  .rail-footer > span:last-child { color: var(--label); font-size: 11px; line-height: 1.6; }
-  .mobile-brand { display: none; }
-  .app-header { display: flex; justify-content: space-between; padding: 12px 32px; }
-  .app-header h1 { font-size: 25px; }
-  .app-header p { font-size: 12px; }
-  .app-header-balance { padding: 10px 14px; font-size: 18px; }
-  .points-coin { width: 30px; height: 30px; }
-  .viewport[data-inset='true'] { bottom: 0; right: 360px; }
-  .sheet { top: calc(var(--header-h) + 16px); left: auto; right: 16px; width: 328px; bottom: 16px; max-height: none; border: 1px solid var(--hair); border-radius: var(--r-sheet); }
+  :root { --rail-w: 0px; --header-h: 100px; }
+  .app-header { padding: 24px 40px; }
+  .app-header h1 { font-size: 26px; }
+  .viewport[data-inset='true'] { right: 360px; bottom: var(--tabbar-h); }
+  .sheet { top: calc(var(--header-h) + 16px); left: auto; right: 16px; width: 328px; bottom: calc(var(--tabbar-h) + 16px); max-height: none; border: 1px solid var(--hair); border-radius: var(--r-sheet); }
   .page-screen > .sheet-head, .shop-sheet > .sheet-head { padding-top: 32px; }
   .page-screen > .sheet-body, .shop-sheet > .sheet-body { padding-bottom: 40px; }
-  .pick-bar { left: var(--rail-w); }
 }
 @media (max-width: 359px) {
-  .app-header { padding-inline: 12px; column-gap: 8px; }
-  .points-label { display: none; }
-  .sheet-head { padding-inline: 16px; }
-  .sheet-body { padding-inline: 16px; }
+  .app-header { padding-inline: 16px; gap: 8px; }
+  .app-header h1 { font-size: 20px; }
+  .app-header p { font-size: 12px; }
+  .sheet-head, .sheet-body { padding-inline: 16px; }
 }

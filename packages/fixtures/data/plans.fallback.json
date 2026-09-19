@@ -136,7 +136,7 @@
       "taxonomy_version": "0.0.0-fallback",
       "community_id": "kw:uw-northwest-campus",
       "plan_id": "kw:uw-northwest-campus:2026-09-18T12:00:00Z",
-      "summary": "Campus running late into the night on study and impromptu gatherings.",
+      "summary": "E7 atrium is hosting a student festival: lights, music, and fireworks make the campus event visible from across the city.",
       "archetype": "campus_hub",
       "identity_tags": [
         "modern",
@@ -161,41 +161,55 @@
         ]
       },
       "activity": {
-        "pedestrian_density": 4,
-        "crowd_clusters": 2,
-        "vehicle_traffic": 3,
+        "pedestrian_density": 5,
+        "crowd_clusters": 4,
+        "vehicle_traffic": 1,
         "behaviors": [
           "walking",
-          "cycling",
+          "dancing",
+          "performing",
           "sitting"
         ]
       },
       "decorations": [
         {
+          "tag": "string_lights",
+          "prominence": 3
+        },
+        {
+          "tag": "stage",
+          "prominence": 2
+        },
+        {
           "tag": "benches",
           "prominence": 1
         }
       ],
-      "mood": "focused",
-      "palette": "cool_pastel",
+      "mood": "festive",
+      "palette": "sunset_orange",
       "lighting": {
-        "signature_time": "day",
-        "intensity": 3,
-        "color_temp": "neutral",
+        "signature_time": "night",
+        "intensity": 5,
+        "color_temp": "warm",
         "accents": [
-          "streetlamps_warm"
+          "string_lights",
+          "spotlights"
         ]
       },
-      "effects": [],
+      "effects": [
+        "fireworks",
+        "music_notes",
+        "sparkles"
+      ],
       "hero_asset": null,
       "stability": {
-        "change_magnitude": "none",
+        "change_magnitude": "moderate",
         "retained_from_previous": [],
         "reasons": [
-          "fallback fixture, not model output"
+          "E7 festival demonstration state"
         ]
       },
-      "confidence": 55
+      "confidence": 90
     },
     {
       "schema_version": "1.0",

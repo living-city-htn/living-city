@@ -271,13 +271,17 @@ export default function AppShell() {
         scene fills this box, so 3D's component gets the same behaviour without
         a change to its props.
       */}
-      <AppHeader
-        title={selected?.name ?? 'Kitchener-Waterloo'}
-        subtitle={HEADER_LINE[tab]}
-        balance={balance}
-      />
+      {/*
+        The header always names the city, never the selected block: it was
+        reading "Uptown Waterloo" while you stood in the Shop, and on the City
+        tab it repeated the panel's own title back at you.
+      */}
+      <AppHeader title="Kitchener-Waterloo" subtitle={HEADER_LINE[tab]} balance={balance} />
 
-      <div className="viewport" data-inset={tab === 'mine' && sheetHeight > 0}>
+      <div
+        className="viewport"
+        data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}
+      >
         <ParticleField />
         <div className="city-layer">
         {city && (
@@ -312,6 +316,7 @@ export default function AppShell() {
           name={selected.name}
           onClose={() => setSelectedId(null)}
           onLiked={setBalance}
+          onHeight={setSheetHeight}
         />
       )}
 

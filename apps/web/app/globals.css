@@ -150,7 +150,12 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
  */
 .viewport { position: absolute; inset: 0; top: var(--header-h); bottom: var(--tabbar-h);
   transition: bottom var(--base) var(--ease); }
-/* My City: also clear the sheet, so every slot stays tappable. */
+/*
+ * Whenever a sheet is open the map stops above it. On the City tab the panel
+ * was covering the very block it describes — measured at 100% hidden on a
+ * phone — and moments 2 and 4 both need the block visible while you read it.
+ * In My City it also keeps every slot tappable.
+ */
 .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h, 0px)); }
 
 .greeting {
@@ -174,6 +179,14 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
   animation: sheet-in 260ms var(--ease);
 }
 @keyframes sheet-in { from { transform: translateY(14px); opacity: 0; } }
+
+/*
+ * The block panel is shorter than the others on purpose. A full-height sheet
+ * squeezed the map into a strip barely taller than one block, and moments 2 and
+ * 4 are both "look at the block while you read about it".
+ */
+.block-sheet { max-height: calc(54% - var(--tabbar-h)); }
+@media (min-width: 900px) { .block-sheet { max-height: none; } }
 
 .sheet-head {
   display: flex; align-items: flex-start; gap: 16px;
@@ -416,7 +429,8 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   .tab:active { transform: none; }
 
   .viewport { left: var(--rail-w); bottom: 0; }
-  .viewport[data-inset='true'] { bottom: 0; }
+  /* Desktop: clear the docked column instead of the bottom sheet. */
+  .viewport[data-inset='true'] { bottom: 0; left: calc(var(--rail-w) + 436px); }
 
   .greeting { left: calc(var(--rail-w) + 440px); padding-top: 28px; }
 
@@ -427,7 +441,8 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
    */
   .sheet {
     left: calc(var(--rail-w) + 20px); right: auto; width: 400px;
-    top: 20px; bottom: 20px; max-height: none;
+    /* Below the header: at top: 20px the panel's own title sat under it. */
+    top: calc(var(--header-h) + 16px); bottom: 20px; max-height: none;
     background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none;
     border: 1px solid var(--hair); border-radius: var(--r-sheet);
     box-shadow: 0 1px 0 var(--hair), 0 18px 50px rgba(0, 0, 0, 0.1);
@@ -624,7 +639,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 @media (min-width: 900px) {
   .composer {
     left: calc(var(--rail-w) + 20px); right: auto; width: 400px;
-    top: 20px; bottom: 20px; border-radius: var(--r-sheet);
+    top: calc(var(--header-h) + 16px); bottom: 20px; border-radius: var(--r-sheet);
     border: 1px solid var(--hair);
     animation: sheet-in-side var(--base) var(--ease);
   }

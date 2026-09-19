@@ -12,7 +12,7 @@
  * evidence-based (docs/03 section 3.2). Nothing on this panel is written by a
  * model at read time.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { BlockState, PostRow } from '@/lib/api'
 import { getBlockPosts, getBlockState } from '@/lib/api'
 import PostList from './PostList'
@@ -22,12 +22,31 @@ export default function BlockPanel({
   name,
   onClose,
   onLiked,
+  onHeight,
 }: {
   communityId: string
   name: string
   onClose: () => void
   onLiked: (balance: number) => void
+  /** Reports the sheet's height so the map can keep the block above it. */
+  onHeight: (px: number) => void
 }) {
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) onHeight(entry.contentRect.height)
+    })
+    observer.observe(node)
+    onHeight(node.getBoundingClientRect().height)
+    return () => {
+      observer.disconnect()
+      onHeight(0)
+    }
+  }, [onHeight])
+
   const [state, setState] = useState<BlockState | null>(null)
   const [posts, setPosts] = useState<PostRow[]>([])
   const [why, setWhy] = useState(false)
@@ -50,7 +69,7 @@ export default function BlockPanel({
   }, [communityId])
 
   return (
-    <section className="sheet" aria-label={`${name} details`}>
+    <section ref={ref} className="sheet block-sheet" aria-label={`${name} details`}>
       <header className="sheet-head">
         <div>
           <h2>{name}</h2>

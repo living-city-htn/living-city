@@ -1,0 +1,74 @@
+{
+  "_readme": "Gate 0 manifest. The renderer currently uses deterministic primitives; each visual enum resolves to one named primitive asset or alias. AI receives only taxonomy values, never this geometry mapping.",
+  "version": "1.0",
+  "assets": {
+    "building.lowrise": { "kind": "procedural", "primitive": "box", "role": "low-rise building" },
+    "building.midrise": { "kind": "procedural", "primitive": "box", "role": "mid-rise building" },
+    "building.campus": { "kind": "procedural", "primitive": "box", "role": "institutional building" },
+    "building.market": { "kind": "procedural", "primitive": "box", "role": "retail building" },
+    "green.tree": { "kind": "procedural", "primitive": "cone", "role": "tree" },
+    "green.ground": { "kind": "procedural", "primitive": "disc", "role": "lawn or planter" },
+    "people.walk": { "kind": "procedural", "primitive": "capsule", "role": "person" },
+    "people.gather": { "kind": "procedural", "primitive": "capsule", "role": "crowd" },
+    "decor.marker": { "kind": "procedural", "primitive": "box", "role": "small decoration" },
+    "decor.stage": { "kind": "procedural", "primitive": "box", "role": "stage" },
+    "decor.light": { "kind": "procedural", "primitive": "sphere", "role": "light decoration" },
+    "effect.particle": { "kind": "procedural", "primitive": "sprite", "role": "floating particle" },
+    "effect.falling": { "kind": "procedural", "primitive": "sprite", "role": "falling particle" },
+    "effect.weather": { "kind": "procedural", "primitive": "line", "role": "weather particle" },
+    "effect.atmosphere": { "kind": "procedural", "primitive": "sprite", "role": "atmospheric particle" },
+    "effect.birds": { "kind": "procedural", "primitive": "chevron", "role": "bird" },
+    "effect.fireworks": { "kind": "procedural", "primitive": "sprite", "role": "firework particle" },
+    "hero.landmark": { "kind": "procedural", "primitive": "box", "role": "landmark" },
+    "palette.warm": { "kind": "material", "role": "warm palette" },
+    "palette.cool": { "kind": "material", "role": "cool palette" },
+    "palette.night": { "kind": "material", "role": "night palette" },
+    "palette.green": { "kind": "material", "role": "green palette" },
+    "palette.grey": { "kind": "material", "role": "neutral palette" },
+    "palette.sunset": { "kind": "material", "role": "sunset palette" },
+    "palette.blue": { "kind": "material", "role": "blue palette" },
+    "palette.brick": { "kind": "material", "role": "brick palette" },
+    "palette.candy": { "kind": "material", "role": "festival palette" },
+    "palette.default": { "kind": "material", "role": "default palette" }
+  },
+  "enum_mappings": {
+    "archetype": {
+      "residential_quiet": "building.lowrise", "residential_lively": "building.lowrise", "commercial_core": "building.midrise", "nightlife_district": "building.market", "creative_quarter": "building.market", "green_retreat": "green.ground", "campus_hub": "building.campus", "waterfront_leisure": "green.ground", "civic_center": "building.campus", "transit_hub": "building.midrise", "maker_industrial": "building.midrise", "market_street": "building.market", "mixed_use_default": "building.midrise"
+    },
+    "mood": {
+      "cozy": "palette.warm", "vibrant": "palette.candy", "serene": "palette.green", "busy": "palette.grey", "gritty": "palette.brick", "festive": "palette.candy", "melancholic": "palette.cool", "focused": "palette.default", "playful": "palette.candy", "elegant": "palette.warm"
+    },
+    "palette": {
+      "warm_pastel": "palette.warm", "cool_pastel": "palette.cool", "neon_night": "palette.night", "earthy_green": "palette.green", "soft_grey": "palette.grey", "sunset_orange": "palette.sunset", "ocean_blue": "palette.blue", "brick_red": "palette.brick", "candy_pop": "palette.candy", "default_city": "palette.default"
+    },
+    "identity_tags": {
+      "modern": "building.midrise", "historic": "building.lowrise", "brick": "palette.brick", "glass": "building.midrise", "wood": "building.lowrise", "colorful": "palette.candy", "minimal": "palette.grey", "industrial": "building.midrise", "cozy": "palette.warm", "upscale": "building.midrise", "student": "building.campus", "family": "building.lowrise", "tourist": "hero.landmark", "bohemian": "building.market"
+    },
+    "vegetation_types": {
+      "street_trees": "green.tree", "mature_trees": "green.tree", "park_lawn": "green.ground", "flower_beds": "green.ground", "hedges": "green.ground", "wild_meadow": "green.ground", "planters": "green.ground", "rooftop_green": "green.ground"
+    },
+    "behaviors": {
+      "walking": "people.walk", "sitting": "people.gather", "jogging": "people.walk", "dancing": "people.gather", "cycling": "people.walk", "dining": "people.gather", "shopping": "people.walk", "performing": "decor.stage", "dog_walking": "people.walk", "skateboarding": "people.walk", "studying": "people.gather", "queueing": "people.gather"
+    },
+    "decorations": {
+      "string_lights": "decor.light", "banners": "decor.marker", "mural": "decor.marker", "sculpture": "decor.marker", "fountain": "decor.marker", "food_trucks": "decor.marker", "market_stalls": "decor.marker", "benches": "decor.marker", "bike_racks": "decor.marker", "neon_signs": "decor.light", "outdoor_seating": "decor.marker", "playground": "decor.marker", "sports_court": "decor.marker", "stage": "decor.stage", "kiosks": "decor.marker", "flags": "decor.marker", "lanterns": "decor.light", "graffiti": "decor.marker", "construction_barriers": "decor.marker", "bus_shelter": "decor.marker"
+    },
+    "lighting_accents": {
+      "streetlamps_warm": "decor.light", "streetlamps_cool": "decor.light", "window_glow": "decor.light", "neon": "decor.light", "string_lights": "decor.light", "lanterns": "decor.light", "spotlights": "decor.light"
+    },
+    "effects": {
+      "fireflies": "effect.particle", "confetti": "effect.falling", "music_notes": "effect.particle", "falling_leaves": "effect.falling", "rain": "effect.weather", "snow": "effect.weather", "fog": "effect.atmosphere", "sparkles": "effect.particle", "steam": "effect.atmosphere", "birds": "effect.birds", "fireworks": "effect.fireworks", "heart_particles": "effect.particle"
+    },
+    "hero_asset": {
+      "clock_tower": "hero.landmark", "stadium": "hero.landmark", "ferris_wheel": "hero.landmark", "museum": "hero.landmark", "market_hall": "hero.landmark", "concert_hall": "hero.landmark", "giant_tree": "green.tree", "fountain_plaza": "decor.marker", "lighthouse": "hero.landmark", "university_hall": "hero.landmark", "transit_station": "hero.landmark", "observation_deck": "hero.landmark"
+    }
+  },
+  "shop_items": [
+    { "item_tag": "benches", "price": 20, "category": "decoration", "label": "Park bench" },
+    { "item_tag": "planters", "price": 20, "category": "vegetation", "label": "Flower planter" },
+    { "item_tag": "string_lights", "price": 40, "category": "decoration", "label": "String lights" },
+    { "item_tag": "food_trucks", "price": 60, "category": "decoration", "label": "Food truck" },
+    { "item_tag": "fountain", "price": 80, "category": "decoration", "label": "Fountain" },
+    { "item_tag": "sculpture", "price": 80, "category": "decoration", "label": "Sculpture" }
+  ]
+}

@@ -20,11 +20,18 @@ import PostList from './PostList'
 export default function BlockPanel({
   communityId,
   name,
+  planId,
   onClose,
   onLiked,
 }: {
   communityId: string
   name: string
+  /**
+   * The block's current plan id. When it changes the block has been replanned,
+   * so the panel re-reads itself — otherwise moment 4 leaves a panel open that
+   * still describes the plan the city just replaced.
+   */
+  planId: string | undefined
   onClose: () => void
   onLiked: (balance: number) => void
 }) {
@@ -47,7 +54,7 @@ export default function BlockPanel({
     return () => {
       live = false
     }
-  }, [communityId])
+  }, [communityId, planId])
 
   return (
     <section className="sheet" aria-label={`${name} details`}>

@@ -24,64 +24,116 @@ const EXCLUDE = new Set(['Rural East', 'Country Squire', 'Erbsville', 'Conservat
 const slug = (name) =>
   'kw:' + name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-/** Perpendicular distance from p to the segment a-b. */
-function dist(p, a, b) {
-  const [px, py] = p, [ax, ay] = a, [bx, by] = b
-  const dx = bx - ax, dy = by - ay
-  if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay)
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
-  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy))
-}
+/**
+ * Why the blocks are a partition rather than simplified official outlines.
+ *
+ * Simplifying each district on its own breaks the shared edges: two neighbours
+ * reduce the same boundary to different lines, so the city comes apart into
+ * gaps and overlaps and stops reading as one place. docs/02 section 4.1 asks
+ * the visual layer to preserve silhouette, relative position and adjacency —
+ * not the boundaries themselves.
+ *
+ * So the city outline is cut into one cell per district instead: every cell is
+ * the set of points nearer to its own district than to any other, clipped to
+ * the outline. The pieces tile exactly, each has a handful of vertices, and
+ * each sits where its district sits. Assignment still uses the official
+ * polygons, which are untouched.
+ */
 
-/** Douglas-Peucker. */
-function simplify(points, tolerance) {
-  if (points.length < 3) return points
-  let index = 0, max = 0
-  for (let i = 1; i < points.length - 1; i++) {
-    const d = dist(points[i], points[0], points[points.length - 1])
-    if (d > max) { index = i; max = d }
+/** Sutherland-Hodgman: keep the part of `poly` on the inside of a half-plane. */
+function clipHalfPlane(poly, inside, intersect) {
+  const out = []
+  for (let i = 0; i < poly.length; i++) {
+    const cur = poly[i]
+    const prev = poly[(i + poly.length - 1) % poly.length]
+    const curIn = inside(cur)
+    const prevIn = inside(prev)
+    if (curIn) {
+      if (!prevIn) out.push(intersect(prev, cur))
+      out.push(cur)
+    } else if (prevIn) {
+      out.push(intersect(prev, cur))
+    }
   }
-  if (max <= tolerance) return [points[0], points[points.length - 1]]
-  return [
-    ...simplify(points.slice(0, index + 1), tolerance).slice(0, -1),
-    ...simplify(points.slice(index), tolerance),
-  ]
+  return out
 }
 
-/** Shrink toward the centroid so neighbours read as separate pieces on a board. */
-const shrink = (ring, centroid, factor) =>
-  ring.map(([x, y]) => [
-    centroid[0] + (x - centroid[0]) * factor,
-    centroid[1] + (y - centroid[1]) * factor,
-  ])
+/** The half-plane of points at least as close to `a` as to `b`. */
+function bisector(a, b) {
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const side = (p) => (p[0] - mx) * dx + (p[1] - my) * dy
+  return {
+    inside: (p) => side(p) <= 0,
+    intersect: (p, q) => {
+      const sp = side(p), sq = side(q)
+      const t = sp / (sp - sq)
+      return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
+    },
+  }
+}
+
+/** Andrew's monotone chain. */
+function hull(points) {
+  const pts = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+  const half = (src) => {
+    const h = []
+    for (const p of src) {
+      while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= 0) h.pop()
+      h.push(p)
+    }
+    h.pop()
+    return h
+  }
+  return [...half(pts), ...half([...pts].reverse())]
+}
+
+
+const features = raw.features.filter((f) => !EXCLUDE.has(f.properties.DISTNAME))
 
 const outerRing = (geometry) => {
   if (geometry.type === 'Polygon') return geometry.coordinates[0]
-  // MultiPolygon: the largest ring is the district; the rest are slivers.
   let best = geometry.coordinates[0][0]
   for (const poly of geometry.coordinates) if (poly[0].length > best.length) best = poly[0]
   return best
 }
 
-const features = raw.features.filter((f) => !EXCLUDE.has(f.properties.DISTNAME))
+const centroidOf = (ring) => [
+  ring.reduce((s, p) => s + p[0], 0) / ring.length,
+  ring.reduce((s, p) => s + p[1], 0) / ring.length,
+]
 
-const communities = features.map((f) => {
-  const ring = outerRing(f.geometry).map(([x, y]) => [x, y])
-  const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length
-  const cy = ring.reduce((s, p) => s + p[1], 0) / ring.length
+const rings = features.map((f) => outerRing(f.geometry))
+const sites = rings.map(centroidOf)
 
-  // Tolerance climbs until the ring is down to the 4-8 vertices docs/02
-  // section 4.1 asks a drawn block for.
-  let simple = ring
-  for (let t = 0.0002; simple.length > 9 && t < 0.02; t *= 1.25) {
-    simple = simplify(ring, t)
+// One outline for the whole city, kept loose so it reads as a single place.
+const outline = hull(rings.flat())
+
+const cells = sites.map((site, i) => {
+  let cell = outline
+  for (let j = 0; j < sites.length; j++) {
+    if (j === i) continue
+    const { inside, intersect } = bisector(site, sites[j])
+    cell = clipHalfPlane(cell, inside, intersect)
+    if (cell.length === 0) break
   }
-  if (simple[0][0] !== simple[simple.length - 1][0] || simple[0][1] !== simple[simple.length - 1][1]) {
-    simple = [...simple, simple[0]]
-  }
+  return cell
+})
 
-  const xs = simple.map((p) => p[0]), ys = simple.map((p) => p[1])
+/** Pull each cell in a little so the seams between blocks are visible. */
+const shrinkToCentre = (ring, factor) => {
+  const c = centroidOf(ring)
+  return ring.map(([x, y]) => [c[0] + (x - c[0]) * factor, c[1] + (y - c[1]) * factor])
+}
+
+const communities = features.map((f, i) => {
+  const cell = cells[i]
+  const official = rings[i]
+  const [cx, cy] = centroidOf(cell)
   const round = (ps) => ps.map(([x, y]) => [Number(x.toFixed(5)), Number(y.toFixed(5))])
+  const block = round([...shrinkToCentre(cell, 0.94), shrinkToCentre(cell, 0.94)[0]])
+  const xs = block.map((p) => p[0]), ys = block.map((p) => p[1])
   const hectares = f.properties.HECTARES ?? (f.properties.AREA_M2 ?? 0) / 10000
   const lots = Math.max(10, Math.min(30, Math.round(hectares / 14)))
 
@@ -93,8 +145,8 @@ const communities = features.map((f) => {
     centroid: [Number(cx.toFixed(5)), Number(cy.toFixed(5))],
     bbox: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map((n) => Number(n.toFixed(5))),
     area_km2: Number((hectares / 100).toFixed(2)),
-    polygon_real: { type: 'Polygon', coordinates: [round(outerRing(f.geometry))] },
-    polygon_block: { type: 'Polygon', coordinates: [round(shrink(simple, [cx, cy], 0.9))] },
+    polygon_real: { type: 'Polygon', coordinates: [round(official)] },
+    polygon_block: { type: 'Polygon', coordinates: [block] },
     adjacent_ids: [],
     relative_position: { bearing_from_center: '', distance_km_from_center: 0 },
     land_use_hints: {

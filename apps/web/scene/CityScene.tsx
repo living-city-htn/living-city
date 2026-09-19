@@ -277,13 +277,17 @@ export default function CityScene({
     [placements],
   )
 
+  /**
+   * The middle of the city's extent, not the average of its centroids. Averaging
+   * centroids pulls toward wherever the small blocks cluster, which left the
+   * city sitting low and to one side of the frame.
+   */
   const centre = useMemo<[number, number]>(() => {
-    const cs = city.communities.map((c) => c.centroid as [number, number])
-    if (cs.length === 0) return [0, 0]
-    return [
-      cs.reduce((s, c) => s + c[0], 0) / cs.length,
-      cs.reduce((s, c) => s + c[1], 0) / cs.length,
-    ]
+    const pts = city.communities.flatMap(ringOf)
+    if (pts.length === 0) return [0, 0]
+    const xs = pts.map((p) => p[0])
+    const ys = pts.map((p) => p[1])
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]
   }, [city.communities])
 
   /** Metres across the whole city, used to pick the scale. */

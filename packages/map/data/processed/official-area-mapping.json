@@ -1,0 +1,16 @@
+{
+  "official_area_mappings": [
+    { "official_area_id": "waterloo:W2", "community_id": "kw:uptown-waterloo" },
+    { "official_area_id": "waterloo:W3", "community_id": "kw:waterloo-park" },
+    { "official_area_id": "waterloo:UW Northwest Campus", "community_id": "kw:university-district" },
+    { "official_area_id": "waterloo:UW Research and Technology Park", "community_id": "kw:research-tech-park" },
+    { "official_area_id": "waterloo:W14", "community_id": "kw:columbia-hills" },
+    { "official_area_id": "waterloo:W92", "community_id": "kw:columbia-hills" },
+    { "official_area_id": "kitchener:1", "community_id": "kw:downtown-kitchener" },
+    { "official_area_id": "kitchener:7", "community_id": "kw:victoria-park" },
+    { "official_area_id": "kitchener:2", "community_id": "kw:civic-centre" },
+    { "official_area_id": "kitchener:13", "community_id": "kw:central-frederick" },
+    { "official_area_id": "kitchener:24", "community_id": "kw:stanley-park" },
+    { "official_area_id": "kitchener:21", "community_id": "kw:midtown-ion" }
+  ]
+}

@@ -122,17 +122,16 @@ laptop. Activate reduced detail only when measurements show it is needed.
 
 ### Phase 3 — Stage 4 only, after Gate 3
 
-#### Task 4: Render one existing hero landmark on a campus plaza
+#### Task 4: Render the City Hall landmark
 
-**Description:** Honor an approved plan's `hero_asset` using an existing
-asset alias, placed on the deterministic plaza. The university block becomes
-recognizable without pretending to be an accurate building survey.
+**Description:** Reserve one generated building in `kw:central` for the
+existing `civic-01` asset. This makes City Hall a deterministic landmark
+without adding a building asset or pretending to reproduce an exact footprint.
 
 **Acceptance criteria:**
 
-- [ ] A `university_hall` hero appears only for plans that request it.
-- [ ] It is placed deterministically on the plaza and does not overlap a
-  personal decoration slot.
+- [ ] City Hall replaces the same generated building on every render.
+- [ ] Other communities keep their existing deterministic building mix.
 - [ ] It uses the existing asset cap and stays consistent with the low-poly
   miniature style.
 
@@ -144,6 +143,32 @@ recognizable without pretending to be an accurate building survey.
 **Dependencies:** Gate 3 passed; Tasks 1–3.  
 **Files likely touched:** `apps/web/scene/CityScene.tsx`,
 `apps/web/scene/asset-layout.ts`, its test.  
+**Estimated scope:** Medium (3 files).
+
+#### Task 5: Add the City Hall tornado drill
+
+**Description:** When City Hall is selected, render a clearly labelled,
+local tornado drill above its landmark. The unselected city remains the normal
+simulation. The drill is a visual rehearsal, never a weather feed or a new
+planning state.
+
+**Acceptance criteria:**
+
+- [ ] The normal city has no tornado effect.
+- [ ] Selecting City Hall activates a readable funnel, debris, and alert
+  beacon only at that landmark.
+- [ ] Reduced-motion users see the drill without continuous animation.
+- [ ] A future evidence photo is labelled "simulation" and cannot be mistaken
+  for a real resident post.
+
+**Verification:**
+
+- [ ] Add focused pure tests for landmark and drill-state selection.
+- [ ] Run web tests, typecheck, build, and a phone visual check.
+
+**Dependencies:** Task 4.  
+**Files likely touched:** `apps/web/scene/CityScene.tsx`, a drill-state helper
+and test.  
 **Estimated scope:** Medium (3 files).
 
 ## External blockers to assign
@@ -165,6 +190,6 @@ recognizable without pretending to be an accurate building survey.
 
 ## Approval checkpoint
 
-Implementation begins with Tasks 1–2 only. Task 4 remains explicitly deferred
-until Gate 3. Record these tasks on the team's GitHub Projects board when it
-is available.
+Gate 3 is reported passed. Tasks 4–5 are approved for implementation. The
+photo asset remains a separately approved follow-up because image generation
+is unavailable in this environment.

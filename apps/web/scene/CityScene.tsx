@@ -14,11 +14,13 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
+import { civicHallCellIndex, isCivicHallDrill } from './civic-hall'
 import { blockVisualState } from './visual-state'
+import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
@@ -432,6 +434,58 @@ function PlanningOutline({ slab }: { slab: THREE.BufferGeometry }) {
   </lineSegments>
 }
 
+function CivicHallLabel({ drill, position }: { drill: boolean; position: [number, number] }) {
+  return <Html transform position={[position[0], 1.45, position[1]]} distanceFactor={9}>
+    <div className={drill ? `${styles.label} ${styles.alert}` : styles.label} role="status">
+      <strong>City Hall</strong>
+      <span>{drill ? 'Tornado drill active' : 'Normal operations'}</span>
+    </div>
+  </Html>
+}
+
+/** A local exercise effect, deliberately separate from public plan effects. */
+function TornadoDrill({ position }: { position: [number, number] }) {
+  const reducedMotion = useReducedMotion()
+  const funnel = useRef<THREE.Group>(null)
+  const debris = useRef<THREE.InstancedMesh>(null)
+  const pieces = useMemo(() => {
+    const random = seeded('city-hall-tornado-drill')
+    return Array.from({ length: 18 }, () => ({ angle: random() * Math.PI * 2, radius: 0.3 + random() * 0.62, height: 0.18 + random() * 1.05 }))
+  }, [])
+
+  useFrame(({ clock }) => {
+    const time = reducedMotion ? 0 : clock.elapsedTime
+    funnel.current?.rotation.set(0, time * 0.8, 0)
+    pieces.forEach((piece, index) => {
+      const angle = piece.angle + time * (1.4 + piece.height)
+      dummy.position.set(Math.cos(angle) * piece.radius, piece.height, Math.sin(angle) * piece.radius)
+      dummy.rotation.set(time, angle, 0)
+      dummy.scale.setScalar(0.018 + piece.height * 0.015)
+      dummy.updateMatrix()
+      debris.current?.setMatrixAt(index, dummy.matrix)
+    })
+    if (debris.current) debris.current.instanceMatrix.needsUpdate = true
+  })
+
+  return <group position={[position[0], 0.27, position[1]]}>
+    <pointLight color="#e85e45" intensity={reducedMotion ? 1.4 : 2.4} distance={3.8} />
+    <group ref={funnel}>
+      <mesh position={[0, 1.18, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.7, 1.6, 12, 1, true]} />
+        <meshLambertMaterial color="#65707a" transparent opacity={0.44} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.48, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.26, 0.7, 10, 1, true]} />
+        <meshLambertMaterial color="#4d5964" transparent opacity={0.62} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+    </group>
+    <instancedMesh ref={debris} args={[undefined, undefined, pieces.length]}>
+      <dodecahedronGeometry args={[1, 0]} />
+      <meshLambertMaterial color="#8b7667" />
+    </instancedMesh>
+  </group>
+}
+
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 function Block({
   community, plan, origin, cells, scale, state, planning, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
@@ -512,11 +566,17 @@ function Block({
   const pondIndex = useMemo(() => waterCell(cells, local, community.land_use_hints.water_adjacent,
     terrainSlots.map((slot) => [slot.x * halfW * 0.62 * SCALE, slot.y * halfH * 0.62 * SCALE])),
   [cells, local, community.land_use_hints.water_adjacent, terrainSlots, halfW, halfH, SCALE])
+  const civicHallIndex = civicHallCellIndex(community.community_id, cells)
+  const civicHallCell = civicHallIndex >= 0 ? cells[civicHallIndex] : undefined
+  const civicHallPosition = civicHallCell ? [civicHallCell.x / SCALE, -civicHallCell.y / SCALE] as [number, number] : null
+  const tornadoDrill = isCivicHallDrill(community.community_id, state)
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
       if (i === pondIndex || cell.kind === 'plaza') return
-      const id = cell.kind === 'building' ? buildingAsset(cell, community.land_use_hints.campus) : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
+      const id = cell.kind === 'building'
+        ? i === civicHallIndex ? 'civic-01' : buildingAsset(cell, community.land_use_hints.campus)
+        : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
       const width = cell.size / SCALE * (cell.kind === 'building' ? 0.72 : 0.42)
       const group = groups.get(id) ?? { instances: [], indices: [] }
       group.instances.push({ position: [cell.x / SCALE, 0.26, -cell.y / SCALE], scale: [width, cell.kind === 'building' ? width * Math.max(0.8, Math.min(1.3, ((cell.storeys ?? 1) * 0.16) / ((getCityAsset(id)?.height ?? 1) * width))) : width, width], rotation: Math.floor(cell.variant * 4) * Math.PI / 2 })
@@ -524,7 +584,7 @@ function Block({
       groups.set(id, group)
     })
     return groups
-  }, [cells, pondIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
+  }, [cells, pondIndex, civicHallIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
   const proceduralCell = (cell: Cell, i: number) => {
     const width = cell.size / SCALE * 0.72
     const height = cell.kind === 'building' ? (cell.storeys ?? 1) * 0.16 : width * 1.3
@@ -577,6 +637,8 @@ function Block({
 
       {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
         fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
+      {civicHallPosition && <CivicHallLabel drill={tornadoDrill} position={civicHallPosition} />}
+      {tornadoDrill && civicHallPosition && <TornadoDrill position={civicHallPosition} />}
       {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
       {cells.map((cell, i) => {
         if (cell.kind !== 'plaza') return null

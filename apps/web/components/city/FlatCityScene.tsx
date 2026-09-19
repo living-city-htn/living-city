@@ -131,6 +131,8 @@ export default function FlatCityScene({
               data-state={state}
               data-dim={selectedId !== null && selectedId !== id}
               style={{ fill: PALETTE[plan?.palette ?? ''] ?? 'var(--block-neutral)' }}
+              role="button"
+              aria-label={community.name}
               onMouseEnter={() => hover(id)}
               onMouseLeave={() => hover(null)}
               onClick={(e) => {
@@ -139,18 +141,24 @@ export default function FlatCityScene({
                 const point = pickPoint(e)
                 if (point) onBlockPick?.(id, point)
               }}
-            >
-              <title>{plan?.summary ?? community.name}</title>
-            </path>
-
+            />
             {planningIds.includes(id) && <path className="lc-planning" d={geom.d} />}
-
-            <text className="lc-label" x={geom.cx} y={geom.cy + 5}>
-              {community.name}
-            </text>
           </g>
         )
       })}
+
+      {/*
+        Labels last, so a neighbouring block never paints over one. The hand-drawn
+        city should not overlap at all, but the Stage 0 placeholder does and the
+        app must not look broken because of a fixture.
+        No <title> on the blocks: that renders as the browser's own tooltip, and
+        hover feedback belongs in the UI (PRD 8.12), not in an OS popup.
+      */}
+      {blocks.map(({ community, geom }) => (
+        <text className="lc-label" key={community.community_id} x={geom.cx} y={geom.cy + 5}>
+          {community.name}
+        </text>
+      ))}
 
       {/* Personal layer. Public mode shows nothing here, which is moment 5. */}
       {mode === 'mine' &&

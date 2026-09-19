@@ -1,0 +1,14 @@
+# Ownership from docs/05-team-workflow.md section 2.
+# Fill in GitHub usernames once the team is assembled, then enable
+# "Require review from Code Owners" in branch protection for main.
+
+# /packages/contracts/   @pipeline-owner @one-other   # two approvals, all four after Gate 2
+# /packages/fixtures/    @product-owner
+# /packages/map/         @map-owner
+# /packages/pipeline/    @pipeline-owner
+# /packages/modeling/    @3d-owner
+# /packages/game/        @civic-owner @product-owner
+# /packages/civic/       @civic-owner
+# /apps/web/scene/       @3d-owner
+# /apps/web/             @product-owner
+# /docs/                 @product-owner

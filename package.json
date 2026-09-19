@@ -1,0 +1,19 @@
+{
+  "name": "living-city",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Living City - Hack the North 2026",
+  "packageManager": "pnpm@9.12.3",
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "dev": "pnpm --filter @living-city/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}

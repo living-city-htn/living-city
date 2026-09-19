@@ -11,10 +11,17 @@ covers everything around it.
 
 ## Assumptions
 
-1. The leftmost tab in the sketch is unlabelled. Read here as **Feed**. If it was
-   meant as Settings, this document is wrong and the tab table needs one edit.
-2. "Apple style" is read as the design language, not as copying any Apple product.
+1. "Apple style" is read as the design language, not as copying any Apple product.
    Nothing here imitates Apple's own apps, icons or marks.
+
+## Decisions
+
+1. **The fifth tab is Feed, not Settings.** The sketch drew a gear as filler. A
+   settings screen appears nowhere in the frozen script and everything it would
+   contain is on the not-built list in docs/04 section 6. Feed earns the slot:
+   moment 8 has judges post from their own phones and then look for their post,
+   and it is what makes the product read as social rather than as a map viewer.
+   Five slots stay, because a centred camera button needs two tabs either side.
 
 ## The one art rule
 
@@ -52,7 +59,7 @@ One screen, five tabs, the map always underneath.
 
 | Tab | Icon | What it is | Demo moment | Route |
 |---|---|---|---|---|
-| Feed | globe | Citywide post feed, analyzed and unhidden only | supports 2 | `GET /api/posts` |
+| Feed | list | Citywide post feed, analyzed and unhidden only | 8, supports 2 | `GET /api/posts` |
 | City | house | The 3D map. Tap a block for its panel. Default tab. | 1, 2 | `GET /api/city`, `/api/communities/:id/state` |
 | Post | camera | Centre, visually emphasised. Camera, caption, location, submit. | 3, 8 | `POST /api/posts` |
 | Shop | coin | Six items, balance, buy | 5 | `GET /api/shop`, `POST /api/shop/buy` |

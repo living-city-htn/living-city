@@ -15,18 +15,41 @@ const num = (name: string, fallback: number) => {
   return Number.isFinite(n) ? n : fallback
 }
 
+/**
+ * Which adapter `getProvider()` builds. OpenAI is the single critical-path
+ * provider (`integration/EVENT-FACTS.md` decision 3); `AI_PROVIDER=gemini`
+ * switches to the documented alternate without a code change.
+ */
+const providerName = (): 'openai' | 'gemini' =>
+  str('AI_PROVIDER', 'openai') === 'gemini' ? 'gemini' : 'openai'
+
 export const env = {
+  provider: providerName,
+
   /** Required for any real call. Absent means the pipeline can only replay. */
+  openaiApiKey: () => process.env.OPENAI_API_KEY ?? '',
+  /** Overridable for a proxy or a gateway; no trailing slash. */
+  openaiBaseUrl: () => str('OPENAI_BASE_URL', 'https://api.openai.com/v1').replace(/\/$/, ''),
+  /** The alternate provider's key. Only read when AI_PROVIDER=gemini. */
   geminiApiKey: () => process.env.GEMINI_API_KEY ?? '',
 
   /**
-   * Call A is high volume and short: Flash tier. Call B runs rarely and needs
-   * the identity-versus-spike judgement: Pro tier, or Flash if Pro latency
-   * hurts. docs/03 section 9. Both are overridable without a code change
-   * because model ids move faster than hackathons.
+   * Call A is high volume and short: the small tier. Call B runs rarely and
+   * needs the identity-versus-spike judgement: the full tier. docs/03 section
+   * 9. Both are overridable without a code change because model ids move
+   * faster than hackathons.
+   *
+   * The defaults are deterministic tiers rather than reasoning tiers on
+   * purpose: docs/03 principle 7 wants temperature 0 and a replay set that
+   * means something, and the reasoning tiers reject temperature and spend the
+   * output budget on reasoning tokens.
    */
-  modelCallA: () => str('GEMINI_MODEL_CALL_A', 'gemini-2.5-flash'),
-  modelCallB: () => str('GEMINI_MODEL_CALL_B', 'gemini-2.5-pro'),
+  modelCallA: () => providerName() === 'gemini'
+    ? str('GEMINI_MODEL_CALL_A', 'gemini-2.5-flash')
+    : str('OPENAI_MODEL_CALL_A', 'gpt-4.1-mini'),
+  modelCallB: () => providerName() === 'gemini'
+    ? str('GEMINI_MODEL_CALL_B', 'gemini-2.5-pro')
+    : str('OPENAI_MODEL_CALL_B', 'gpt-4.1'),
 
   /** docs/03 section 9: about 350 tokens for Call A, about 600 for Call B. */
   maxTokensCallA: () => num('CALL_A_MAX_TOKENS', 1200),

@@ -1,18 +1,23 @@
 import { env } from '../env'
 import { geminiProvider } from './gemini'
+import { openaiProvider } from './openai'
 import type { ModelProvider } from './types'
 
 export * from './types'
-export { geminiProvider }
+export { geminiProvider, openaiProvider }
 
 let provider: ModelProvider | null = null
 
 /**
- * The one provider this weekend. A second one is docs/04 Stage 4 item 7 and
- * not before: an untested fallback is not a fallback. The stage-time fuse for
- * an outage is the operator's preset plan button, not a second vendor.
+ * The one provider on the critical path: OpenAI for both Call A and Call B
+ * (`integration/EVENT-FACTS.md` decision 3). Gemini is built and kept behind
+ * `AI_PROVIDER=gemini`, but it is the documented alternate, not a runtime
+ * fallback - an untested fallback is not a fallback, and nothing fails over
+ * automatically. The stage-time fuse for an outage is the operator's preset
+ * plan button, not a second vendor.
  */
-export const getProvider = (): ModelProvider => (provider ??= geminiProvider())
+export const getProvider = (): ModelProvider =>
+  (provider ??= env.provider() === 'gemini' ? geminiProvider() : openaiProvider())
 
 /** Tests inject a fake here. */
 export const setProvider = (next: ModelProvider | null): void => { provider = next }

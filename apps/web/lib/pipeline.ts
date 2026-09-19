@@ -2,7 +2,7 @@
  * The seam between the web app and `packages/pipeline`. Pipeline-owned
  * (docs/04 section 4: "the city API routes in apps/web").
  *
- * Active only when USE_FIXTURES=0 and GEMINI_API_KEY is set. With the default
+ * Active only when USE_FIXTURES=0 and a provider key is set. With the default
  * USE_FIXTURES=1 every route below falls straight through to Product's stub,
  * byte for byte, so turning the pipeline on is an environment change and
  * turning it off again is the fuse.
@@ -26,9 +26,18 @@ import {
 } from '@living-city/pipeline'
 import { listCommunities, listPosts, likeCount } from '@living-city/fixtures/store'
 
-/** The one switch. Product's stub owns every request while this is false. */
+/**
+ * The one switch. Product's stub owns every request while this is false.
+ *
+ * The key names follow `AI_PROVIDER` (OpenAI by default, Gemini as the
+ * documented alternate), so setting the wrong vendor's key leaves the pipeline
+ * dark rather than failing on the first post.
+ */
 export const pipelineEnabled = (): boolean =>
-  process.env.USE_FIXTURES === '0' && !!process.env.GEMINI_API_KEY
+  process.env.USE_FIXTURES === '0'
+  && !!(process.env.AI_PROVIDER === 'gemini'
+    ? process.env.GEMINI_API_KEY
+    : process.env.OPENAI_API_KEY)
 
 type State = {
   analyses: Map<string, PostAnalysis>

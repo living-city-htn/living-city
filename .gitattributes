@@ -1,0 +1,2 @@
+# Preserve third-party license files byte-for-byte, including upstream CRLF.
+apps/web/public/assets/city/licenses/*.txt -text -whitespace

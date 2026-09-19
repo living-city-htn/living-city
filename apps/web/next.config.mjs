@@ -8,6 +8,7 @@ const nextConfig = {
     '@living-city/modeling',
     '@living-city/game',
     '@living-city/civic',
+    '@living-city/signal',
   ],
 }
 

@@ -16,6 +16,7 @@ import {
   getQrPaused, getVersion, hidePost, planAll, planOne, presetFestival, resetDemo,
   setQrPaused, tick, type CityVersion,
 } from '@/lib/operator'
+import SignalPanel from '@/components/SignalPanel'
 
 const TICK_MS = 10_000
 
@@ -212,6 +213,8 @@ export default function OperatorPage() {
           ))}
         </ul>
       </section>
+
+      <SignalPanel />
 
       <section className="op-card">
         <h2>Reset</h2>

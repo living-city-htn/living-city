@@ -1,5 +1,6 @@
 import { hidePost, write } from '@living-city/fixtures/store'
 import { json, notFound, readJson, type RouteCtx } from '@/lib/stub'
+import { removeFromSignal } from '@/lib/signal'
 
 // PATCH /api/posts/:id/hide -> operator or government one-tap hide.
 // Removes the post from every feed, from aggregation, and its incident from the
@@ -9,5 +10,12 @@ export async function PATCH(req: Request, ctx: RouteCtx<{ id: string }>) {
   const body = await readJson<{ reason?: 'auto' | 'operator' }>(req)
   const reason = body?.reason ?? 'operator'
   const post = await write(() => hidePost(id, reason))
-  return post ? json({ post }) : notFound('no such post')
+  if (!post) return notFound('no such post')
+
+  // "Every surface" includes the evidence index, so this is awaited rather than
+  // fired and forgotten. It never throws: a hide must succeed against a dead
+  // cluster, and the document is then removed by the next backfill.
+  await removeFromSignal(id)
+
+  return json({ post })
 }

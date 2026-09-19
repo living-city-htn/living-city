@@ -1,5 +1,6 @@
-import { createPost, listCommunities, listPosts } from '@living-city/fixtures/store'
+import { createPost, hidePost, listCommunities, listPosts } from '@living-city/fixtures/store'
 import { badRequest, currentUser, json, readJson, withPostMeta } from '@/lib/stub'
+import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 
 // GET /api/posts?community=&scope=  -> analyzed, unhidden posts only
 export async function GET(req: Request) {
@@ -45,5 +46,17 @@ export async function POST(req: Request) {
     community_id: communityId,
     is_incident_report: body.is_incident_report,
   })
+
+  if (!pipelineEnabled()) return json({ post }, 201)
+
+  // Call A runs inline, before the response, because Vercel has no worker to
+  // drain a queue (docs/02 section 4.2). The post is `pending` and invisible
+  // in every feed until it returns; an `unsafe` verdict hides it outright.
+  // `createPost` hands back the live row, so these are the stored values.
+  post.status = 'pending'
+  const verdict = await analyzeNewPost(post)
+  post.status = verdict.status
+  if (verdict.hidden) hidePost(post.id, 'auto')
+
   return json({ post }, 201)
 }

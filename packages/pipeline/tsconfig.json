@@ -1,4 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "compilerOptions": {
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@living-city/contracts": ["../contracts/src/index.ts"],
+      "@living-city/fixtures": ["../fixtures/src/index.ts"],
+      "@living-city/fixtures/store": ["../fixtures/src/store.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
 }

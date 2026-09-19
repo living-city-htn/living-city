@@ -21,8 +21,9 @@ import MyCityPanel from './MyCityPanel'
 import TabBar, { type Tab } from './TabBar'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
-import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getShopCatalog, type PostRow } from '@/lib/api'
+import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getPlan, getShopCatalog, type PostRow } from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
+import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '@/lib/live'
 import type { ShopItem } from '@living-city/fixtures'
 
 export default function AppShell() {
@@ -45,7 +46,10 @@ export default function AppShell() {
   const [placeMessage, setPlaceMessage] = useState('')
   const [needsRefresh, setNeedsRefresh] = useState(false)
   const placeInFlight = useRef(false)
+  const plansRef = useRef<CommunityPlan[]>([])
+  plansRef.current = plans
   const [sheetHeight, setSheetHeight] = useState(0)
+  const [planningIds, setPlanningIds] = useState<string[]>([])
 
   useEffect(() => {
     let live = true
@@ -80,6 +84,61 @@ export default function AppShell() {
       live = false
     }
   }, [tab])
+
+  /**
+   * Live update (docs/02 section 10): poll the cheap version endpoint, re-fetch
+   * only the plans whose id changed, and clear the "planning" mark on any block
+   * that just got a new plan.
+   *
+   * It polls unconditionally, including while the tab is hidden. An earlier
+   * version paused on `document.hidden` to save a phone's battery, which was an
+   * optimisation nobody asked for and a real demo risk: a city view sitting in a
+   * background tab while a projector shows it would silently stop updating in
+   * the middle of moment 4. The endpoint is a plan-id map, the cost is nothing,
+   * and a missed update on stage is everything. `visibilitychange` still forces
+   * an immediate poll so a laptop waking from sleep catches up at once.
+   */
+  useEffect(() => {
+    if (!city) return
+    let cancelled = false
+    let inFlight = false
+
+    const poll = async () => {
+      if (inFlight) return
+      inFlight = true
+      try {
+        const version = await getCityVersion()
+        if (cancelled) return
+        const changed = changedPlanIds(version, planIdsOf(plansRef.current))
+        if (changed.length === 0) return
+        const fresh = (await Promise.all(changed.map(getPlan))).filter(
+          (p): p is CommunityPlan => p !== null,
+        )
+        if (cancelled || fresh.length === 0) return
+        setPlans((current) => mergePlans(current, fresh))
+        // The block changed, so whatever we were waiting for has landed.
+        const done = new Set(fresh.map((p) => p.community_id))
+        setPlanningIds((ids) => ids.filter((id) => !done.has(id)))
+      } catch {
+        // A missed poll is not worth telling anyone about; the next one is in
+        // five seconds and the city on screen is still valid.
+      } finally {
+        inFlight = false
+      }
+    }
+
+    const id = setInterval(() => void poll(), POLL_MS)
+    // Catch up at once when a sleeping laptop or a pocketed phone comes back.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void poll()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [city])
 
   const refreshMyCity = useCallback(async () => {
     if (placeInFlight.current) return
@@ -156,6 +215,9 @@ export default function AppShell() {
     const points = typeof result.points_earned === 'number' ? ` +${result.points_earned} points.` : ''
     setNotice(result.post.hidden ? 'Post received but not shown publicly.' :
       `Posted to ${community?.name ?? 'your community'}.${points}${result.post.status === 'pending' ? ' Being analyzed.' : ''}`)
+    // Moment 8: mark the block so the judge knows where to look and that it
+    // takes a moment. The poll clears it when the plan id actually changes.
+    setPlanningIds(ids => ids.includes(result.post.community_id) ? ids : [...ids, result.post.community_id])
     setSelectedId(result.post.community_id); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
   }
 
@@ -178,7 +240,7 @@ export default function AppShell() {
             placements={placements}
             mode={mode}
             selectedId={selectedId}
-            planningIds={[]}
+            planningIds={planningIds}
             onBlockSelect={setSelectedId}
             onBlockPick={(id, point) => {
               if (tab !== 'post' || !pickingLocation) return

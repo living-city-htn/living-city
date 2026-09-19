@@ -20,25 +20,33 @@ import { useMemo, useState } from 'react'
 import type { CitySceneProps } from './types'
 import { buildProjection, projectBlock } from './project'
 
-/** Muted stand-ins for the plan's palette enum (docs/03 section 5.3). Not material sets. */
+/**
+ * Muted stand-ins for the plan's palette enum (docs/03 section 5.3). Flat fills,
+ * not material sets — the real palettes are 3D's.
+ *
+ * `sunset_orange` is the festival plan's palette, so it has to read as different
+ * from everything around it: moment 4 is a block visibly changing. Anything not
+ * listed aliases to neutral, which docs/04 section 3 allows.
+ */
 const PALETTE: Record<string, string> = {
   warm_pastel: 'var(--block-warm)',
   brick_red: 'var(--block-brick)',
   cool_pastel: 'var(--block-cool)',
   earthy_green: 'var(--block-green)',
+  sunset_orange: 'var(--block-sunset)',
   soft_grey: 'var(--block-neutral)',
 }
 
 const CSS = `
 .lc-scene { --ink: #1c1c1e; --hair: #d8d8dc; --paper: #fbfbfd; --label: #6e6e73;
   --block-warm: #f0e3d6; --block-brick: #ecd9d4; --block-cool: #dde5ee;
-  --block-green: #dde8dc; --block-neutral: #e8e8ec; --mark: #2f6fdd;
+  --block-green: #dde8dc; --block-sunset: #f7d9b8; --block-neutral: #e8e8ec; --mark: #2f6fdd;
   width: 100%; height: 100%; display: block; background: var(--paper);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 @media (prefers-color-scheme: dark) {
   .lc-scene { --ink: #f2f2f7; --hair: #3a3a3e; --paper: #0d0d0f; --label: #98989f;
     --block-warm: #3a3229; --block-brick: #3a2c29; --block-cool: #26303c;
-    --block-green: #28332a; --block-neutral: #2a2a2e; --mark: #6ea0f5; }
+    --block-green: #28332a; --block-sunset: #4a3520; --block-neutral: #2a2a2e; --mark: #6ea0f5; }
 }
 .lc-block { fill: var(--block-neutral); stroke: var(--ink); stroke-width: 2;
   stroke-linejoin: round; cursor: pointer; transition: opacity 200ms ease, stroke-width 200ms ease; }

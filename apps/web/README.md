@@ -150,6 +150,37 @@ Stage 3 — there is nothing to pause until then.
 Handoff: placement is verified end to end against the stub - buy, place, switch
 to City and see it gone, switch back, take it back. Durable placements still
 wait on Civic's database-backed game service. Physical-phone checks remain open
-for Product's Gate 1. Next on Product's list is live update (Stage 2): the
-scene polling `/api/city/version` every 5s, rebuilding only changed blocks, and
-marking the poster's block as "planning" until its plan id changes.
+for Product's Gate 1. Next on Product's list is the QR page (Stage 3), which
+also brings the operator panel's "pause QR" control.
+
+## Live update (Product, Stage 2)
+
+The app polls `GET /api/city/version` every 5 seconds and re-fetches only the
+plans whose id changed (docs/02 section 10). No server push. This is what lets
+a judge watch their own block change without anyone touching the operator
+laptop, which is all of moment 8.
+
+After posting, the poster's block is marked "planning" so they know where to
+look and that it takes a moment. The mark clears when that block's plan id
+actually changes, not on a timer.
+
+Polling runs unconditionally, including while the tab is hidden. An earlier
+version paused on `document.hidden` to spare a phone's battery. That was an
+optimisation nobody asked for and a real demo risk: a city view sitting in a
+background tab while a projector shows it would silently stop updating in the
+middle of moment 4. The endpoint is a plan-id map, the cost is nothing, and a
+missed update on stage is everything. `visibilitychange` still forces an
+immediate poll so a laptop waking from sleep catches up at once.
+
+The operator panel's ticker has never had a visibility guard, for the same
+reason: it has to keep running when the operator switches tabs, because it is
+the only thing replanning blocks during moment 8.
+
+A block missing from a version response is left alone rather than blanked, so a
+partial response can never wipe the block someone is looking at. A failed poll
+is silent: the next one is five seconds away and the city on screen is still
+valid.
+
+The fallback scene maps `sunset_orange`, the festival plan's palette. It was
+falling through to neutral grey, which made the demo block the dullest thing on
+screen at the moment it is supposed to be the loudest.

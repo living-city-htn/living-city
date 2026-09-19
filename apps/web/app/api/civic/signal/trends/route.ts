@@ -1,5 +1,6 @@
 import { blockTrends, incidentClusters, risingStress } from '@living-city/signal'
 import { json } from '@/lib/stub'
+import { requireGovernment } from '@/lib/civic-gate'
 import { signalEnabled } from '@/lib/signal'
 
 // GET /api/civic/signal/trends?window=24h&dimension=stress
@@ -18,6 +19,8 @@ import { signalEnabled } from '@/lib/signal'
 // Runs all three in parallel: they are independent, and the panel is no use
 // until it has all three.
 export async function GET(req: Request) {
+  const denied = requireGovernment(req)
+  if (denied) return denied
   if (!signalEnabled()) {
     return json({ error: 'signal layer is off', code: 'SIGNAL_LAYER_OFF' }, 404)
   }

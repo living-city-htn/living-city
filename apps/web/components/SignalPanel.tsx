@@ -18,6 +18,7 @@
  * told it is weaker.
  */
 import { useCallback, useEffect, useState } from 'react'
+import { STAFF_HEADER } from '@/lib/civic-gate'
 
 type Metadata = { degraded: boolean; reason: string | null; took_ms: number; esql: string | null }
 
@@ -74,7 +75,7 @@ export default function SignalPanel() {
 
   const load = useCallback(() => {
     setLoading(true)
-    fetch('/api/civic/signal/trends?window=24h')
+    fetch('/api/civic/signal/trends?window=24h', { headers: STAFF_HEADER })
       .then(async (response) => {
         if (response.status === 404) { setOff(true); return null }
         if (!response.ok) throw new Error(`trends failed: ${response.status}`)

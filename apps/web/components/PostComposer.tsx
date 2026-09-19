@@ -139,149 +139,158 @@ export default function PostComposer({
     }
   }
 
-  if (!active) return null
-
-  // Collapsed to a bar so the whole map is reachable underneath.
-  if (picking) {
-    return (
-      <section className="pick-bar" aria-label="Choose a block">
-        <p>Tap a block on the map</p>
-        <button className="form-button" onClick={() => onPick(false)}>Cancel</button>
-      </section>
-    )
-  }
-
   const canPost = Boolean(location) && (text.trim().length > 0 || Boolean(photo)) && !locating
+  // Shown when this is the current tab and the map is not being used to pick.
+  const composing = active && !picking
 
+  /*
+   * The composer stays mounted rather than returning nothing when it is not
+   * the current tab. Its own state survived either way — React keeps the
+   * component, only the markup went — but rebuilding the markup re-fired the
+   * textarea's autoFocus, so coming back to a half-written post reopened the
+   * keyboard and threw away where you were. Staying mounted also lets it fade
+   * like every other destination.
+   */
   return (
-    <section
-      className="composer page-screen"
-      aria-label="Create a post"
-    >
-      <div className="composer-topbar"><span /><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
-
-      {step === 'choose' ? (
-        <div className="composer-body capture">
-          <div className="capture-lead">
-            <h2>Create a post</h2>
-            <p>The places, people, and little things that make your neighbourhood yours.</p>
-          </div>
-
-          <label className="capture-primary">
-            {preparing ? 'Preparing photo…' : 'Take a photo'}
-            <input
-              disabled={preparing || busy} aria-label="Take a photo" type="file" accept="image/*" capture="environment"
-              onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
-            />
-          </label>
-
-          <label className="capture-secondary">
-            Choose from library
-            <input
-              disabled={preparing || busy} aria-label="Choose from library" type="file" accept="image/*"
-              onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
-            />
-          </label>
-
-          <button className="capture-text" disabled={preparing || busy} onClick={() => setStep('compose')}>
-            Write without a photo
-          </button>
-
-          {error && <p className="form-error" role="alert">{error}</p>}
-        </div>
-      ) : (
-        <form
-          className="composer-body"
-          onSubmit={(e) => { e.preventDefault(); void submit() }}
-        >
-          <header className="composer-head">
-            <button
-              type="button" className="composer-back" aria-label="Back to photo choices" disabled={busy || preparing}
-              onClick={() => { setStep('choose'); setError('') }}
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M15 5l-7 7 7 7" />
-              </svg>
-            </button>
-            <h2>{photo ? 'Add a caption' : 'What’s happening?'}</h2>
-            <button className="composer-post" type="submit" disabled={!canPost || busy || preparing}>
-              {busy ? 'Posting…' : uncertain ? 'Try again' : 'Post'}
-            </button>
-          </header>
-
-          <fieldset disabled={busy || preparing}>
-            <legend className="sr-only">Your post</legend>
-
-            {photo && (
-              <div className="composer-photo">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo} alt="Photo ready to post" />
-                <button
-                  type="button" className="form-button"
-                  onClick={() => { setPhoto(null); setPhotoUnavailable(false) }}
-                >
-                  Remove photo
-                </button>
-              </div>
-            )}
-
-            <label className="sr-only" htmlFor="post-caption">
-              {photo ? 'Caption' : 'What’s happening?'}
-            </label>
-            <textarea
-              id="post-caption" rows={photo ? 3 : 6} maxLength={1000} value={text}
-              onChange={(e) => setText(e.target.value)} autoFocus={!photo}
-              placeholder={photo ? 'Say something about it…' : 'Live music, warm lights, good company…'}
-            />
-            <p className="character-count">{text.length}/1,000 · Text-only posts welcome</p>
-
-            <div className="composer-where">
-              <label className="field-label" htmlFor="post-community">Where did it happen?</label>
-              <select
-                id="post-community" value={location?.community_id ?? ''}
-                onChange={(e) => {
-                  const c = city.communities.find((c) => c.community_id === e.target.value)
-                  if (!c) return
-                  locationRequest.current++
-                  setLocating(false)
-                  onLocation({
-                    community_id: c.community_id, lon: c.centroid[0], lat: c.centroid[1], label: c.name,
-                  })
-                }}
-              >
-                <option value="" disabled>Choose a community</option>
-                {city.communities.map((c) => (
-                  <option value={c.community_id} key={c.community_id}>{c.name}</option>
-                ))}
-              </select>
-              <div className="photo-actions">
-                <button type="button" className="form-button" disabled={locating} onClick={locate}>
-                  {locating ? 'Finding location…' : 'Use my location'}
-                </button>
-                <button
-                  type="button" className="form-button"
-                  onClick={() => { locationRequest.current++; setLocating(false); onPick(true) }}
-                >
-                  Choose on map
-                </button>
-              </div>
-              {location && <p className="muted" role="status">{location.label}</p>}
-            </div>
-          </fieldset>
-
-          {error && <p className="form-error" role="alert">{error}</p>}
-          {photoUnavailable && photo && (
-            <button
-              type="button" className="form-button"
-              disabled={busy || locating || preparing || !text.trim()}
-              onClick={() => void submit(true)}
-            >
-              Post caption without photo
-            </button>
-          )}
-        </form>
+    <>
+      {/* Collapsed to a bar so the whole map is reachable underneath. */}
+      {active && picking && (
+        <section className="pick-bar" aria-label="Choose a block">
+          <p>Tap a block on the map</p>
+          <button className="form-button" onClick={() => onPick(false)}>Cancel</button>
+        </section>
       )}
-    </section>
+      <section
+        className="composer page-screen"
+        aria-label="Create a post"
+        data-shown={composing}
+        inert={!composing}
+      >
+        <div className="composer-topbar"><span /><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
+
+        {step === 'choose' ? (
+          <div className="composer-body capture">
+            <div className="capture-lead">
+              <h2>Create a post</h2>
+              <p>The places, people, and little things that make your neighbourhood yours.</p>
+            </div>
+
+            <label className="capture-primary">
+              {preparing ? 'Preparing photo…' : 'Take a photo'}
+              <input
+                disabled={preparing || busy} aria-label="Take a photo" type="file" accept="image/*" capture="environment"
+                onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
+              />
+            </label>
+
+            <label className="capture-secondary">
+              Choose from library
+              <input
+                disabled={preparing || busy} aria-label="Choose from library" type="file" accept="image/*"
+                onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
+              />
+            </label>
+
+            <button className="capture-text" disabled={preparing || busy} onClick={() => setStep('compose')}>
+              Write without a photo
+            </button>
+
+            {error && <p className="form-error" role="alert">{error}</p>}
+          </div>
+        ) : (
+          <form
+            className="composer-body"
+            onSubmit={(e) => { e.preventDefault(); void submit() }}
+          >
+            <header className="composer-head">
+              <button
+                type="button" className="composer-back" aria-label="Back to photo choices" disabled={busy || preparing}
+                onClick={() => { setStep('choose'); setError('') }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M15 5l-7 7 7 7" />
+                </svg>
+              </button>
+              <h2>{photo ? 'Add a caption' : 'What’s happening?'}</h2>
+              <button className="composer-post" type="submit" disabled={!canPost || busy || preparing}>
+                {busy ? 'Posting…' : uncertain ? 'Try again' : 'Post'}
+              </button>
+            </header>
+
+            <fieldset disabled={busy || preparing}>
+              <legend className="sr-only">Your post</legend>
+
+              {photo && (
+                <div className="composer-photo">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo} alt="Photo ready to post" />
+                  <button
+                    type="button" className="form-button"
+                    onClick={() => { setPhoto(null); setPhotoUnavailable(false) }}
+                  >
+                    Remove photo
+                  </button>
+                </div>
+              )}
+
+              <label className="sr-only" htmlFor="post-caption">
+                {photo ? 'Caption' : 'What’s happening?'}
+              </label>
+              <textarea
+                id="post-caption" rows={photo ? 3 : 6} maxLength={1000} value={text}
+                onChange={(e) => setText(e.target.value)} autoFocus={!photo}
+                placeholder={photo ? 'Say something about it…' : 'Live music, warm lights, good company…'}
+              />
+              <p className="character-count">{text.length}/1,000 · Text-only posts welcome</p>
+
+              <div className="composer-where">
+                <label className="field-label" htmlFor="post-community">Where did it happen?</label>
+                <select
+                  id="post-community" value={location?.community_id ?? ''}
+                  onChange={(e) => {
+                    const c = city.communities.find((c) => c.community_id === e.target.value)
+                    if (!c) return
+                    locationRequest.current++
+                    setLocating(false)
+                    onLocation({
+                      community_id: c.community_id, lon: c.centroid[0], lat: c.centroid[1], label: c.name,
+                    })
+                  }}
+                >
+                  <option value="" disabled>Choose a community</option>
+                  {city.communities.map((c) => (
+                    <option value={c.community_id} key={c.community_id}>{c.name}</option>
+                  ))}
+                </select>
+                <div className="photo-actions">
+                  <button type="button" className="form-button" disabled={locating} onClick={locate}>
+                    {locating ? 'Finding location…' : 'Use my location'}
+                  </button>
+                  <button
+                    type="button" className="form-button"
+                    onClick={() => { locationRequest.current++; setLocating(false); onPick(true) }}
+                  >
+                    Choose on map
+                  </button>
+                </div>
+                {location && <p className="muted" role="status">{location.label}</p>}
+              </div>
+            </fieldset>
+
+            {error && <p className="form-error" role="alert">{error}</p>}
+            {photoUnavailable && photo && (
+              <button
+                type="button" className="form-button"
+                disabled={busy || locating || preparing || !text.trim()}
+                onClick={() => void submit(true)}
+              >
+                Post caption without photo
+              </button>
+            )}
+          </form>
+        )}
+      </section>
+    </>
   )
 }

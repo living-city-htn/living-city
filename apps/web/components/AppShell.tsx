@@ -256,7 +256,7 @@ export default function AppShell() {
       <div
         className="viewport"
         role="region"
-        hidden={!sceneVisible}
+        data-shown={sceneVisible}
         inert={!sceneVisible}
         aria-label={mode === 'mine' ? 'Your personal city' : 'Community city'}
         data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}

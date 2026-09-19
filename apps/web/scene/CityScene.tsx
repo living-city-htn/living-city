@@ -14,7 +14,7 @@
  * Props and events are exactly docs/roles/3d.md. `blockPick` emits [lon, lat],
  * not scene space, because the post flow uses it as a location (PRD 8.12).
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -69,16 +69,261 @@ function ringOf(c: CommunityGeo): Array<[number, number]> {
 function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
-  useEffect(() => {
+  const framedAt = useRef<number | null>(null)
+
+  /*
+   * Only the first fit moves the camera. Every later one changes magnification
+   * instead, because moving the camera on a resize throws away whatever the
+   * person was looking at — and the viewport resizes constantly: opening a
+   * block's card insets it, and on a phone the URL bar sliding away does too.
+   * Tapping a block used to reset your orbit, your pan and your pinch, which
+   * read on screen as the map lurching.
+   *
+   * `fit` is the distance at which the city exactly fills the frame, so
+   * `framedAt / fit` is the magnification that holds its apparent size through
+   * any change of shape. It is absolute rather than accumulated, so closing the
+   * card returns the zoom to exactly 1 with nothing left drifting.
+   *
+   * This works because nothing else writes `zoom`: OrbitControls dollies a
+   * perspective camera by moving it, and only touches `zoom` for an
+   * orthographic one. If this scene ever goes orthographic, that stops being
+   * true and this has to go back to driving distance. Picking is unaffected —
+   * unprojection runs through the projection matrix, which includes zoom.
+   *
+   * A layout effect, not an effect: React Three Fiber has already written the
+   * new aspect into the camera by this point, and the correction has to land in
+   * the same frame or the city visibly pops before it settles.
+   */
+  useLayoutEffect(() => {
     const cam = camera as THREE.PerspectiveCamera
+    // A collapsed viewport has no aspect worth fitting to; wait for a real one.
+    if (size.width < 2 || size.height < 2) return
     const vFov = (cam.fov * Math.PI) / 180
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (size.width / Math.max(size.height, 1)))
-    const distance = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
-    cam.position.set(0, distance * 0.66, distance * 0.78)
-    cam.lookAt(0, 0, 0)
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (size.width / size.height))
+    const fit = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
+    if (framedAt.current === null) {
+      framedAt.current = fit
+      cam.position.set(0, fit * 0.66, fit * 0.78)
+      cam.zoom = 1
+    } else {
+      cam.zoom = framedAt.current / fit
+    }
     cam.updateProjectionMatrix()
   }, [camera, size.width, size.height, radius])
   return null
+}
+
+/**
+ * The event look, which is what moment 4 is actually selling.
+ *
+ * Before this the only thing a festival changed was the light: the plan asked
+ * for a crowd, music notes and string lights and the scene drew none of them,
+ * so the presenter said four things out loud and one of them was on screen.
+ * These are primitives like everything else here — no asset pack — but they
+ * move, and movement is what reads from the back of a room.
+ */
+
+/** Mulberry32 on a string seed: a block scatters the same way every render. */
+function seeded(key: string) {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return () => {
+    h = (h + 0x6d2b79f5) | 0
+    let t = Math.imul(h ^ (h >>> 15), 1 | h)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/** Shared scratch object; instanced matrices are written one at a time. */
+const dummy = new THREE.Object3D()
+
+/**
+ * People. Count comes from the plan's own pedestrian density and cluster
+ * count, so a quiet block stays empty and the festival fills up.
+ */
+function Crowd({ count, spread, seed, colour }: {
+  count: number
+  spread: number
+  seed: string
+  colour: string
+}) {
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  const people = useMemo(() => {
+    const r = seeded(`crowd:${seed}`)
+    return Array.from({ length: count }, () => ({
+      x: (r() * 2 - 1) * spread,
+      z: (r() * 2 - 1) * spread,
+      phase: r() * Math.PI * 2,
+      speed: 1.4 + r() * 1.6,
+    }))
+  }, [count, spread, seed])
+
+  useFrame(({ clock }) => {
+    const m = mesh.current
+    if (!m) return
+    const t = clock.elapsedTime
+    for (let i = 0; i < people.length; i++) {
+      const p = people[i]!
+      // A small hop rather than a walk cycle: at this scale the motion is the
+      // whole signal, and a bobbing dot reads as a person in a crowd.
+      dummy.position.set(p.x, 0.3 + Math.abs(Math.sin(t * p.speed + p.phase)) * 0.05, p.z)
+      dummy.rotation.set(0, p.phase, 0)
+      dummy.updateMatrix()
+      m.setMatrixAt(i, dummy.matrix)
+    }
+    m.instanceMatrix.needsUpdate = true
+  })
+
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, count]} castShadow>
+      <capsuleGeometry args={[0.026, 0.055, 2, 5]} />
+      <meshLambertMaterial color={colour} />
+    </instancedMesh>
+  )
+}
+
+/**
+ * One look per effect in the taxonomy. Nothing new is invented here: these are
+ * the values docs/03 section 5.3 already allows, given a colour and a motion
+ * so the scene can draw the ones a plan asks for.
+ */
+const EFFECT_LOOK: Record<string, { colour: string; rise: number; spin: number; size: number }> = {
+  music_notes: { colour: '#46495e', rise: 0.42, spin: 1.7, size: 0.075 },
+  sparkles: { colour: '#ffd583', rise: 0.38, spin: 2.4, size: 0.05 },
+  fireflies: { colour: '#ffe08a', rise: 0.12, spin: 0.4, size: 0.045 },
+  confetti: { colour: '#ff8fb1', rise: -0.45, spin: 3.4, size: 0.055 },
+  falling_leaves: { colour: '#c98b4b', rise: -0.3, spin: 2.2, size: 0.06 },
+  snow: { colour: '#ffffff', rise: -0.25, spin: 0.5, size: 0.045 },
+  rain: { colour: '#9fb6cc', rise: -1.1, spin: 0, size: 0.035 },
+  steam: { colour: '#dfe4e8', rise: 0.3, spin: 0.3, size: 0.07 },
+  fog: { colour: '#d8dde2', rise: 0.05, spin: 0.2, size: 0.1 },
+  birds: { colour: '#5b6472', rise: 0.08, spin: 1.1, size: 0.05 },
+  fireworks: { colour: '#ffd166', rise: 0.7, spin: 2.8, size: 0.06 },
+  heart_particles: { colour: '#ff7f9e', rise: 0.34, spin: 1.5, size: 0.055 },
+}
+
+/** Floating particles over a block, one instanced mesh per effect. */
+function Effect({ tag, spread, seed }: { tag: string; spread: number; seed: string }) {
+  const look = EFFECT_LOOK[tag] ?? EFFECT_LOOK.sparkles!
+  const COUNT = 14
+  const parts = useMemo(() => {
+    const r = seeded(`fx:${tag}:${seed}`)
+    return Array.from({ length: COUNT }, () => ({
+      x: (r() * 2 - 1) * spread,
+      z: (r() * 2 - 1) * spread,
+      offset: r(),
+      tilt: r() * Math.PI,
+    }))
+  }, [tag, spread, seed])
+
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  useFrame(({ clock }) => {
+    const m = mesh.current
+    if (!m) return
+    const t = clock.elapsedTime
+    const SPAN = 1.1
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i]!
+      // Loop through the span so particles stream rather than drift away.
+      const travel = (((t * look.rise) / SPAN + p.offset) % 1 + 1) % 1
+      dummy.position.set(p.x, 0.42 + travel * SPAN, p.z)
+      dummy.rotation.set(p.tilt, t * look.spin + p.tilt, 0)
+      dummy.scale.setScalar(look.size)
+      dummy.updateMatrix()
+      m.setMatrixAt(i, dummy.matrix)
+    }
+    m.instanceMatrix.needsUpdate = true
+  })
+
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, COUNT]}>
+      <boxGeometry args={[1, 1, 0.3]} />
+      {/* Basic, not Lambert: these are meant to glow, not take the sun. */}
+      <meshBasicMaterial color={look.colour} transparent opacity={0.92} />
+    </instancedMesh>
+  )
+}
+
+/**
+ * A decoration prop. The shop sells these and a plan asks for them, so the
+ * same component draws both: what a judge buys in moment 5 is what a plan
+ * puts on the block in moment 4.
+ */
+function Decoration({ tag, palette }: { tag: string; palette: Palette }) {
+  switch (tag) {
+    case 'string_lights':
+    case 'lanterns':
+      return (
+        <group>
+          {[-0.28, -0.09, 0.09, 0.28].map((x, i) => (
+            <mesh key={i} position={[x, 0.3 - Math.abs(x) * 0.22, 0]}>
+              <sphereGeometry args={[0.035, 6, 6]} />
+              <meshBasicMaterial color="#ffce7a" />
+            </mesh>
+          ))}
+        </group>
+      )
+    case 'stage':
+      return (
+        <group>
+          <mesh position={[0, 0.05, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.42, 0.1, 0.3]} />
+            <meshLambertMaterial color={palette.roof} />
+          </mesh>
+          <mesh position={[0, 0.26, -0.12]}>
+            <boxGeometry args={[0.44, 0.32, 0.03]} />
+            <meshLambertMaterial color={palette.accent} />
+          </mesh>
+        </group>
+      )
+    case 'food_trucks':
+    case 'market_stalls':
+    case 'kiosks':
+      return (
+        <group>
+          <mesh position={[0, 0.11, 0]} castShadow>
+            <boxGeometry args={[0.3, 0.22, 0.18]} />
+            <meshLambertMaterial color={palette.accent} />
+          </mesh>
+          <mesh position={[0, 0.26, 0]}>
+            <boxGeometry args={[0.36, 0.05, 0.24]} />
+            <meshLambertMaterial color={palette.roof} />
+          </mesh>
+        </group>
+      )
+    case 'benches':
+      return (
+        <mesh position={[0, 0.06, 0]} castShadow>
+          <boxGeometry args={[0.26, 0.05, 0.1]} />
+          <meshLambertMaterial color={palette.roof} />
+        </mesh>
+      )
+    case 'fountain':
+    case 'fountain_plaza':
+      return (
+        <group>
+          <mesh position={[0, 0.05, 0]} castShadow>
+            <cylinderGeometry args={[0.16, 0.18, 0.1, 12]} />
+            <meshLambertMaterial color={palette.roof} />
+          </mesh>
+          <mesh position={[0, 0.18, 0]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.16, 6]} />
+            <meshBasicMaterial color="#bcd9ea" />
+          </mesh>
+        </group>
+      )
+    default:
+      return (
+        <mesh position={[0, 0.13, 0]} castShadow>
+          <boxGeometry args={[0.2, 0.26, 0.2]} />
+          <meshLambertMaterial color={palette.accent} />
+        </mesh>
+      )
+  }
 }
 
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
@@ -111,8 +356,17 @@ function Block({
     g.position.y += (lift - g.position.y) * Math.min(1, delta * 9)
   })
 
+  // One projection of the ring, shared by the slab, the slots and the scatter.
+  // It used to be recomputed inside the slot loop, so every block paid for it
+  // three more times on every render.
+  const local = useMemo(
+    () => ringOf(community).map((p) => toLocalMetres(p, community.centroid as [number, number])),
+    [community],
+  )
+  const halfW = useMemo(() => Math.max(...local.map((p) => Math.abs(p[0]))) / SCALE, [local, SCALE])
+  const halfH = useMemo(() => Math.max(...local.map((p) => Math.abs(p[1]))) / SCALE, [local, SCALE])
+
   const shape = useMemo(() => {
-    const local = ringOf(community).map((p) => toLocalMetres(p, community.centroid as [number, number]))
     const s = new THREE.Shape()
     local.forEach(([x, y], i) => {
       const px = x / SCALE
@@ -122,7 +376,7 @@ function Block({
     })
     s.closePath()
     return s
-  }, [community, SCALE])
+  }, [local, SCALE])
 
   const slab = useMemo(
     () => new THREE.ExtrudeGeometry(shape, { depth: 0.26, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 1 }),
@@ -130,6 +384,35 @@ function Block({
   )
 
   const festive = plan?.mood === 'festive'
+
+  /*
+   * How many people to draw. Density carries most of it and clusters add a
+   * little on top, capped so a busy block stays readable rather than becoming
+   * a smear. A plan with no activity at all draws nobody.
+   */
+  const crowdCount = Math.min(
+    20,
+    Math.round((plan?.activity.pedestrian_density ?? 0) * 2.4 + (plan?.activity.crowd_clusters ?? 0) * 1.6),
+  )
+
+  /*
+   * An open cell is where a decoration goes. The plan names them in priority
+   * order, so they are dealt round the open cells: a block that asks for
+   * string lights and a stage gets a string of lights and a stage, instead of
+   * the one anonymous box every festive block used to get. Worked out up
+   * front rather than counted during the render.
+   */
+  const decorationFor = useMemo(() => {
+    const wanted = plan?.decorations ?? []
+    const byCell = new Map<number, { tag: string }>()
+    if (!wanted.length) return byCell
+    let n = 0
+    cells.forEach((cell, i) => {
+      if (cell.kind === 'building' || cell.kind === 'vegetation') return
+      byCell.set(i, wanted[n++ % wanted.length]!)
+    })
+    return byCell
+  }, [cells, plan])
 
   return (
     <group ref={group} position={[origin[0], 0, origin[1]]}>
@@ -157,6 +440,19 @@ function Block({
 
       {/* A festive block lights itself, and only itself. */}
       {festive && <pointLight position={[0, 1.1, 0]} intensity={2.2} distance={4.5} color="#ffb765" />}
+
+      {/* The people the plan asked for, and the particles over their heads. */}
+      {crowdCount > 0 && (
+        <Crowd
+          count={crowdCount}
+          spread={Math.min(halfW, halfH) * 0.66}
+          seed={community.community_id}
+          colour={palette.roof}
+        />
+      )}
+      {(plan?.effects ?? []).slice(0, 3).map((tag) => (
+        <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
+      ))}
 
       {cells.map((cell, i) => {
         const x = cell.x / SCALE
@@ -195,28 +491,21 @@ function Block({
             </group>
           )
         }
+        const decoration = decorationFor.get(i)
         return (
           <group key={i} position={[x, 0.27, z]}>
             <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
               <circleGeometry args={[w * 0.55, 16]} />
               <meshLambertMaterial color={palette.accent} />
             </mesh>
-            {festive && (
-              <mesh position={[0, 0.22, 0]}>
-                <boxGeometry args={[w * 0.5, 0.42, w * 0.12]} />
-                <meshLambertMaterial color={palette.roof} />
-              </mesh>
-            )}
+            {decoration && <Decoration tag={decoration.tag} palette={palette} />}
           </group>
         )
       })}
 
+      {/* Slots sit on a fraction of the block's own extent, like the flat scene. */}
       {slots.map((slot) => {
         const held = placements.get(`${community.community_id}/${slot.slot_id}`)
-        // Slots sit on a fraction of the block's own extent, like the flat scene.
-        const local = ringOf(community).map((p) => toLocalMetres(p, community.centroid as [number, number]))
-        const halfW = Math.max(...local.map((p) => Math.abs(p[0]))) / SCALE
-        const halfH = Math.max(...local.map((p) => Math.abs(p[1]))) / SCALE
         return (
           <group key={slot.slot_id} position={[slot.x * halfW * 0.62, 0.27, -slot.y * halfH * 0.62]}>
             <mesh
@@ -226,12 +515,8 @@ function Block({
               <ringGeometry args={[0.12, 0.18, 18]} />
               <meshBasicMaterial color={held ? palette.accent : '#8d9a91'} />
             </mesh>
-            {held && (
-              <mesh position={[0, 0.14, 0]} castShadow>
-                <boxGeometry args={[0.2, 0.26, 0.2]} />
-                <meshLambertMaterial color={palette.accent} />
-              </mesh>
-            )}
+            {/* What was bought, drawn as itself: a bench looks like a bench. */}
+            {held && <Decoration tag={held} palette={palette} />}
           </group>
         )
       })}

@@ -14,6 +14,15 @@
 @media (min-width: 900px) { .tabbar { overflow-y: auto; } .tabbar .tab { flex-shrink: 0; } }
 
 .shell[data-screen='city'] .city-layer { top: 0; }
+/*
+ * A hidden scene keeps whatever size it had. The offset above exists to clear
+ * the header on the screens that show the scene under one; on a screen that
+ * hides it there is nothing to clear, and changing it only resizes the canvas
+ * and reallocates its buffers in the middle of the fade. This used to be free
+ * because display:none collapsed the box to nothing and the renderer ignored
+ * it; visibility keeps the box, so the rule has to say so itself.
+ */
+.viewport[data-shown='false'] .city-layer { top: 0; }
 .viewport { overflow: hidden; background: white; }
 .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .particle { position: absolute; bottom: -10px; border-radius: 50%; background: #b5bac0; opacity: 0; animation: ambient-drift 48s linear infinite; }

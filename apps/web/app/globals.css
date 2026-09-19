@@ -236,3 +236,71 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .tray-qty { color: var(--label); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 .mycity-hint { margin-top: 12px; font-size: 13px; }
+
+/* --- operator panel ------------------------------------------------------
+   A working surface, not demo chrome: judges never see it, so it trades the
+   quiet of DESIGN.md for density and unmistakable state. Same tokens though.
+*/
+
+.op { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+.op-head { margin-bottom: 20px; }
+.op-head h1 { font-size: 24px; }
+.op-head p { margin: 4px 0 0; font-size: 14px; font-weight: 600; }
+.op-live { color: #1f7a3d; }
+.op-dead { color: #b3261e; }
+@media (prefers-color-scheme: dark) {
+  .op-live { color: #5fd17f; }
+  .op-dead { color: #ff8a80; }
+}
+
+.op-card {
+  border: 1px solid var(--hair); border-radius: var(--r-card);
+  padding: 16px; margin-bottom: 14px;
+}
+.op-card h2 { font-size: 15px; margin-bottom: 8px; }
+.op-card p { margin: 0; font-size: 13px; color: var(--label); }
+.op-ticker { display: flex; align-items: center; gap: 16px; }
+.op-ticker > div { flex: 1; }
+.op-hint { font-size: 12px; color: var(--label); margin-top: 8px !important; }
+
+.op-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.op-row-spread { align-items: center; justify-content: space-between; margin-top: 0; }
+
+.op-btn {
+  border: 1px solid var(--hair); border-radius: 10px; padding: 9px 14px;
+  background: transparent; color: var(--ink); font-size: 14px; cursor: pointer;
+  transition: background 150ms var(--ease), opacity 150ms var(--ease);
+}
+.op-btn:hover:not(:disabled) { background: var(--fill); }
+.op-btn:disabled { opacity: 0.45; cursor: default; }
+.op-btn-sm { padding: 5px 10px; font-size: 13px; flex: 0 0 auto; }
+.op-btn[data-tone='go'] { border-color: currentColor; color: #1f7a3d; }
+.op-btn[data-tone='warn'] { border-color: currentColor; color: #9a6400; }
+.op-btn[data-tone='danger'] { border-color: currentColor; color: #b3261e; }
+@media (prefers-color-scheme: dark) {
+  .op-btn[data-tone='go'] { color: #5fd17f; }
+  .op-btn[data-tone='warn'] { color: #ffc46b; }
+  .op-btn[data-tone='danger'] { color: #ff8a80; }
+}
+
+.op-blocks, .op-posts, .op-log { list-style: none; margin: 8px 0 0; padding: 0; }
+.op-blocks li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-top: 1px solid var(--hair); font-size: 14px;
+}
+.op-block-name { flex: 1; }
+.op-blocks code { color: var(--label); font-size: 11px; max-width: 190px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.op-posts li {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; border-top: 1px solid var(--hair);
+}
+.op-posts li > div { flex: 1; min-width: 0; }
+.op-posts strong { font-size: 14px; }
+.op-posts p { margin: 3px 0 0; color: var(--ink); font-size: 13px; }
+
+.op-log li {
+  font: 400 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--label);
+}

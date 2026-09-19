@@ -155,6 +155,9 @@ function Block({
         <meshLambertMaterial color={planning ? '#cfe0ff' : palette.ground} />
       </mesh>
 
+      {/* A festive block lights itself, and only itself. */}
+      {festive && <pointLight position={[0, 1.1, 0]} intensity={2.2} distance={4.5} color="#ffb765" />}
+
       {cells.map((cell, i) => {
         const x = cell.x / SCALE
         const z = -cell.y / SCALE
@@ -236,6 +239,29 @@ function Block({
   )
 }
 
+/**
+ * The scene takes its surround from the app's own CSS variables rather than
+ * hardcoding a colour. The interface has been restyled three times during the
+ * build; a scene painted to match one of those revisions goes wrong on the
+ * next one, and a warm ground under a white interface is exactly how that
+ * looks.
+ */
+function useShellColours() {
+  const [colours, setColours] = useState({ background: '#FFFFFF', ground: '#FFFFFF' })
+  useEffect(() => {
+    const read = (name: string, fallback: string) => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+      return v || fallback
+    }
+    // Both the page colour. The deployed app shows the city on plain white, so
+    // the ground plane disappears into it and only the blocks and their soft
+    // shadows are left — which is the whole point of a miniature on a board.
+    const paper = read('--paper', '#FFFFFF')
+    setColours({ background: paper, ground: paper })
+  }, [])
+  return colours
+}
+
 export default function CityScene({
   city, plans, placements, mode, selectedId, planningIds,
   onBlockHover, onBlockSelect, onBlockPick, onSlotTap,
@@ -243,6 +269,7 @@ export default function CityScene({
   // R3F cannot render on the server, so wait for the client.
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
+  const shell = useShellColours()
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(
@@ -298,21 +325,32 @@ export default function CityScene({
 
   if (!ready) return null
 
-  const anyFestive = blocks.some((b) => b.plan?.mood === 'festive')
-
   return (
-    <Canvas shadows dpr={[1, 1.8]} camera={{ position: [0, 17, 23], fov: 40 }} style={{ width: '100%', height: '100%' }}>
-      <color attach="background" args={['#eef1ee']} />
+    /*
+     * `flat` turns off ACES filmic tone mapping. With it on, the near-white
+     * ground under this much light clipped to a warm tan — which is why the
+     * scene looked nothing like the white interface around it. Flat renders
+     * the colours as authored, which is what a cartoon miniature wants
+     * anyway (PRD 8.11: flat or toon shaded, no photographic treatment).
+     */
+    <Canvas flat shadows dpr={[1, 1.8]} camera={{ position: [0, 17, 23], fov: 40 }} style={{ width: '100%', height: '100%' }}>
+      <color attach="background" args={[shell.background]} />
       {/*
         No fog. The camera distance changes with the viewport shape, so a fixed
         fog band that looked like haze on a laptop bleached the whole city on a
         portrait phone, where the camera sits much further back.
       */}
-      <ambientLight intensity={1.5} color={anyFestive ? '#ffe9cf' : '#ffffff'} />
+      {/*
+        Neutral, always. These were tinted warm whenever any block was festive,
+        which meant one festive block washed the entire city — and the ground —
+        orange. Lighting is a property of a plan, so a festive block carries its
+        own warm light below instead.
+      */}
+      <ambientLight intensity={0.9} color="#ffffff" />
       <directionalLight
         position={[14, 22, 10]}
-        intensity={2.1}
-        color={anyFestive ? '#ffd9a8' : '#fff6e8'}
+        intensity={1.35}
+        color="#ffffff"
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
@@ -341,7 +379,13 @@ export default function CityScene({
       {/* Tap empty space to deselect (PRD 8.12). */}
       <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} onClick={() => onBlockSelect?.(null)} receiveShadow>
         <planeGeometry args={[400, 400]} />
-        <meshLambertMaterial color="#e4e9e4" />
+        {/*
+          Shadow-only, so the ground IS the page colour with the blocks'
+          shadows on it. A lit white plane renders as grey — it can only
+          reflect the light that reaches it — which read as a grey slab cut
+          into a white interface.
+        */}
+        <shadowMaterial opacity={0.14} />
       </mesh>
 
       <OrbitControls

@@ -38,7 +38,7 @@ import { log } from './log'
  * absent and leaves an existing one alone, because silently changing a mapping
  * under a live index is how a demo loses its data mid-rehearsal.
  */
-export const MAPPING_VERSION = '1.0'
+export const MAPPING_VERSION = '1.1'
 
 /** Aggregation-only numeric: doc values, no inverted index. */
 const aggOnly = { type: 'float', index: false } as const
@@ -97,6 +97,14 @@ export const indexBody = () => ({
        * coordinates.
        */
       location: { type: 'geo_point' },
+      /**
+       * The precision-6 geohash cell the post falls in, computed at write time
+       * (`geohash.ts`). It exists so ES|QL can group incidents into candidate
+       * clusters with a plain `BY geohash`, without depending on which 8.x
+       * minor added the spatial functions. Roughly 1.2 km by 0.6 km here, so it
+       * is a pre-filter; the exact 500 m radius is a `geo_distance` refinement.
+       */
+      geohash: { type: 'keyword' },
 
       language: { type: 'keyword' },
       activity_type: { type: 'keyword' },

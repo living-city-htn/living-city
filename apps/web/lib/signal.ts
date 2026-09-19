@@ -15,11 +15,11 @@
  * and the seeded corpus comes from `pnpm signal:backfill` instead. That is a
  * property of the stub, not of this layer.
  */
-import type { PostAnalysis } from '@living-city/contracts'
-import { listCommunities, likeCount, listPosts } from '@living-city/fixtures/store'
+import type { Incident, PostAnalysis } from '@living-city/contracts'
+import { listCommunities, likeCount, listIncidents, listPosts } from '@living-city/fixtures/store'
 import {
-  backfill, indexPost, removePost, signalEnv,
-  type BackfillRow, type IndexableBlock, type IndexablePost,
+  backfill, indexPost, removePost, setCivicReadPort, signalEnv,
+  type BackfillRow, type EvidenceRecord, type IndexableBlock, type IndexablePost,
 } from '@living-city/signal'
 import { analysisOf } from '@/lib/pipeline'
 
@@ -114,3 +114,37 @@ export const collectBackfillRows = (): BackfillRow[] => {
 }
 
 export const runBackfill = () => backfill(collectBackfillRows())
+
+/**
+ * The store fallback every read path in `packages/signal` uses when
+ * Elasticsearch is unavailable. Registered once, at module load, so importing
+ * this file anywhere in a route is enough to make the fallback exist.
+ *
+ * It reads the same two places the rest of the app reads - the fixture store
+ * for rows, `lib/pipeline.ts` for analyses - which is what makes "the civic
+ * page falls back to the existing queries" literally true rather than a second
+ * implementation that can drift.
+ */
+setCivicReadPort({
+  listEvidence: ({ blockId, since, limit = 500 }) => {
+    const rows: EvidenceRecord[] = []
+    for (const post of listPosts({ community: blockId })) {
+      if (since && post.created_at < since) continue
+      const analysis = analysisOf(post.id)
+      if (!analysis) continue
+      rows.push({
+        post: toIndexable(post),
+        analysis,
+        block: blockOf(post.community_id),
+        engagement: likeCount(post.id),
+      })
+      if (rows.length >= limit) break
+    }
+    return rows
+  },
+
+  listIncidents: (filter) => listIncidents({
+    community: filter?.community,
+    status: filter?.status,
+  }) as Incident[],
+})

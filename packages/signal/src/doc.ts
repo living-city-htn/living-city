@@ -8,6 +8,7 @@
  */
 import type { PostAnalysis } from '@living-city/contracts'
 import { DIMENSIONS } from '@living-city/contracts'
+import { encodeGeohash } from './geohash'
 import { MAPPING_VERSION } from './mapping'
 
 /** The `Post` fields this package reads. A structural subset, so the web app
@@ -165,6 +166,7 @@ export const buildDoc = (
     city_id: options.block?.city_id ?? null,
     // Server-side only. Nothing in this package ever returns it to a client.
     location: { lon: post.lon, lat: post.lat },
+    geohash: encodeGeohash(post.lon, post.lat),
 
     language: analysis.language,
     activity_type: analysis.activity_type,

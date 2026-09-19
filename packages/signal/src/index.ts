@@ -41,3 +41,10 @@ export {
   searchEvidence, windowStart,
   type EvidenceHit, type SearchEvidenceParams, type SearchEvidenceResult, type SearchMode,
 } from './retrieval'
+export { encodeGeohash, GEOHASH_PRECISION } from './geohash'
+export {
+  blockTrends, incidentClusters, incidentClustersQuery, risingStress, risingStressQuery,
+  haversineMetres, CLUSTER_RADIUS_M, CLUSTER_CELL_PRECISION,
+  type BlockTrend, type BlockTrendsResult, type IncidentCluster,
+  type IncidentClustersResult, type QueryMetadata, type RisingBlock, type RisingStressResult,
+} from './aggregations'

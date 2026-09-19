@@ -24,14 +24,39 @@ pnpm --filter @living-city/web dev
 fixtures from `packages/fixtures` and nothing calls a model or a database. Set
 `USE_FIXTURES=0` only once Pipeline's routes exist.
 
-**Stub writes do not persist.** The store is a module-level object in one
-process's memory, so it resets on every HMR reload locally, and deployed it is
-per-invocation: a like or a purchase may not be visible to the next request.
-Reads are stable, which is all Stage 1 needs against fixtures. Writes become
-real when Civic's game CRUD lands on Postgres (docs/02 section 6).
+**Stub writes are durable when `DATABASE_URL` is set.** The whole state travels
+as one JSONB row in Neon (`demo_state`), loaded per request and saved after each
+mutation, so every serverless instance sees the same city. Without a database it
+falls back to module memory, which is fine for local work.
 
-To pull the real environment locally: `pnpm dlx vercel env pull`. That writes a
-gitignored `.env.local`; never commit one.
+This exists because rehearsing moment 8 on the deployed build failed: state
+lived in one instance's memory, so a judge's post landed in one instance and
+their phone read another — the operator pressed the preset and it never reached
+the phone.
+
+- Writes go through `write()`, which re-runs the mutation against fresh state if
+  someone else wrote first. Two judges posting in the same second is the case
+  that protects.
+- Reads go through `read()`. Touching the store outside either one sees whatever
+  that instance last loaded.
+- One row per environment (production, preview, development), so a rehearsal on
+  a laptop cannot overwrite the city the judges are looking at.
+
+This is Product's stub getting honest about serverless, not Civic's game
+service. When their Postgres-backed CRUD lands it replaces this; the store's
+signatures do not change either way.
+
+To pull the real environment locally:
+
+```bash
+pnpm dlx vercel env pull apps/web/.env.local
+```
+
+**The path matters.** Next reads env files from the Next project root, which is
+`apps/web`, not the repo root. A `.env.local` at the root is silently ignored,
+and the store quietly falls back to memory as if no database existed — which
+looks exactly like the bug it is there to fix. Never commit one; `.env*` is
+gitignored.
 
 ## Deployment
 

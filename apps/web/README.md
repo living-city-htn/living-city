@@ -123,8 +123,33 @@ geometry.
 Slot markers carry a role and a label naming the block, the slot and what it
 holds, so they are reachable without sight of the map.
 
+## Operator panel (Product, Stage 2)
+
+At `/operator`, deliberately not a tab: judges never see it, so it stays off
+the five-tab bar.
+
+Its most important job is the planning ticker. There is no long-running process
+on Vercel, so nothing replans a block unless this page is open calling
+`POST /api/plan/tick` every ten seconds (docs/04 section 7). Closing the page is
+the intended off switch, and the header says out loud whether the ticker is on.
+**Keep it open and keep the laptop awake during moment 8.**
+
+Also here: the preset festival plan for the demo block (the fuse for moment 4
+when a real plan comes back flat), replan one block or all of them, the live
+plan id per block, the latest posts with a one-tap hide, and a reset behind a
+confirm because it discards everything a judge did. A timestamped log records
+what was pressed, which matters when something looks wrong mid-demo.
+
+Nothing retries on its own. During moment 8 a silent retry of a plan trigger
+would burn model budget, and a silent retry of a reset would wipe a judge's
+post twice.
+
+Not here yet: pausing the QR page, which lands with the QR page itself in
+Stage 3 — there is nothing to pause until then.
+
 Handoff: placement is verified end to end against the stub - buy, place, switch
 to City and see it gone, switch back, take it back. Durable placements still
 wait on Civic's database-backed game service. Physical-phone checks remain open
-for Product's Gate 1. Next on Product's list is the operator panel (Stage 2):
-reset, manual trigger, preset plan, one-tap hide, and the planning ticker.
+for Product's Gate 1. Next on Product's list is live update (Stage 2): the
+scene polling `/api/city/version` every 5s, rebuilding only changed blocks, and
+marking the poster's block as "planning" until its plan id changes.

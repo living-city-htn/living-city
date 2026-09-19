@@ -8,6 +8,9 @@ import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 import { VOICE_POSTS, discardAudio, storeAudio, type StoredAudio } from '@/lib/voice-blob'
 import { analyzeVoice, type VoiceResult } from '@living-city/pipeline'
 import { voiceNotice } from '@/lib/post-audio'
+import {
+  AUTHENTICITY_GATE, gateText, scoreText, setAuthenticity, type Authenticity,
+} from '@/lib/authenticity'
 
 /**
  * What the composer needs to show the right one of the five degraded states.
@@ -105,7 +108,27 @@ export async function POST(req: Request) {
   // drain a queue (docs/02 section 4.2). The post is `pending` and invisible
   // in every feed until it returns; an `unsafe` verdict hides it outright.
   created.post.status = 'pending'
-  const verdict = await analyzeNewPost(created.post, voice)
+
+  // The gate starts now, beside Call A, and is abandoned the moment Call A
+  // finishes. `deadline` is what enforces that: the race cannot settle later
+  // than Call A does, so allSettled below adds nothing to the critical path.
+  // If the gate loses, the score is null and the post proceeds normally.
+  const gate: Promise<Authenticity | null> = AUTHENTICITY_GATE
+    ? scoreText(gateText(body.text, voice?.analysis?.transcript ?? null))
+    : Promise.resolve(null)
+
+  const analysis = analyzeNewPost(created.post, voice)
+  const deadline = analysis.then(() => null, () => null)
+
+  const [verdictResult, scoreResult] = await Promise.allSettled([
+    analysis,
+    Promise.race([gate, deadline]),
+  ])
+
+  if (verdictResult.status === 'rejected') throw verdictResult.reason
+  const verdict = verdictResult.value
+  const score = scoreResult.status === 'fulfilled' ? scoreResult.value : null
+  setAuthenticity(created.post.id, score)
 
   // The row above is detached once the write commits, so the verdict is applied
   // by id against freshly loaded state.

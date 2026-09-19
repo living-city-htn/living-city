@@ -19,7 +19,15 @@ import type { CitySceneProps } from './types'
 // If this line stops compiling, the fallback has drifted from the contract.
 void (FlatCityScene satisfies ComponentType<CitySceneProps>)
 
-const provided = (sceneModule as Record<string, unknown>).CityScene
+/*
+ * Read through a computed key on purpose. A direct `sceneModule.CityScene`
+ * makes webpack warn "'CityScene' is not exported from '@/scene'" on every
+ * build until 3D lands one, which is true, expected, and looks like an error
+ * in a Vercel log. The computed access says the same thing to the reader
+ * without shouting it at the whole team.
+ */
+const EXPORT_NAME = 'CityScene'
+const provided = (sceneModule as Record<string, unknown>)[EXPORT_NAME]
 
 /** True while the city is Product's flat outlines rather than 3D's scene. */
 export const isFallbackScene = typeof provided !== 'function'

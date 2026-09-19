@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   // One colour while dark mode is held (see globals.css).
-  themeColor: '#F5F8FC',
+  themeColor: '#FFFFFF',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,3 +1,7 @@
+## Current visual direction — clean interface
+
+Product rejected the playful art direction after the interaction work merged. The approved replacement is system typography, white/gray surfaces, subtle separators, no logo art/coins/slogans, and quiet bottom navigation on all widths. City shows an explore prompt and top-right points without a header band, a contained outline with white surroundings, and pinch zoom without buttons. Existing posting, rewards, shop, and placement logic remains. The fallback now implements bounded gestures; real3D owns its own camera at the existing seam. See DESIGN.md for the current source of truth. Do not restore the playful styling described in historical entries below.
+
 # Frontend redesign handoff
 
 ## PR 1 — visual foundation and page layouts
@@ -26,3 +30,5 @@ Review fixes: feed rows reconcile fresh likes while preserving pending mutations
 Validation: all three committed PR versions build independently; final web suite50/50. Browser checks at320,390,768,1024,1440px found no horizontal overflow in Feed/Shop/Post. Tested text and photo posting against local fixture data, draft retention, permission-denied fallback, community selection, confirmed rewards, purchase→preselected item→placement, public/private visibility, Feed retry and purchase failure. Keyboard block selection, collapsed/expanded inspector, reduced motion, and accessibility audit checked. Automated browser checks are Chromium; actual iOS camera/system permissions and the real3D integration still require team rehearsal.
 
 No production data was modified. Local test server uses fixtures and no database URL. Production deploys only after Bryan merges. Merge the three PRs in order; later PRs target the preceding branch until it is merged. Never archive Claude's session. Continue from the latest merged main, keeping the Product/3D boundary intact.
+
+Clean-interface validation: tested real two-finger touch events against the fallback (viewBox shrank from1240 to477 units, no selected block after release), keyboard reset, and desktop inspector preserving828px canvas height at1440×1000. Gesture math has four regression cases. Camera remains confined to Product fallback; no apps/web/scene or contract change. Removed unused bundled font assets. Develop locally and open a PR; Bryan merges.

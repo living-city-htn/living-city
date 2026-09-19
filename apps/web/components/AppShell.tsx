@@ -17,6 +17,7 @@ import AppHeader from './AppHeader'
 import BlockPanel from './BlockPanel'
 import FeedPage from './FeedPage'
 import CommunityPicker from './CommunityPicker'
+import ParticleField from './ParticleField'
 import './shell-feedback.css'
 import { postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
 import './post-confirmation.css'
@@ -37,8 +38,8 @@ const PLANNING_GIVES_UP_AFTER = 45_000
 import type { ShopItem } from '@living-city/fixtures'
 
 const SCREEN_TITLE: Record<Tab, string> = {
-  feed: 'City feed', city: 'Explore the city', post: 'Share a moment',
-  shop: 'City shop', mine: 'My City',
+  feed: 'Feed', city: 'Explore your city', post: 'New post',
+  shop: 'Shop', mine: 'My City',
 }
 
 export default function AppShell() {
@@ -250,7 +251,7 @@ export default function AppShell() {
 
   return (
     <div className="shell" data-screen={tab} data-picking={pickingLocation && tab === 'post'} style={{ ['--sheet-h' as string]: `${Math.round(sheetHeight)}px` }}>
-      <AppHeader title={SCREEN_TITLE[tab]} context="Kitchener–Waterloo" balance={balance} />
+      <AppHeader title={SCREEN_TITLE[tab]} context={tab === 'city' ? 'Tap a neighbourhood to explore' : 'Kitchener–Waterloo'} balance={balance} scene={sceneVisible} />
 
       <div
         className="viewport"
@@ -260,7 +261,7 @@ export default function AppShell() {
         aria-label={mode === 'mine' ? 'Your personal city' : 'Community city'}
         data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}
       >
-        {city && <CommunityPicker communities={city.communities} selectedId={selectedId} picking={tab === 'post' && pickingLocation}
+        {city && tab !== 'city' && <CommunityPicker communities={city.communities} selectedId={selectedId} picking={tab === 'post' && pickingLocation}
           onSelect={id => {
             setSelectedId(id)
             if (id && tab === 'post' && pickingLocation) {
@@ -275,6 +276,7 @@ export default function AppShell() {
           <p role={cityError ? 'alert' : 'status'}>{cityError ? 'Could not load your city. Check your connection and try again.' : 'Opening your city…'}</p>
           {cityError && <button className="form-button" onClick={() => setCityAttempt(v => v + 1)}>Try again</button>}
         </div>}
+        <ParticleField />
         <div className="city-layer">
         {city && (
           <CityScene

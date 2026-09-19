@@ -88,7 +88,7 @@ function Post({ post, onLiked, community, onCommunity }: { post: PostRow; onLike
         <span className="post-author">{post.author_name}</span>
         <span className="post-time">{when(post.created_at)}</span>
       </div>
-      {community && onCommunity && <button className="post-community" onClick={() => onCommunity(post.community_id)}>{community}<span aria-hidden="true"> ↗</span></button>}
+      {community && onCommunity && <button className="post-community" onClick={() => onCommunity(post.community_id)}>{community}<span aria-hidden="true"> ›</span></button>}
       {post.image_url && !broken && (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img className="post-photo" src={post.image_url} alt="" onError={() => setBroken(true)} />

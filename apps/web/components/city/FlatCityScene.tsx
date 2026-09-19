@@ -9,14 +9,14 @@
  * It is disposable. When 3D exports `CityScene` from apps/web/scene, ./index.ts
  * picks theirs up and this file can be deleted without touching a call site.
  *
- * Deliberately NOT here: rotate, orbit, zoom, pan, camera framing, anything that
- * fakes 3D. Those are 3D's Gate 1 items (docs/roles/3d.md) and building them in
- * SVG would be throwaway work on a component designed to be thrown away.
+ * Pinch/pan is a Product-requested interaction for this fallback only. The real
+ * renderer owns its camera; this adds no geometry or simulated 3D.
  *
  */
 import { useMemo, useState } from 'react'
 import type { CitySceneProps } from './types'
 import { buildProjection, projectBlock } from './project'
+import { useCityCamera } from './useCityCamera'
 
 /**
  * Muted stand-ins for the plan's palette enum (docs/03 section 5.3). Flat fills,
@@ -41,7 +41,7 @@ const CSS = `
   --block-green: #dde8dc; --block-sunset: #f7d9b8; --block-neutral: #e8e8ec; --mark: #2f6fdd;
   /* Transparent: the drifting particles live behind this. */
   width: 100%; height: 100%; display: block; background: transparent;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  touch-action: none; -webkit-tap-highlight-color: transparent; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .lc-scene { --ink: #cfe0d4; --hair: #3a3a3e; --paper: #0d0d0f; --label: #8d9a91;
     --block-warm: #3a3229; --block-brick: #3a2c29; --block-cool: #26303c;
@@ -91,6 +91,7 @@ export default function FlatCityScene({
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
   const projection = useMemo(() => buildProjection(city.communities), [city.communities])
+  const { svgRef, camera, handlers } = useCityCamera(projection.width, projection.height)
   const blocks = useMemo(
     () => city.communities.map((c) => ({ community: c, geom: projectBlock(c, projection) })),
     [city.communities, projection],
@@ -125,9 +126,12 @@ export default function FlatCityScene({
   return (
     <svg
       className="lc-scene"
-      viewBox={`0 0 ${projection.width.toFixed(0)} ${projection.height.toFixed(0)}`}
+      ref={svgRef}
+      {...handlers}
+      tabIndex={0}
+      viewBox={`${camera.x} ${camera.y} ${camera.width} ${camera.height}`}
       role="group"
-      aria-label="Kitchener-Waterloo, one shape per community"
+      aria-label="Kitchener-Waterloo, one shape per community. Pinch to zoom; drag to pan. Keyboard: plus or minus to zoom, arrows to pan, zero to reset."
       /**
        * Tap empty space to deselect (docs/01 section 8.12). This sits on the
        * element, not on a background rect in user units: the viewBox is

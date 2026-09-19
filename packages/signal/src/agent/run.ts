@@ -25,6 +25,7 @@ import { civicRead } from '../ports'
 import { windowStart } from '../retrieval'
 import { dissentNote, resolveConflict, type Claim, type Verdict } from '../scoring'
 import { finishRun, startRun, type AgentRunLog } from '../store'
+import { MAX_MALFORMED, MAX_TURNS, checkGuards } from './guards'
 import { TOOLS, toolByName, toolSchema, type ToolContext } from './tools'
 
 /**
@@ -34,10 +35,6 @@ import { TOOLS, toolByName, toolSchema, type ToolContext } from './tools'
  */
 const PRICE_IN = Number(process.env.SIGNAL_PRICE_IN_PER_M ?? 0.4)
 const PRICE_OUT = Number(process.env.SIGNAL_PRICE_OUT_PER_M ?? 1.6)
-
-/** How many model calls one run may make before it is stopped. A run that has
- *  not finished in this many turns is looping, not thinking. */
-const MAX_TURNS = 8
 
 const SYSTEM = `You are the civic triage agent for a city's resident reporting system.
 
@@ -173,12 +170,31 @@ export const runAgent = async (options: RunAgentOptions = {}): Promise<AgentRunR
   if (!env.openaiApiKey()) return fail('disabled', 'OPENAI_API_KEY is not set, so the agent cannot run')
   if (!civicRead()) return fail('disabled', 'no civic read port is wired up')
 
+  // Rate and spend, checked once before any money is spent and never mid-run.
+  const guard = checkGuards()
+  if (!guard.allowed) return fail(guard.outcome, guard.reason)
+
   const window = options.window ?? '1h'
   const verdicts = verdictsFor({ blockId: options.blockId, window })
 
   // The deterministic verdicts go in the first message rather than behind a
   // tool, so the model cannot skip them and start guessing. `action` is the
   // floor: `suggest` means it may not write, whatever it concludes.
+  // Empty retrieval is not an error and must not cost a model call. A block
+  // with nothing reported in the window is a finished run with no actions.
+  if (verdicts.length === 0) {
+    const finished = finishRun(run.run_id, {
+      calls: 0, duration_ms: Date.now() - started, actions: 0, outcome: 'ok',
+    })
+    log.info('agent.nothing_to_do', { run_id: run.run_id, window, block: options.blockId ?? 'all' })
+    return {
+      run: finished ?? run,
+      actions: [],
+      narrative: 'No block had a reported or contested incident in this window, so nothing was done.',
+      error: null,
+    }
+  }
+
   const brief = verdicts.length === 0
     ? 'No block has a contested or reported incident in this window.'
     : verdicts.map(({ block_id, verdict, dissent_note }) =>
@@ -220,7 +236,7 @@ export const runAgent = async (options: RunAgentOptions = {}): Promise<AgentRunR
       const message = response.choices?.[0]?.message
       if (!message) {
         // Malformed output: retry once, then give up cleanly.
-        if (++malformed > 1) return fail('error', 'the model returned no message twice; giving up')
+        if (++malformed > MAX_MALFORMED) return fail('error', `the model returned no usable message ${malformed} times; giving up`)
         messages.push({ role: 'user', content: 'That response was empty. Call a tool or say you are done.' })
         continue
       }

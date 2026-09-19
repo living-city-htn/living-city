@@ -4,4 +4,11 @@
  * several calls) and for where it may and may not run.
  */
 export * from './tools'
-export { runAgent, toolSurface, type AgentRunResult, type RunAgentOptions } from './run'
+export {
+  MAX_MALFORMED, MAX_TURNS, agentDisabled, checkGuards, guardStatus, resetGuards,
+  type GuardStatus, type GuardVerdict,
+} from './guards'
+export {
+  runAgent, toolSurface, verdictsFor,
+  type AgentRunResult, type RunAgentOptions,
+} from './run'

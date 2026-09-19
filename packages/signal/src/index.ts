@@ -65,3 +65,4 @@ export {
   resolveConflict,
   type Claim, type DissentEntry, type ResolveOptions, type TieBreak, type Verdict,
 } from './scoring'
+export * from './agent/index'

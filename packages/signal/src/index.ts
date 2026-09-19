@@ -33,3 +33,11 @@ export {
   backfill, indexPost, removePost, resetIngestState,
   type BackfillResult, type BackfillRow, type IngestResult,
 } from './ingest'
+export {
+  civicRead, setCivicReadPort,
+  type CivicReadPort, type EvidenceQuery, type EvidenceRecord,
+} from './ports'
+export {
+  searchEvidence, windowStart,
+  type EvidenceHit, type SearchEvidenceParams, type SearchEvidenceResult, type SearchMode,
+} from './retrieval'

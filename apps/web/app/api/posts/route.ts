@@ -5,6 +5,7 @@ import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } f
 import { nearestCommunity } from '@/lib/post-location'
 import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
+import { ingestAnalyzedPost } from '@/lib/signal'
 import { VOICE_POSTS, discardAudio, storeAudio, type StoredAudio } from '@/lib/voice-blob'
 import { analyzeVoice, type VoiceResult } from '@living-city/pipeline'
 import { voiceNotice } from '@/lib/post-audio'
@@ -168,6 +169,14 @@ export async function POST(req: Request) {
     if (verdict.hidden) hidePost(created.post.id, 'auto')
   })
   created.post.status = verdict.status
+  created.post.hidden = verdict.hidden
+  created.post.hidden_reason = verdict.hidden_reason
+
+  // Signal layer (SIGNAL_LAYER, off by default). Not awaited: the post is
+  // already created and the response is already leaving, and no index write or
+  // embedding may sit between a post being created and the block rebuilding.
+  // Swallows its own errors, so this cannot fail the post.
+  ingestAnalyzedPost(created.post)
 
   return json({ ...created, voice: voiceSummary(voice) }, 201)
 }

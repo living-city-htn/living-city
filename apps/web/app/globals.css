@@ -6,33 +6,52 @@
  * The city viewport carries its own colour and is not themed from here.
  */
 :root {
-  --paper: #fbfbfd;
-  --sheet: rgba(255, 255, 255, 0.82);
-  --ink: #1c1c1e;
-  --label: #6e6e73;
-  --hair: rgba(0, 0, 0, 0.1);
-  --fill: rgba(120, 120, 128, 0.12);
+  /*
+   * Pale green-white. The tint lives in surfaces only: text, icons and controls
+   * stay neutral, so apps/web/DESIGN.md's one art rule still holds and nothing
+   * in the chrome competes with a block lighting up in moment 4.
+   */
+  --paper: #f3f7f3;
+  --surface: #ffffff;
+  --sheet: rgba(255, 255, 255, 0.86);
+  --ink: #16201a;
+  --label: #5e6b62;
+  --hair: rgba(22, 32, 26, 0.1);
+  --fill: rgba(22, 32, 26, 0.06);
   --accent: #2f6fdd;
 
-  /* The tab bar's own height, so sheets can sit exactly on top of it. */
-  --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+  --r-card: 14px;
+  --r-sheet: 24px;
 
-  --r-card: 12px;
-  --r-sheet: 22px;
-  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  /* One easing and three durations, used everywhere. Nothing teleports. */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --fast: 140ms;
+  --base: 220ms;
+  --slow: 320ms;
+
+  --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+  --rail-w: 0px;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0d0d0f;
-    --sheet: rgba(28, 28, 30, 0.82);
-    --ink: #f2f2f7;
-    --label: #98989f;
-    --hair: rgba(255, 255, 255, 0.12);
-    --fill: rgba(120, 120, 128, 0.24);
+    --paper: #0d120f;
+    --surface: #151b17;
+    --sheet: rgba(21, 27, 23, 0.86);
+    --ink: #eaf1ec;
+    --label: #96a39a;
+    --hair: rgba(234, 241, 236, 0.12);
+    --fill: rgba(234, 241, 236, 0.08);
     --accent: #6ea0f5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
   }
 }
 
@@ -328,3 +347,74 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .qr-url { margin: 0; color: var(--label); font-size: 14px; font-variant-numeric: tabular-nums; }
 .qr-paused h1 { color: var(--label); }
 .qr-paused p { margin: 8px 0 0; color: var(--label); }
+
+/* --- desktop ------------------------------------------------------------
+   Mobile is the real layout; this is a considered adaptation, not a second
+   design. The five destinations become a left rail, the sheets dock beside it
+   as a column, and the city takes the rest of the screen.
+*/
+
+@media (min-width: 900px) {
+  :root { --rail-w: 232px; --tabbar-h: 0px; }
+
+  .tabbar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--rail-w);
+    grid-template-columns: none; grid-auto-rows: max-content;
+    align-content: start; gap: 2px; height: auto;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+    border-top: 0; border-right: 1px solid var(--hair);
+    background: var(--surface); backdrop-filter: none;
+  }
+  .tab {
+    flex-direction: row; justify-content: flex-start; gap: 14px;
+    padding: 11px 14px; border-radius: 11px; font-size: 15px;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .tab:hover { background: var(--fill); }
+  .tab[data-active='true'] { background: var(--fill); }
+  .tab:active { transform: none; }
+
+  .viewport { left: var(--rail-w); bottom: 0; }
+  .viewport[data-inset='true'] { bottom: 0; }
+
+  .greeting { left: calc(var(--rail-w) + 440px); padding-top: 28px; }
+
+  /*
+   * Sheets become a docked column rather than something sliding up, and they
+   * are opaque: a translucent panel over twelve city blocks is unreadable, and
+   * the blur is a phone idiom rather than a desktop one.
+   */
+  .sheet {
+    left: calc(var(--rail-w) + 20px); right: auto; width: 400px;
+    top: 20px; bottom: 20px; max-height: none;
+    background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none;
+    border: 1px solid var(--hair); border-radius: var(--r-sheet);
+    box-shadow: 0 1px 0 var(--hair), 0 18px 50px rgba(0, 0, 0, 0.1);
+    animation: sheet-in-side var(--base) var(--ease);
+  }
+  @keyframes sheet-in-side { from { transform: translateX(-10px); opacity: 0; } }
+}
+
+/* --- feed as a photo feed -----------------------------------------------
+   Author row, then the image edge to edge, then actions, then the caption.
+*/
+
+.posts { gap: 30px; }
+.post-photo {
+  width: calc(100% + 48px); margin-left: -24px; margin-right: -24px;
+  aspect-ratio: 4 / 5; object-fit: cover; border-radius: 0;
+  background: var(--fill); display: block;
+  animation: photo-in var(--slow) var(--ease);
+}
+@keyframes photo-in { from { opacity: 0; } }
+@media (min-width: 900px) {
+  .post-photo { border-radius: var(--r-card); width: 100%; margin-left: 0; margin-right: 0; }
+}
+.post-head { align-items: center; gap: 9px; padding-bottom: 10px; }
+.post-avatar {
+  width: 30px; height: 30px; border-radius: 999px; flex: 0 0 auto;
+  display: grid; place-items: center; background: var(--fill);
+  color: var(--label); font-size: 12px; font-weight: 600;
+}
+.post-text { margin-top: 2px; }
+.post-actions { display: flex; align-items: center; gap: 4px; padding-top: 8px; }

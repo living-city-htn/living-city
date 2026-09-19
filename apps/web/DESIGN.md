@@ -42,16 +42,28 @@ If a UI element needs colour to be understood, it is doing too much.
 |---|---|
 | Type | System stack (`-apple-system`, `SF Pro` on Apple devices). Two weights: regular for body, semibold for titles. No third font. |
 | Spacing | 8pt grid. When unsure, use more space, not less. |
-| Colour | Neutral greys plus one accent used only for the primary action. Backgrounds are near-white in light mode, near-black in dark. |
+| Colour | Pale green-white surfaces; text, icons and controls stay neutral. One accent, used only for the primary action. Dark mode is a deep green-black. The tint is in surfaces only, so the one art rule still holds. |
 | Depth | Subtle shadow and background blur only. No gradients, no borders where space will do, no skeuomorphism. |
 | Corners | Large radii: 12px on cards, 20px+ on sheets. |
 | Tab bar | Translucent, `backdrop-filter: blur()`, hairline top border, floats over the map. |
-| Motion | Short and springy, 200-300ms. Every state change animates; nothing teleports. |
+| Motion | One easing curve and three durations (`--fast` 140ms, `--base` 220ms, `--slow` 320ms), smooth rather than springy. Every state change animates; nothing teleports. `prefers-reduced-motion` turns it all off. |
 | Dark mode | Required, not optional. The city has a night lighting mode and the chrome follows it. |
 | Panels | Bottom sheets that slide over the map, not full-screen pushes. The city stays visible. |
 
 The map is full-bleed behind everything. The chrome floats; it never boxes the
 city in.
+
+## Two layouts
+
+Mobile is the real layout — it is the phone in the judge's hand, and every
+decision above is made for it. Desktop is a considered adaptation of the same
+screen, not a second design:
+
+| | Mobile | Desktop (>= 900px) |
+|---|---|---|
+| Navigation | Bottom tab bar, translucent, floating over the map | Left rail, opaque, 232px |
+| Panels | Bottom sheets that slide up | A docked column beside the rail, opaque because a translucent panel over twelve blocks is unreadable |
+| Map | Full width, stops above the tab bar | Fills everything right of the rail |
 
 ## Screen structure
 

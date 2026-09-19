@@ -45,6 +45,8 @@ export const getCity = () => get<CityPayload>('/api/city')
 export const getMe = () => get<Me>('/api/me')
 export const getMyPlacements = () =>
   get<{ placements: Placement[] }>('/api/me/placements').then((d) => d.placements)
+export const getShopCatalog = () =>
+  get<{ items: import('@living-city/fixtures').ShopItem[] }>('/api/shop').then((d) => d.items)
 export const getFeed = () => get<{ posts: PostRow[] }>('/api/posts').then((d) => d.posts)
 
 export const getPlan = (id: string) =>

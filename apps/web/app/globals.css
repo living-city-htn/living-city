@@ -83,7 +83,9 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
 
 /* The map is full-bleed behind everything; the chrome floats over it. */
-.viewport { position: absolute; inset: 0; }
+.viewport { position: absolute; inset: 0; transition: bottom 260ms var(--ease); }
+/* My City: keep the whole city, and every slot, clear of the sheet. */
+.viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h, 0px)); }
 
 .greeting {
   position: absolute; top: 0; left: 0; right: 0; z-index: 2;
@@ -214,3 +216,23 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .shop-feedback p { margin: 0 0 10px; }
 @media (min-width: 700px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 340px) { .shop-grid { grid-template-columns: 1fr; } }
+
+/* --- my city ------------------------------------------------------------ */
+
+.tray { display: flex; gap: 8px; list-style: none; margin: 0; padding: 4px 0 8px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.tray::-webkit-scrollbar { display: none; }
+
+.tray-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 92px; padding: 10px 8px; border: 1px solid transparent;
+  border-radius: var(--r-card); background: var(--fill); color: var(--ink);
+  cursor: pointer; transition: border-color 200ms var(--ease), transform 200ms var(--ease);
+}
+.tray-item:active { transform: scale(0.96); }
+.tray-item[data-selected='true'] { border-color: var(--ink); }
+.tray-item:disabled { opacity: 0.5; cursor: default; }
+.tray-label { font-size: 12px; text-align: center; line-height: 1.2; }
+.tray-qty { color: var(--label); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+.mycity-hint { margin-top: 12px; font-size: 13px; }

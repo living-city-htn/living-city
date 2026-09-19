@@ -95,6 +95,36 @@ The screen uses existing APIs; no Civic routes or shared contracts were changed.
 Durable inventory still depends on Civic's database-backed game service: the
 current fixture store is only process memory.
 
-Handoff: local mobile-width tests cover buying, double taps, insufficient points,
-failed requests and refresh recovery. Physical-phone checks are still needed
-for Product's Gate 1. After the gate, the next screen is My City placement.
+Local mobile-width tests cover buying, double taps, insufficient points,
+failed requests and refresh recovery.
+
+## My City placement (Product, Stage 2)
+
+Pick an owned item in the My City tray, then tap an empty slot on any block to
+place it. Tapping a filled slot takes the item back. One slot, both directions,
+because PRD 8.12 makes the slot marker the touch target rather than a control
+in a list.
+
+While the tab is open the map's box stops above the sheet, so every slot stays
+tappable instead of sitting behind it. That is plain CSS on the viewport, not a
+scene prop, so 3D's component inherits the same behaviour.
+
+A placement moves a unit between inventory and a slot, both owned by the
+server, so writes are never retried automatically. A response that cannot be
+trusted - a 5xx, a dropped connection, or a confirmation with no placement id
+to remove later - leaves the screen unchanged and asks for a refresh. After
+every confirmed write the screen re-reads `/api/me` and `/api/me/placements`
+rather than guessing the new state.
+
+Placements are private: the scene draws them only in My City mode, and no route
+returns another user's. Nothing here can change a public plan or a block's
+geometry.
+
+Slot markers carry a role and a label naming the block, the slot and what it
+holds, so they are reachable without sight of the map.
+
+Handoff: placement is verified end to end against the stub - buy, place, switch
+to City and see it gone, switch back, take it back. Durable placements still
+wait on Civic's database-backed game service. Physical-phone checks remain open
+for Product's Gate 1. Next on Product's list is the operator panel (Stage 2):
+reset, manual trigger, preset plan, one-tap hide, and the planning ticker.

@@ -177,6 +177,12 @@ export default function FlatCityScene({
                     cy={y}
                     r={12}
                     data-filled={Boolean(item)}
+                    role="button"
+                    aria-label={
+                      item
+                        ? `${community.name}, ${slot.slot_id}, holds ${item.replace(/_/g, ' ')}`
+                        : `${community.name}, ${slot.slot_id}, empty`
+                    }
                     onClick={(e) => {
                       e.stopPropagation()
                       onSlotTap?.(community.community_id, slot.slot_id)

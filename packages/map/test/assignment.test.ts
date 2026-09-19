@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { assignCommunity, defaultAssignmentData, type AssignmentData } from '../src/index'
+import mappings from '../data/processed/official-area-mapping.json'
 
 const data: AssignmentData = {
   officialAreas: [
@@ -71,5 +72,13 @@ describe('assignCommunity', () => {
         blocks: defaultAssignmentData.blocks,
       }),
     )
+  })
+
+  it('keeps every mapping entry attached to a checked-in official area', () => {
+    expect(mappings.official_area_mappings.every((mapping) =>
+      defaultAssignmentData.officialAreas.some((area) =>
+        area.official_area_id === mapping.official_area_id && area.block_id === mapping.community_id,
+      ),
+    )).toBe(true)
   })
 })

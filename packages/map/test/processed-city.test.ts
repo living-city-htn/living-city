@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { communityGeo, decorationSlot } from '@living-city/contracts'
-import city from '../data/processed/city.json'
-import slots from '../data/processed/slots.json'
+import { processedCity } from '../src/index'
 import mappings from '../data/processed/official-area-mapping.json'
 
 describe('the processed Kitchener-Waterloo city', () => {
   it('ships 12 to 20 contract-valid hand-drawn blocks with the demo landmarks', () => {
-    const communities = communityGeo.array().parse(city.communities)
+    const communities = processedCity.communities
     const ids = new Set(communities.map((community) => community.community_id))
 
     expect(communities).toHaveLength(12)
@@ -33,8 +31,8 @@ describe('the processed Kitchener-Waterloo city', () => {
   })
 
   it('gives every block exactly three stable decoration slots', () => {
-    const communities = communityGeo.array().parse(city.communities)
-    const parsedSlots = decorationSlot.array().parse(slots)
+    const communities = processedCity.communities
+    const parsedSlots = processedCity.slots
 
     expect(parsedSlots).toHaveLength(36)
     for (const community of communities) {
@@ -44,7 +42,7 @@ describe('the processed Kitchener-Waterloo city', () => {
   })
 
   it('maps only known official areas to known visual blocks', () => {
-    const ids = new Set(city.communities.map((community) => community.community_id))
+    const ids = new Set(processedCity.communities.map((community) => community.community_id))
     expect(mappings.official_area_mappings.length).toBeGreaterThan(0)
     expect(mappings.official_area_mappings.every((mapping) => ids.has(mapping.community_id))).toBe(true)
     expect(new Set(mappings.official_area_mappings.map((mapping) => mapping.official_area_id)).size)

@@ -1,7 +1,7 @@
 import kitchenerAreas from '../data/raw/kitchener-planning-communities.json'
 import waterlooAreas from '../data/raw/waterloo-district-plans.json'
-import city from '../data/processed/city.json'
 import mappings from '../data/processed/official-area-mapping.json'
+import { processedCity } from './city'
 
 /**
  * Assignment uses official polygons only. Drawn blocks appear here solely as
@@ -85,7 +85,7 @@ export const defaultAssignmentData: AssignmentData = {
       return `waterloo:${districtId || stringProperty(properties, 'DISTNAME')}`
     }),
   ],
-  blocks: city.communities.map((community) => ({
+  blocks: processedCity.communities.map((community) => ({
     community_id: community.community_id,
     centroid: [community.centroid[0]!, community.centroid[1]!],
   })),

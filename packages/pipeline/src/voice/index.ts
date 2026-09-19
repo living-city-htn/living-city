@@ -159,12 +159,12 @@ export const analyzeVoice = async (
     ?? (env.voiceFixtures() ? fixtureVoiceProvider() : omniProvider())
 
   if (!provider.available()) {
-    log('voice.degraded', { rung: 'disabled', reason: 'no OMNI key configured' })
+    log.warn('voice.degraded', { rung: 'disabled', reason: 'no OMNI key configured' })
     return { analysis: null, degraded: 'disabled', latencyMs: 0, attempts: 0 }
   }
 
   if (!formatSupported(request.audio.mimeType)) {
-    log('voice.degraded', { rung: 'unsupported_format', mime: request.audio.mimeType })
+    log.warn('voice.degraded', { rung: 'unsupported_format', mime: request.audio.mimeType })
     return { analysis: null, degraded: 'unsupported_format', latencyMs: 0, attempts: 0 }
   }
 
@@ -189,14 +189,14 @@ export const analyzeVoice = async (
 
     const analysis = validateVoiceAnalysis(response.json)
     if (!analysis) {
-      log('voice.degraded', { rung: 'unintelligible', reason: 'no speech and no cues' })
+      log.warn('voice.degraded', { rung: 'unintelligible', reason: 'no speech and no cues' })
       return {
         analysis: null, degraded: 'unintelligible',
         latencyMs: response.latencyMs, attempts: response.attempts,
       }
     }
 
-    log('voice.ok', {
+    log.info('voice.ok', {
       latency_ms: response.latencyMs, attempts: response.attempts,
       confidence: analysis.confidence, cues: analysis.audio_cues.length,
       transcript_chars: analysis.transcript.length,
@@ -210,7 +210,7 @@ export const analyzeVoice = async (
       e instanceof Error ? e.message : 'voice call failed', 'transport', 1,
     )
     const rung = degradationFor(error)
-    log('voice.degraded', { rung, error: error.message, attempts: error.attempts })
+    log.warn('voice.degraded', { rung, error: error.message, attempts: error.attempts })
     return {
       analysis: null, degraded: rung,
       latencyMs: Date.now() - started, attempts: error.attempts,

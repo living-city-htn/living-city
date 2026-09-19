@@ -136,7 +136,7 @@ export const omniProvider = (): ModelProvider => ({
         } else {
           lastError = new ModelError(e instanceof Error ? e.message : 'OMNI call failed', 'transport', attempt)
         }
-        log('voice.omni.attempt_failed', { attempt, kind: lastError.kind, error: lastError.message })
+        log.warn('voice.omni.attempt_failed', { attempt, kind: lastError.kind, error: lastError.message })
         // A config or refusal error will not get better on a second try.
         if (lastError.kind === 'config' || lastError.kind === 'refusal') break
       } finally {

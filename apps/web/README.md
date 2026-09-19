@@ -31,6 +31,7 @@ gitignored `.env.local`; never commit one.
 
 | | |
 |---|---|
+| Live | https://living-city-delta.vercel.app |
 | Vercel project | `bryan-kuangs-projects/living-city` |
 | Root Directory | `apps/web` (Vercel installs at the workspace root on its own) |
 | Production | pushes to `main` |

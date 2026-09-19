@@ -83,8 +83,14 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
 
 /* The map is full-bleed behind everything; the chrome floats over it. */
-.viewport { position: absolute; inset: 0; transition: bottom 260ms var(--ease); }
-/* My City: keep the whole city, and every slot, clear of the sheet. */
+/*
+ * The map stops above the tab bar rather than running behind it. With the real
+ * 12-block city the southern blocks were landing under the bar, and moment 1
+ * asks for the whole city in frame.
+ */
+.viewport { position: absolute; inset: 0; bottom: var(--tabbar-h);
+  transition: bottom 260ms var(--ease); }
+/* My City: also clear the sheet, so every slot stays tappable. */
 .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h, 0px)); }
 
 .greeting {

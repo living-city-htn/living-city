@@ -3,12 +3,13 @@
  * before the module that really owns the data has landed it.
  *
  * Naming rule: a file called `*.fallback.json` is a placeholder Product wrote
- * and another owner will replace (city, plans, shop). A file with no suffix is
- * genuinely Product's for the weekend (`posts.seed.json`).
+ * and another owner will replace (plans, shop). A file with no suffix is
+ * genuinely Product's for the weekend (`posts.seed.json`). The city is no
+ * longer one of these: it comes from `@living-city/map`.
  *
  * See docs/05-team-workflow.md section 3.
  */
-import cityRaw from '../data/city.fallback.json'
+import { processedCity } from '@living-city/map'
 import incidentsRaw from '../data/incidents.mock.json'
 import postsRaw from '../data/posts.seed.json'
 import plansRaw from '../data/plans.fallback.json'
@@ -37,8 +38,14 @@ export type {
 } from './types'
 export type { Incident } from '@living-city/contracts'
 
-export const communities: CommunityGeo[] = clean(cityRaw.communities) as CommunityGeo[]
-export const slots: DecorationSlot[] = clean(cityRaw.slots) as DecorationSlot[]
+/**
+ * The real hand-drawn city from the Map owner, not a Product placeholder.
+ * `city.fallback.json` is gone: it existed only so the app could render before
+ * Map landed, and keeping a second copy of the city around invites the two to
+ * drift.
+ */
+export const communities: CommunityGeo[] = [...processedCity.communities] as CommunityGeo[]
+export const slots: DecorationSlot[] = [...processedCity.slots] as DecorationSlot[]
 export const seedUsers: SeedUser[] = clean(postsRaw.users) as SeedUser[]
 export const seedPosts: SeedPost[] = clean(postsRaw.posts) as SeedPost[]
 export const incidentMocks: Incident[] = clean(incidentsRaw.incidents) as Incident[]

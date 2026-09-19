@@ -16,7 +16,8 @@
     "validate": "node scripts/validate.mjs"
   },
   "dependencies": {
-    "@living-city/contracts": "workspace:*"
+    "@living-city/contracts": "workspace:*",
+    "@living-city/map": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

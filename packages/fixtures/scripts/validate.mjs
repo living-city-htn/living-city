@@ -13,7 +13,13 @@ import { dirname, join } from 'node:path'
 const here = dirname(fileURLToPath(import.meta.url))
 const read = (f) => JSON.parse(readFileSync(join(here, '..', 'data', f), 'utf8'))
 
-const city = read('city.fallback.json')
+// The city is the Map owner's processed data, not a Product fixture.
+const city = JSON.parse(
+  readFileSync(new URL('../../map/data/processed/city.json', import.meta.url), 'utf8'),
+)
+city.slots = JSON.parse(
+  readFileSync(new URL('../../map/data/processed/slots.json', import.meta.url), 'utf8'),
+)
 const seed = read('posts.seed.json')
 const plansFile = read('plans.fallback.json')
 const shop = read('shop.fallback.json')

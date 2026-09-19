@@ -89,6 +89,9 @@ importers:
       '@living-city/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@living-city/map':
+        specifier: workspace:*
+        version: link:../map
     devDependencies:
       typescript:
         specifier: ^5.6.0

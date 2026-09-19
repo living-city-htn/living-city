@@ -1,16 +1,108 @@
 {
   "official_area_mappings": [
-    { "official_area_id": "waterloo:W2", "community_id": "kw:uptown-waterloo" },
-    { "official_area_id": "waterloo:W3", "community_id": "kw:waterloo-park" },
-    { "official_area_id": "waterloo:UW Northwest Campus", "community_id": "kw:university-district" },
-    { "official_area_id": "waterloo:UW Research and Technology Park", "community_id": "kw:research-tech-park" },
-    { "official_area_id": "waterloo:W14", "community_id": "kw:columbia-hills" },
-    { "official_area_id": "waterloo:W92", "community_id": "kw:columbia-hills" },
-    { "official_area_id": "kitchener:1", "community_id": "kw:downtown-kitchener" },
-    { "official_area_id": "kitchener:7", "community_id": "kw:victoria-park" },
-    { "official_area_id": "kitchener:2", "community_id": "kw:civic-centre" },
-    { "official_area_id": "kitchener:13", "community_id": "kw:central-frederick" },
-    { "official_area_id": "kitchener:24", "community_id": "kw:stanley-park" },
-    { "official_area_id": "kitchener:21", "community_id": "kw:midtown-ion" }
+    {
+      "official_area_id": "waterloo:W2",
+      "community_id": "kw:central"
+    },
+    {
+      "official_area_id": "waterloo:W3",
+      "community_id": "kw:westmount"
+    },
+    {
+      "official_area_id": "waterloo:Beechwood",
+      "community_id": "kw:beechwood"
+    },
+    {
+      "official_area_id": "waterloo:W92",
+      "community_id": "kw:columbia-hills"
+    },
+    {
+      "official_area_id": "waterloo:W11",
+      "community_id": "kw:conservation-meadows"
+    },
+    {
+      "official_area_id": "waterloo:Beaver Creek Meadows",
+      "community_id": "kw:beaver-creek-meadows"
+    },
+    {
+      "official_area_id": "waterloo:Country Squire",
+      "community_id": "kw:country-squire"
+    },
+    {
+      "official_area_id": "waterloo:W10",
+      "community_id": "kw:lakeshore-north"
+    },
+    {
+      "official_area_id": "waterloo:W27",
+      "community_id": "kw:clair-hills"
+    },
+    {
+      "official_area_id": "waterloo:W18",
+      "community_id": "kw:northland"
+    },
+    {
+      "official_area_id": "waterloo:W9",
+      "community_id": "kw:erbsville"
+    },
+    {
+      "official_area_id": "waterloo:Conestoga",
+      "community_id": "kw:conestoga"
+    },
+    {
+      "official_area_id": "waterloo:W17",
+      "community_id": "kw:lincoln"
+    },
+    {
+      "official_area_id": "waterloo:W93",
+      "community_id": "kw:west-hill"
+    },
+    {
+      "official_area_id": "waterloo:W4",
+      "community_id": "kw:westvale"
+    },
+    {
+      "official_area_id": "waterloo:W14",
+      "community_id": "kw:columbia"
+    },
+    {
+      "official_area_id": "waterloo:W15",
+      "community_id": "kw:willowdale"
+    },
+    {
+      "official_area_id": "waterloo:W16",
+      "community_id": "kw:dearborn"
+    },
+    {
+      "official_area_id": "waterloo:W19",
+      "community_id": "kw:lexington"
+    },
+    {
+      "official_area_id": "waterloo:Beechwood West",
+      "community_id": "kw:beechwood-west"
+    },
+    {
+      "official_area_id": "waterloo:UW Northwest Campus",
+      "community_id": "kw:uw-northwest-campus"
+    },
+    {
+      "official_area_id": "waterloo:Eastbridge",
+      "community_id": "kw:eastbridge"
+    },
+    {
+      "official_area_id": "waterloo:W8",
+      "community_id": "kw:lakeshore"
+    },
+    {
+      "official_area_id": "waterloo:W21",
+      "community_id": "kw:rural-east"
+    },
+    {
+      "official_area_id": "waterloo:Laurelwood",
+      "community_id": "kw:laurelwood"
+    },
+    {
+      "official_area_id": "waterloo:UW Research and Technology Park",
+      "community_id": "kw:uw-research-and-technology-park"
+    }
   ]
 }

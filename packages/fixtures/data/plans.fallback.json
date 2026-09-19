@@ -1303,6 +1303,470 @@
         ]
       },
       "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:conservation-meadows",
+      "plan_id": "kw:conservation-meadows:2026-09-18T12:00:00Z",
+      "summary": "Wetland boardwalks and seed heads; the quietest ground in the city.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:beaver-creek-meadows",
+      "plan_id": "kw:beaver-creek-meadows:2026-09-18T12:00:00Z",
+      "summary": "Open field and a creek that takes the low path back every spring.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "minimal",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:country-squire",
+      "plan_id": "kw:country-squire:2026-09-18T12:00:00Z",
+      "summary": "Long drives, honour boxes and a horizon nobody is building on.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:lakeshore-north",
+      "plan_id": "kw:lakeshore-north:2026-09-18T12:00:00Z",
+      "summary": "The north shore: last path cleared, best one to walk.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "cozy"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:erbsville",
+      "plan_id": "kw:erbsville:2026-09-18T12:00:00Z",
+      "summary": "Farm stands, enormous sky and a tractor in the rush hour.",
+      "archetype": "residential_quiet",
+      "identity_tags": [
+        "historic",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "cozy",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:rural-east",
+      "plan_id": "kw:rural-east:2026-09-18T12:00:00Z",
+      "summary": "Stubble fields and a combine working past dark.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "minimal",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 35,
+        "retail": 5,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 5,
+        "campus_industrial": 55
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "wild_meadow"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "dog_walking",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:uw-environmental-reserve",
+      "plan_id": "kw:uw-environmental-reserve:2026-09-18T12:00:00Z",
+      "summary": "Creek, boardwalk and second-growth bush between the campuses. Protected land, barely built on.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "family",
+        "minimal"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 0,
+        "retail": 0,
+        "cafe_bar": 0,
+        "office": 0,
+        "cultural_civic": 60,
+        "campus_industrial": 40
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "mature_trees",
+          "wild_meadow",
+          "park_lawn"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 2,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 0,
+        "behaviors": [
+          "walking",
+          "jogging",
+          "dog_walking"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [
+        "birds"
+      ],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 55
     }
   ],
   "preset_festival": {

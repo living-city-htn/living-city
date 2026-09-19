@@ -41,20 +41,6 @@ export default function BlockPanel({
 }) {
   const ref = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    const node = ref.current
-    if (!node) return
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) onHeight(node.getBoundingClientRect().height)
-    })
-    observer.observe(node)
-    onHeight(node.getBoundingClientRect().height)
-    return () => {
-      observer.disconnect()
-      onHeight(0)
-    }
-  }, [onHeight])
-
   const [state, setState] = useState<BlockState | null>(null)
   const [posts, setPosts] = useState<PostRow[]>([])
   const [why, setWhy] = useState(false)
@@ -62,6 +48,32 @@ export default function BlockPanel({
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
   useEffect(() => setExpanded(false), [communityId])
+
+  const expandedRef = useRef(false)
+  expandedRef.current = expanded
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    const report = () => {
+      /*
+       * Expanding this card lays it over the map; it does not push the map up.
+       * Reporting the expanded height drove the viewport's height to nearly
+       * zero and the city disappeared behind the card describing it.
+       */
+      if (expandedRef.current) return
+      // Rounded because the shell rounds it again for CSS, so sub-pixel
+      // jitter was re-rendering the tree to produce identical styles.
+      onHeight(Math.round(node.getBoundingClientRect().height))
+    }
+    const observer = new ResizeObserver(report)
+    observer.observe(node)
+    report()
+    return () => {
+      observer.disconnect()
+      onHeight(0)
+    }
+  }, [onHeight])
 
   useEffect(() => {
     let live = true
@@ -86,12 +98,20 @@ export default function BlockPanel({
       <header className="sheet-head">
         <div>
           <h2>{name}</h2>
-          {state && (
-            <p className="sheet-sub">
-              <span className="mood">{state.mood.replace(/_/g, ' ')}</span> · {state.post_count}{' '}
-              {state.post_count === 1 ? 'post' : 'posts'}
-            </p>
-          )}
+          {/*
+            Always present, even before the fetch lands. The card reports its
+            own height to the map, so a line that appears late moves the map.
+          */}
+          <p className="sheet-sub">
+            {state ? (
+              <>
+                <span className="mood">{state.mood.replace(/_/g, ' ')}</span> · {state.post_count}{' '}
+                {state.post_count === 1 ? 'post' : 'posts'}
+              </>
+            ) : (
+              <span className="sk sk-chip" aria-hidden="true" />
+            )}
+          </p>
         </div>
         <button className="icon-btn" onClick={onClose} aria-label="Close">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -102,7 +122,17 @@ export default function BlockPanel({
 
       <div className="sheet-body">
         {error ? <div role="alert"><p>{error}</p><button className="form-button" onClick={() => setAttempt((n) => n + 1)}>Try again</button></div> : !state ? (
-          <p className="muted" role="status">Loading community…</p>
+          /*
+            The placeholder borrows the real `summary` class rather than
+            approximating it, so the box it leaves is the one the text will
+            occupy: same margins, same two-line clamp, same height. Announced
+            to screen readers, which a silent skeleton would not be.
+          */
+          <>
+            <p className="sr-only" role="status">Loading community…</p>
+            <p className="summary sk" aria-hidden="true" />
+            <span className="sk sk-button" aria-hidden="true" />
+          </>
         ) : (
           <>
             <p className="summary">{state.summary}</p>

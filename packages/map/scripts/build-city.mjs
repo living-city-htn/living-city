@@ -121,10 +121,65 @@ const cells = sites.map((site, i) => {
   return cell
 })
 
-/** Pull each cell in a little so the seams between blocks are visible. */
-const shrinkToCentre = (ring, factor) => {
-  const c = centroidOf(ring)
-  return ring.map(([x, y]) => [c[0] + (x - c[0]) * factor, c[1] + (y - c[1]) * factor])
+/**
+ * Inset every cell by the same distance, so every seam is the same width.
+ *
+ * Scaling a cell toward its own centroid does not do this: the same percentage
+ * on a large district and a small one produces a wide gap beside a hairline,
+ * which is what made the city look broken rather than divided.
+ *
+ * Cells are convex, so an inset is just the polygon clipped by each of its own
+ * edges moved inward — no general offsetting needed. The work happens in metres
+ * so a degree of longitude and a degree of latitude do not give different gaps.
+ */
+const SEAM_METRES = 28
+
+const M_PER_DEG_LAT = 111320
+const toMetres = (ring, lat0) => {
+  const k = Math.cos((lat0 * Math.PI) / 180)
+  return ring.map(([x, y]) => [x * k * M_PER_DEG_LAT, y * M_PER_DEG_LAT])
+}
+const toDegrees = (ring, lat0) => {
+  const k = Math.cos((lat0 * Math.PI) / 180)
+  return ring.map(([x, y]) => [x / (k * M_PER_DEG_LAT), y / M_PER_DEG_LAT])
+}
+
+/** Positive for counter-clockwise. */
+const signedArea = (ring) => {
+  let a = 0
+  for (let i = 0; i < ring.length; i++) {
+    const [x1, y1] = ring[i]
+    const [x2, y2] = ring[(i + 1) % ring.length]
+    a += x1 * y2 - x2 * y1
+  }
+  return a / 2
+}
+
+function insetConvex(ring, lat0, metres) {
+  let poly = toMetres(ring, lat0)
+  if (signedArea(poly) < 0) poly = [...poly].reverse()
+  const edges = poly.map((a, i) => [a, poly[(i + 1) % poly.length]])
+
+  let cell = poly
+  for (const [a, b] of edges) {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const len = Math.hypot(dx, dy)
+    if (len === 0) continue
+    // Interior lies to the left of a->b on a counter-clockwise ring.
+    const nx = -dy / len
+    const ny = dx / len
+    const ox = a[0] + nx * metres
+    const oy = a[1] + ny * metres
+    const side = (p) => (p[0] - ox) * nx + (p[1] - oy) * ny
+    cell = clipHalfPlane(cell, (p) => side(p) >= 0, (p, q) => {
+      const sp = side(p), sq = side(q)
+      const t = sp / (sp - sq)
+      return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
+    })
+    if (cell.length < 3) return ring
+  }
+  return toDegrees(cell, lat0)
 }
 
 const communities = features.map((f, i) => {
@@ -132,7 +187,8 @@ const communities = features.map((f, i) => {
   const official = rings[i]
   const [cx, cy] = centroidOf(cell)
   const round = (ps) => ps.map(([x, y]) => [Number(x.toFixed(5)), Number(y.toFixed(5))])
-  const block = round([...shrinkToCentre(cell, 0.94), shrinkToCentre(cell, 0.94)[0]])
+  const inset = insetConvex(cell, cy, SEAM_METRES)
+  const block = round([...inset, inset[0]])
   const xs = block.map((p) => p[0]), ys = block.map((p) => p[1])
   const hectares = f.properties.HECTARES ?? (f.properties.AREA_M2 ?? 0) / 10000
   const lots = Math.max(10, Math.min(30, Math.round(hectares / 14)))

@@ -13,8 +13,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEMO_COMMUNITY_ID, type CommunityGeo } from '@living-city/fixtures'
 import { getCity, getFeed, type PostRow } from '@/lib/api'
 import {
-  getVersion, hidePost, planAll, planOne, presetFestival, resetDemo, tick,
-  type CityVersion,
+  getQrPaused, getVersion, hidePost, planAll, planOne, presetFestival, resetDemo,
+  setQrPaused, tick, type CityVersion,
 } from '@/lib/operator'
 
 const TICK_MS = 10_000
@@ -28,6 +28,7 @@ export default function OperatorPage() {
   const [log, setLog] = useState<string[]>([])
   const [busy, setBusy] = useState('')
   const [confirmReset, setConfirmReset] = useState(false)
+  const [qrPaused, setQrPausedState] = useState<boolean | null>(null)
   const tickInFlight = useRef(false)
 
   const note = useCallback((line: string) => {
@@ -44,6 +45,7 @@ export default function OperatorPage() {
   useEffect(() => {
     getCity().then((c) => setCommunities(c.communities)).catch(() => {})
     getVersion().then(setVersion).catch(() => {})
+    getQrPaused().then(setQrPausedState).catch(() => {})
     loadPosts()
   }, [loadPosts])
 
@@ -141,6 +143,32 @@ export default function OperatorPage() {
         <p className="op-hint">
           Press the preset if a real plan comes back flat on stage, then keep talking.
         </p>
+      </section>
+
+      <section className="op-card op-ticker">
+        <div>
+          <h2>QR page</h2>
+          <p>
+            {qrPaused === null
+              ? 'Checking whether the QR page is inviting posts…'
+              : qrPaused
+                ? 'Paused — the QR page is not inviting new posts.'
+                : 'Live — judges scanning it can post.'}
+          </p>
+          <p className="op-hint">
+            Volume only. The fuse for a bad post is Hide, below. A reset starts unpaused.
+          </p>
+        </div>
+        <button
+          className="op-btn"
+          data-tone={qrPaused ? 'go' : 'warn'}
+          disabled={busy !== '' || qrPaused === null}
+          onClick={() => void act(qrPaused ? 'resume QR page' : 'pause QR page', async () => {
+            setQrPausedState(await setQrPaused(!qrPaused))
+          })}
+        >
+          {qrPaused ? 'Resume QR page' : 'Pause QR page'}
+        </button>
       </section>
 
       <section className="op-card">

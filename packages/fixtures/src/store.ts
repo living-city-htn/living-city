@@ -41,6 +41,8 @@ type State = {
   incidents: Incident[]
   updatedAt: string
   seq: number
+  /** Whether the QR page is inviting new posts (operator control). */
+  qrPaused: boolean
 }
 
 let state: State
@@ -82,6 +84,7 @@ export function reset(): void {
     incidents: seedIncidents(seedPosts),
     updatedAt: new Date().toISOString(),
     seq: seedPosts.length,
+    qrPaused: false,
   }
 }
 reset()
@@ -226,6 +229,22 @@ export function replan(communityId: string): CommunityPlan | null {
   state.plans.set(communityId, next)
   touch()
   return next
+}
+
+/**
+ * Whether the QR page is inviting new posts. Product's operator control, not a
+ * docs/02 section 8 contract route.
+ *
+ * This is volume throttling for moment 8, not a safety fuse: the fuse for bad
+ * content is hide-post, which is a database write. A cold process starts
+ * unpaused, so the operator has to re-pause after a reset — the panel shows the
+ * current state so that is visible rather than assumed.
+ */
+export const qrPaused = () => state.qrPaused
+export function setQrPaused(paused: boolean): boolean {
+  state.qrPaused = paused
+  touch()
+  return state.qrPaused
 }
 
 export const cityVersion = () => ({

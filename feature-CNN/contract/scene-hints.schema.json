@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SceneHints",
+  "description": "Deterministic per-image scene facts from the feature-CNN model, offered to Call A as extra context. Not part of packages/contracts.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "model_version",
+    "image_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "cnn-hints-1.0"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "image_ref": {
+      "type": "string"
+    },
+    "crowd": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "empty",
+            "few",
+            "group",
+            "crowd",
+            "packed",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "greenery": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "none",
+            "trace",
+            "some",
+            "lush",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "lighting": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "daylight",
+            "overcast",
+            "golden_hour",
+            "artificial_night",
+            "dark",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "weather": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "clear",
+            "cloudy",
+            "rain",
+            "snow",
+            "fog",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "park",
+            "street",
+            "plaza",
+            "waterfront",
+            "cafe_restaurant",
+            "bar",
+            "shop",
+            "market",
+            "transit",
+            "venue",
+            "indoor_other",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "built_form": {
+      "type": "object",
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "properties": {
+        "value": {
+          "enum": [
+            "none",
+            "low_rise",
+            "mid_rise",
+            "high_rise",
+            null
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "runners_up": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "hazards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "value",
+          "confidence"
+        ],
+        "properties": {
+          "value": {
+            "enum": [
+              "flooding",
+              "fallen_tree",
+              "road_blocked",
+              "power_outage",
+              null
+            ]
+          },
+          "confidence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "runners_up": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "prompt_lines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 160
+      }
+    }
+  }
+}

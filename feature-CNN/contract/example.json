@@ -1,0 +1,69 @@
+{
+  "schema_version": "cnn-hints-1.0",
+  "model_version": "citycnn-0.1.0",
+  "image_ref": "/seed/e7-window-broken.jpg",
+  "crowd": {
+    "value": "empty",
+    "confidence": 88,
+    "runners_up": {
+      "empty": 88,
+      "few": 9
+    }
+  },
+  "greenery": {
+    "value": "some",
+    "confidence": 71,
+    "runners_up": {
+      "some": 71,
+      "trace": 18
+    }
+  },
+  "lighting": {
+    "value": "overcast",
+    "confidence": 83,
+    "runners_up": {
+      "overcast": 83,
+      "daylight": 11
+    }
+  },
+  "weather": {
+    "value": "rain",
+    "confidence": 79,
+    "runners_up": {
+      "rain": 79,
+      "cloudy": 16
+    }
+  },
+  "scene": {
+    "value": null,
+    "confidence": 44,
+    "runners_up": {
+      "street": 44,
+      "park": 31,
+      "plaza": 17
+    }
+  },
+  "built_form": {
+    "value": "low_rise",
+    "confidence": 66,
+    "runners_up": {
+      "low_rise": 66,
+      "mid_rise": 22
+    }
+  },
+  "hazards": [
+    {
+      "value": "fallen_tree",
+      "confidence": 91,
+      "runners_up": {}
+    }
+  ],
+  "prompt_lines": [
+    "crowd: no people visible (88% confident)",
+    "greenery: noticeable trees or planting (71% confident)",
+    "lighting: flat overcast light (83% confident)",
+    "weather: rain or wet ground (79% confident)",
+    "built_form: low buildings, one to three storeys (66% confident)",
+    "possible a fallen tree or large branch (91% confident)"
+  ]
+}

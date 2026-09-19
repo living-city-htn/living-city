@@ -1,0 +1,18 @@
+# Training output. Checkpoints are large and are not source; share them in the
+# team drive and note the commit they were trained on.
+runs/
+*.pt
+*.onnx
+
+# Images live outside git. data/raw is a working copy, not a dataset of record.
+data/raw/*
+!data/raw/.gitkeep
+
+# The working label file is committed; per-person scratch copies are not.
+data/labels/*.local.csv
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

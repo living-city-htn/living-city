@@ -1,0 +1,9 @@
+# Pinned loosely: this trains on a laptop, not in a reproducible cluster.
+# CPU wheels are enough. For CUDA, install torch from pytorch.org first, then
+# run this file with --no-deps on the torch lines already satisfied.
+torch>=2.4
+torchvision>=0.19
+pillow>=10.3
+pyyaml>=6.0
+# Dev only. Nothing in src/ imports pytest.
+pytest>=8.0

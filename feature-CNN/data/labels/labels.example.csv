@@ -1,0 +1,21 @@
+image,crowd,greenery,lighting,weather,scene,built_form,hazard,split,note
+seed/cardill-false-alarm.jpg,few,trace,artificial_night,snow,street,low_rise,,train,p-044 hazard left blank on purpose: fire trucks occupy the street and road_blocked is arguable. blank beats a coin flip
+seed/e7-grad-decorations.jpg,group,none,,,indoor_other,,none,train,p-042 indoor: weather and built_form are unknowable from this frame. lighting blank too - mixed daylight through glass and ceiling lights
+seed/e7-plaza-battery-fire.jpg,few,trace,artificial_night,snow,street,mid_rise,none,train,p-041 a burnt-out car. hazard is none because fire is not one of the four classes - Call A still reports the incident
+seed/e7-window-broken.jpg,empty,some,daylight,cloudy,street,mid_rise,road_blocked,val,p-043 the barricades are the road_blocked label. the broken glass itself has no class here
+seed/environmental-reserve.jpg,empty,lush,daylight,cloudy,waterfront,low_rise,none,val,p-045 aerial drone shot - out of distribution for phone posts. golden_hour is arguable; two labellers should agree a rule before the next one
+# These five are the photos already committed in apps/web/public/seed. Copy this file
+# to labels.csv and keep going, or run `python scripts/bootstrap_labels.py --from-seed`
+# to regenerate it with every seed photo listed.
+#
+# One row per image. `image` is relative to data_root (default data/raw).
+# A blank cell means nobody labelled that head for that image: the loss skips it.
+# That is not the same as a wrong label and not the same as `none`.
+# `hazard` takes several values separated by semicolons, or the word `none` to mean
+# "looked, nothing there".
+# `split` blank means the split is chosen deterministically from the image path.
+# A row whose image column starts with # is ignored, which is how these notes survive.
+#
+# Four of the five notes above record a judgement call. That is the point: the notes
+# are where the labelling rules get written down, and a head whose notes keep saying
+# "arguable" needs a rule, not more images.

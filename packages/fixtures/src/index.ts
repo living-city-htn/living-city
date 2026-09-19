@@ -9,12 +9,14 @@
  * See docs/05-team-workflow.md section 3.
  */
 import cityRaw from '../data/city.fallback.json'
+import incidentsRaw from '../data/incidents.mock.json'
 import postsRaw from '../data/posts.seed.json'
 import plansRaw from '../data/plans.fallback.json'
 import shopRaw from '../data/shop.fallback.json'
 import type {
   CommunityGeo, CommunityPlan, DecorationSlot, SeedPost, SeedUser, ShopItem,
 } from './types'
+import type { Incident } from '@living-city/contracts'
 
 /** Strip `_note` / `_readme` developer annotations before anything consumes a fixture. */
 const clean = <T>(value: T): T => {
@@ -33,11 +35,13 @@ const clean = <T>(value: T): T => {
 export type {
   CommunityGeo, CommunityPlan, DecorationSlot, SeedPost, SeedUser, ShopItem,
 } from './types'
+export type { Incident } from '@living-city/contracts'
 
 export const communities: CommunityGeo[] = clean(cityRaw.communities) as CommunityGeo[]
 export const slots: DecorationSlot[] = clean(cityRaw.slots) as DecorationSlot[]
 export const seedUsers: SeedUser[] = clean(postsRaw.users) as SeedUser[]
 export const seedPosts: SeedPost[] = clean(postsRaw.posts) as SeedPost[]
+export const incidentMocks: Incident[] = clean(incidentsRaw.incidents) as Incident[]
 export const fallbackPlans: CommunityPlan[] = clean(plansRaw.plans) as CommunityPlan[]
 export const presetFestivalPlan: CommunityPlan = clean(plansRaw.preset_festival) as CommunityPlan
 export const shopItems: ShopItem[] = clean(shopRaw.items) as ShopItem[]

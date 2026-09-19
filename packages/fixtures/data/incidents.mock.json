@@ -1,0 +1,43 @@
+{
+  "incidents": [
+    {
+      "id": "inc-001",
+      "post_id": "p-007",
+      "community_id": "kw:downtown-kitchener",
+      "type": "fallen_tree",
+      "severity": 2,
+      "location_hint": "Queen Street sidewalk",
+      "reported_at": "2026-09-18T07:35:00-04:00",
+      "source": "post",
+      "status": "reported",
+      "staff_note": null,
+      "updated_at": "2026-09-18T07:35:00-04:00"
+    },
+    {
+      "id": "inc-002",
+      "post_id": "p-020",
+      "community_id": "kw:midtown-ion",
+      "type": "power_outage",
+      "severity": 2,
+      "location_hint": "Between the two ION stops",
+      "reported_at": "2026-09-17T22:40:00-04:00",
+      "source": "post",
+      "status": "verified",
+      "staff_note": "Streetlight outage verified by operations.",
+      "updated_at": "2026-09-18T08:20:00-04:00"
+    },
+    {
+      "id": "inc-003",
+      "post_id": "p-022",
+      "community_id": "kw:uptown-waterloo",
+      "type": "flooding",
+      "severity": 3,
+      "location_hint": "Intersection by the bus stop",
+      "reported_at": "2026-09-18T06:55:00-04:00",
+      "source": "post",
+      "status": "reported",
+      "staff_note": null,
+      "updated_at": "2026-09-18T06:55:00-04:00"
+    }
+  ]
+}

@@ -73,7 +73,7 @@ export default function ShopPanel({ active, onBalanceChanged, onDecorate }: {
   }
 
   return (
-    <section className="page-screen shop-page" aria-label="Shop" style={!active ? { display: 'none' } : undefined}>
+    <section className="page-screen shop-page" aria-label="Shop" data-shown={active} inert={!active}>
       <header className="page-heading">
         <div><h2>Decorations</h2><p>For your personal city.</p></div>
         {shop && <div className="shop-wallet" aria-label={`${shop.balance} points available`}><strong>{shop.balance}</strong><span>points to spend</span></div>}

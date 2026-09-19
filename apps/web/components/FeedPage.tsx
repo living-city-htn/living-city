@@ -35,7 +35,7 @@ export default function FeedPage({ communities, onCommunity, onLiked, active = t
     return () => { version.current++ }
   }, [active, refresh, refreshKey])
   const names = Object.fromEntries(communities.map(c => [c.community_id, c.name]))
-  return <section className="page-screen feed-page" aria-label="Feed" style={!active ? { display: 'none' } : undefined}>
+  return <section className="page-screen feed-page" aria-label="Feed" data-shown={active} inert={!active}>
     <header className="page-heading"><div><h2>Recent posts</h2><p>From across Kitchener–Waterloo.</p></div>
       <button className="form-button" disabled={loading} onClick={() => void refresh()}>Refresh feed</button>
     </header>

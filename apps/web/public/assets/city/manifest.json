@@ -1,0 +1,707 @@
+[
+  {
+    "id": "house-01",
+    "label": "Gabled house",
+    "url": "/assets/city/models/house-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.790875
+    ],
+    "height": 0.641185,
+    "bytes": 53984,
+    "triangles": 1174,
+    "sha256": "75a205fc34254ef0b320d91b43cb5bdc22c797d813ed6cc816f5ed35b52bf670",
+    "source": {
+      "name": "Kenney City Kit Suburban",
+      "url": "https://kenney.nl/assets/city-kit-suburban",
+      "file": "Models/GLB format/building-type-a.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip",
+      "sha256": "49f32e20b9dcd24b1c8f6d6488807b8c8cb684cbb595bfb0bb36ad903e470faa",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "house-02",
+    "label": "Garden house",
+    "url": "/assets/city/models/house-02.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.585295
+    ],
+    "height": 0.704574,
+    "bytes": 82904,
+    "triangles": 1757,
+    "sha256": "46c418140e03f6554a0ff9ba19abf232236d9e07156bdd5faa8775ea7f25e239",
+    "source": {
+      "name": "Kenney City Kit Suburban",
+      "url": "https://kenney.nl/assets/city-kit-suburban",
+      "file": "Models/GLB format/building-type-d.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip",
+      "sha256": "a41cd28265b2b224e700373c3a8356562619699998b7fa4d70ed41de629a6731",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "house-03",
+    "label": "Town house",
+    "url": "/assets/city/models/house-03.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.812414
+    ],
+    "height": 0.5298,
+    "bytes": 47976,
+    "triangles": 1067,
+    "sha256": "748a79e462fe8c316e3558a29ce094c0dbd406e7249422af933b84eda5133d42",
+    "source": {
+      "name": "Kenney City Kit Suburban",
+      "url": "https://kenney.nl/assets/city-kit-suburban",
+      "file": "Models/GLB format/building-type-g.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip",
+      "sha256": "f497a7bc3a8e6b6273ba99f090042d1cfb3141da57d3c51998c57a479a0ece11",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "apartment-01",
+    "label": "Walk-up apartments",
+    "url": "/assets/city/models/apartment-01.glb",
+    "category": "building",
+    "footprint": [
+      0.939987,
+      1.0
+    ],
+    "height": 1.375532,
+    "bytes": 64036,
+    "triangles": 1252,
+    "sha256": "1a39ee1a62422a123304b04b969ec4c643f5bf270b512acd09ffff34a69ac6c0",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-a.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "5cf220f90ee3f21e7abe38055ca409a48aa8ef1d5ffab6e2deb99e5a5e1ed5e0",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "apartment-02",
+    "label": "Courtyard apartments",
+    "url": "/assets/city/models/apartment-02.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.614568
+    ],
+    "height": 0.544512,
+    "bytes": 80448,
+    "triangles": 1509,
+    "sha256": "cbb09fa26b7785fe56c43b7d0cff71f92e773ad995b49e6a80297a44231b11ab",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-e.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "edbe5b49858a3c83e72d3cf496129c06082ef3a3d6005769f8883138e275b456",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "office-01",
+    "label": "Glass office",
+    "url": "/assets/city/models/office-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 2.117647,
+    "bytes": 73488,
+    "triangles": 1292,
+    "sha256": "e51901fe238d12780980b8085d52253a45d2ff59655b2f243cd202ae29990406",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-skyscraper-a.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "d8339bbb75944ff91d1ec9a70ec6dead71bd98b94a42d3dd0fc1f3b107ddbe85",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "office-02",
+    "label": "Office tower",
+    "url": "/assets/city/models/office-02.glb",
+    "category": "building",
+    "footprint": [
+      0.922262,
+      1.0
+    ],
+    "height": 2.939711,
+    "bytes": 93096,
+    "triangles": 1704,
+    "sha256": "004df55f5db7661df1cddab25dd4d16f00a09b7de11c9a3eb566ef29cea95982",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-skyscraper-c.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "e73c357554f7561fedb8c1cbecf9d7163ba09ada264d661c59a0f0a180e0185f",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "shop-01",
+    "label": "Corner shops",
+    "url": "/assets/city/models/shop-01.glb",
+    "category": "building",
+    "footprint": [
+      0.87667,
+      1.0
+    ],
+    "height": 1.282877,
+    "bytes": 75708,
+    "triangles": 1512,
+    "sha256": "bb5fbf65b5eed00ef62697017fe8c221ff52006e595c0a2e3b107dedea5ac97f",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-h.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "6881613ce218bb33a0f56137d4d33b00d307c47e518fbb21ccba1083efbea896",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "cafe-01",
+    "label": "Neighbourhood caf\u00e9",
+    "url": "/assets/city/models/cafe-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.452105
+    ],
+    "height": 0.705514,
+    "bytes": 152544,
+    "triangles": 2960,
+    "sha256": "b33065c4eb41723bbd199da1bb88b5df0fa873b6b5629d3880a27232438e5f48",
+    "source": {
+      "name": "Kenney City Kit Commercial",
+      "url": "https://kenney.nl/assets/city-kit-commercial",
+      "file": "Models/GLB format/building-k.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "afd36f573b9d6a6a890675aa0fbe762b29efb6258f322990752d79d9f0da42c6",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "warehouse-01",
+    "label": "Warehouse",
+    "url": "/assets/city/models/warehouse-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.596087
+    ],
+    "height": 0.705514,
+    "bytes": 105700,
+    "triangles": 2046,
+    "sha256": "4a3f7d7edbf7b4a6f1b859d6a86c8306c5cd53f1db227d6ec4b3897a4d242c6d",
+    "source": {
+      "name": "Kenney City Kit Industrial",
+      "url": "https://kenney.nl/assets/city-kit-industrial",
+      "file": "Models/GLB format/building-a.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-industrial/0ec35b139d-1788171848/kenney_city-kit-industrial_2.0.zip",
+      "sha256": "0e6ef8eb1e1bdbb9d06b5496b5daf3066e00eaf74b3fcd61b74072116a1c86cf",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "tree-01",
+    "label": "Street tree",
+    "url": "/assets/city/models/tree-01.glb",
+    "category": "nature",
+    "footprint": [
+      0.866025,
+      1.0
+    ],
+    "height": 2.710715,
+    "bytes": 10040,
+    "triangles": 62,
+    "sha256": "3391fe62bfee921b43f9bf20e790a88ac4092309d9d917a042f2a8773f574ee7",
+    "source": {
+      "name": "Kenney Nature Kit",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "file": "Models/GLTF format/tree_small.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "d26c0eeed65cc681667f50042ef23ec72ce47ae3b39837bfeec170b05ba6ab6a",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "tree-02",
+    "label": "Mature oak",
+    "url": "/assets/city/models/tree-02.glb",
+    "category": "nature",
+    "footprint": [
+      0.866025,
+      1.0
+    ],
+    "height": 1.65787,
+    "bytes": 25536,
+    "triangles": 196,
+    "sha256": "f08fb22738c0b8f67be584b967f3419ca4195b07a91d7d9203a55d5684e7b07d",
+    "source": {
+      "name": "Kenney Nature Kit",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "file": "Models/GLTF format/tree_oak.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "d7fd8773674928c50c11b66d12c636d49bdcc15a8b1c7fbb98e6f63a3439a3f3",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "shrub-01",
+    "label": "Garden shrub",
+    "url": "/assets/city/models/shrub-01.glb",
+    "category": "nature",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 0.617282,
+    "bytes": 4064,
+    "triangles": 32,
+    "sha256": "932212ef297423f6fbe6d214946b85a09a8b6a127dad9633d77edaf1ab9d3434",
+    "source": {
+      "name": "Kenney Nature Kit",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "file": "Models/GLTF format/plant_bush.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "ae7b1beb39e242b13f5f29e3ec23ef21034b814f82297b8aa00a9bf4e1b09590",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "rock-01",
+    "label": "Shoreline rock",
+    "url": "/assets/city/models/rock-01.glb",
+    "category": "nature",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 0.53,
+    "bytes": 3244,
+    "triangles": 16,
+    "sha256": "b1ad7d6e4f9b6f15681eae96ff8c5867606b05d09e74748d56c9880870c72b60",
+    "source": {
+      "name": "Kenney Nature Kit",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "file": "Models/GLTF format/rock_smallA.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "df9fff9d711e61370e8df0caa2514c89b8f8a8dc6c6fafaf4eb2ec79c5ae07c1",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "flowers-01",
+    "label": "Flower cluster",
+    "url": "/assets/city/models/flowers-01.glb",
+    "category": "nature",
+    "footprint": [
+      0.997448,
+      1.0
+    ],
+    "height": 0.731805,
+    "bytes": 16188,
+    "triangles": 78,
+    "sha256": "5942b61add0a3a36546258880be3dc0fc61d5cb6dcd19c057353ee7f90e1284f",
+    "source": {
+      "name": "Kenney Nature Kit",
+      "url": "https://kenney.nl/assets/nature-kit",
+      "file": "Models/GLTF format/flower_yellowC.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "4115c017390b3e157466a8719e9e2af6c5385505135e7012982b9410760ba9f3",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "chair-01",
+    "label": "Outdoor chair",
+    "url": "/assets/city/models/chair-01.glb",
+    "category": "furniture",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 2.35,
+    "bytes": 10300,
+    "triangles": 170,
+    "sha256": "44f1f9f59c3cc50f9bf571f00dbbdad377d7e230c1145270e93a20841c900705",
+    "source": {
+      "name": "Kenney Furniture Kit",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "file": "Models/GLTF format/chair.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
+      "sha256": "c8a11eec93e89e31250ba91afc1b8d56c3bec7ae86640fd1239f595ff4180883",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "table-01",
+    "label": "Round caf\u00e9 table",
+    "url": "/assets/city/models/table-01.glb",
+    "category": "furniture",
+    "footprint": [
+      0.866025,
+      1.0
+    ],
+    "height": 0.458417,
+    "bytes": 6120,
+    "triangles": 80,
+    "sha256": "f2cd8f6849f68b3ffd5397888b96e43e90dcf0768f5c776caa098516d3e42475",
+    "source": {
+      "name": "Kenney Furniture Kit",
+      "url": "https://kenney.nl/assets/furniture-kit",
+      "file": "Models/GLTF format/tableRound.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
+      "sha256": "f8daea9124a542a00b7bdacfddac82dc468573d43e44d7b54dd6316e9695754b",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "traffic-light-01",
+    "label": "Traffic light",
+    "url": "/assets/city/models/traffic-light-01.glb",
+    "category": "street",
+    "footprint": [
+      1.0,
+      0.765306
+    ],
+    "height": 4.379252,
+    "bytes": 11816,
+    "triangles": 212,
+    "sha256": "2c45653482bcf1dcd6a63f8fc0e5b8ff0da737d3ea9f9be18123fc71a300bd1a",
+    "source": {
+      "name": "Kenney City Kit Roads",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "file": "Models/GLB format/traffic-light.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-roads/74288c9459-1787042796/kenney_city-kit-roads.zip",
+      "sha256": "6c9ee253b7370e1043168493b2e662b349484a0cdd02100cff04d9d8d1bd9abb",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "street-sign-01",
+    "label": "Street sign",
+    "url": "/assets/city/models/street-sign-01.glb",
+    "category": "street",
+    "footprint": [
+      1.0,
+      0.999999
+    ],
+    "height": 2.420382,
+    "bytes": 8728,
+    "triangles": 154,
+    "sha256": "f529797496c81b4e9265ed0493a2d103bcc7a4bfe0b878b515252373716b938b",
+    "source": {
+      "name": "Kenney City Kit Roads",
+      "url": "https://kenney.nl/assets/city-kit-roads",
+      "file": "Models/GLB format/road-sign-street.glb",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/city-kit-roads/74288c9459-1787042796/kenney_city-kit-roads.zip",
+      "sha256": "570ab030366f549575f0b111fca3965aa8d103043bd3a002f40fad2a3f8175c1",
+      "license": "CC0-1.0"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "campus-01",
+    "label": "University hall",
+    "url": "/assets/city/models/campus-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.661765
+    ],
+    "height": 0.926471,
+    "bytes": 16012,
+    "triangles": 192,
+    "sha256": "1403c1b94f9e20ef97e18f0378525cf0085946cae9be148c62ec34304fbd1332",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "civic-01",
+    "label": "Civic hall",
+    "url": "/assets/city/models/civic-01.glb",
+    "category": "building",
+    "footprint": [
+      1.0,
+      0.808824
+    ],
+    "height": 0.569853,
+    "bytes": 24076,
+    "triangles": 336,
+    "sha256": "66f166549e5568fd4119b6db5fe6334dad15ed8620e82ea04b2f59f612a6fa02",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "bench",
+    "label": "Park bench",
+    "url": "/assets/city/models/bench.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      0.4425
+    ],
+    "height": 0.71,
+    "bytes": 9452,
+    "triangles": 108,
+    "sha256": "1b5d4c49742e1678a9907e01dd9fcc6ed81f27894986c79d27117ca66a66ba2e",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "planter",
+    "label": "Flower planter",
+    "url": "/assets/city/models/planter.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      0.833333
+    ],
+    "height": 1.083333,
+    "bytes": 12696,
+    "triangles": 180,
+    "sha256": "0feed9739b05b0e18b2a1f93b06b6f7647fd14f2e61cb5230b98489b9c9e938f",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "string-lights",
+    "label": "String lights",
+    "url": "/assets/city/models/string-lights.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      0.06087
+    ],
+    "height": 0.869565,
+    "bytes": 24348,
+    "triangles": 344,
+    "sha256": "90ad4d33baaf191e584e19b4b456d4f1c98e4771a71f542a2c5982dbabec543a",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "food-truck",
+    "label": "Food truck",
+    "url": "/assets/city/models/food-truck.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      0.63375
+    ],
+    "height": 0.59375,
+    "bytes": 14128,
+    "triangles": 168,
+    "sha256": "459c11f6233755a160eb2a3462d0089e8077a25cd7706954a769d2bf2fa31032",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "fountain",
+    "label": "Fountain",
+    "url": "/assets/city/models/fountain.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 0.658654,
+    "bytes": 27356,
+    "triangles": 432,
+    "sha256": "69b35db46f90609568a34aaead83df1d2ea114a79a4084a7c35115dc6df7955f",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "sculpture",
+    "label": "Sculpture",
+    "url": "/assets/city/models/sculpture.glb",
+    "category": "decoration",
+    "footprint": [
+      1.0,
+      1.0
+    ],
+    "height": 1.53,
+    "bytes": 7024,
+    "triangles": 92,
+    "sha256": "65e438aa21912eeb00b0f8c6a31023c0a80e973114731a69998a4df499c77df0",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "stage",
+    "label": "Event stage",
+    "url": "/assets/city/models/stage.glb",
+    "category": "event",
+    "footprint": [
+      1.0,
+      0.598592
+    ],
+    "height": 0.952465,
+    "bytes": 10504,
+    "triangles": 128,
+    "sha256": "90e33ea83f36aa5a500e981b8078953b57bab680c86ecf65b5b274b55317192e",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  },
+  {
+    "id": "market-stall",
+    "label": "Market stall",
+    "url": "/assets/city/models/market-stall.glb",
+    "category": "event",
+    "footprint": [
+      1.0,
+      0.648148
+    ],
+    "height": 0.888889,
+    "bytes": 10396,
+    "triangles": 120,
+    "sha256": "a6ba02364727101f70e48827f24cc3861c72deca47b2090e9c2e1dd62a6b9b6a",
+    "source": {
+      "name": "Living City",
+      "url": "https://github.com/living-city-htn/living-city",
+      "file": "scripts/assets/build_library.py",
+      "license": "original"
+    },
+    "paletteSlots": [
+      "muted-vertex-palette"
+    ]
+  }
+]

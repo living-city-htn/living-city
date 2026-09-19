@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import type { CityPayload } from './city'
 import { preparePhoto } from '@/lib/post-photo'
+import { nearestCommunity } from '@/lib/post-location'
 
 export type PostLocation = { community_id?: string; lon?: number; lat?: number; label: string }
 export type PostResult = {
@@ -38,7 +39,14 @@ export default function PostComposer({ city, location, onLocation, picking, onPi
     navigator.geolocation.getCurrentPosition(position => {
       if (request !== locationRequest.current) return
       setLocating(false)
-      onLocation({ lon: position.coords.longitude, lat: position.coords.latitude, label: 'Current location — community assigned when you post' })
+      const { longitude: lon, latitude: lat } = position.coords
+      const community = nearestCommunity(city.communities, lon, lat)
+      if (!community) {
+        setError('Could not match your location. Choose a community or tap the map.')
+        return
+      }
+      onLocation({ community_id: community.community_id, lon, lat,
+        label: `${community.name} · Nearest community to your location` })
     }, () => {
       if (request !== locationRequest.current) return
       setLocating(false); setError('Location could not be found. Choose a community or tap the map.')
@@ -87,7 +95,7 @@ export default function PostComposer({ city, location, onLocation, picking, onPi
             if (!c) return
             locationRequest.current++; setLocating(false)
             onLocation({ community_id: c.community_id, lon: c.centroid[0], lat: c.centroid[1], label: c.name })
-          }}><option value="" disabled>{location && !location.community_id ? 'Using current location' : 'Choose a community'}</option>
+          }}><option value="" disabled>Choose a community</option>
             {city.communities.map(c => <option value={c.community_id} key={c.community_id}>{c.name}</option>)}
           </select>
           <div className="photo-actions"><button type="button" className="form-button" disabled={locating} onClick={locate}>{locating ? 'Finding location…' : 'Use my location'}</button>

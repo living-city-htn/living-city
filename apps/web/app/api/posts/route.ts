@@ -1,5 +1,6 @@
 import { balance, createPost, hidePost, listCommunities, listPosts } from '@living-city/fixtures/store'
 import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } from '@/lib/stub'
+import { nearestCommunity } from '@/lib/post-location'
 import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 
@@ -24,16 +25,7 @@ export async function POST(req: Request) {
     if (typeof body.lon !== 'number' || typeof body.lat !== 'number') {
       return badRequest('either community_id or lon/lat is required')
     }
-    const { lon, lat } = body
-    let best: string | undefined
-    let bestD = Infinity
-    for (const c of listCommunities()) {
-      const [clon, clat] = c.centroid
-      if (clon === undefined || clat === undefined) continue
-      const d = Math.hypot(clon - lon, clat - lat)
-      if (d < bestD) { bestD = d; best = c.community_id }
-    }
-    communityId = best
+    communityId = nearestCommunity(listCommunities(), body.lon, body.lat)?.community_id
   }
   if (!communityId) return badRequest('could not assign a community')
 

@@ -64,7 +64,9 @@ image, which is not in the demo script.
 
 The Post tab supports camera/gallery photos, optional captions for photos,
 text-only posts, device location, a community picker, and picking a block on
-the map. The draft stays mounted across tabs and survives a failed request;
+the map. Device location selects and names the nearest demo community before
+submission, using the same lookup as the post route, while retaining the GPS
+coordinates. Users can override that selection. The draft stays mounted across tabs and survives a failed request;
 it does not survive a page reload. A successful response names the assigned
 community and reports the credited points and balance from that request.
 

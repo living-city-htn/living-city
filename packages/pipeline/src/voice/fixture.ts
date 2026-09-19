@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { ModelProvider, ModelRequest, ModelResponse } from '../provider/types'
+import bundled from '../../../fixtures/data/voice/voice-analysis.mock.json'
 
 /**
  * The offline OMNI. docs/08 section 9.
@@ -20,16 +21,29 @@ type Mock = Record<string, unknown>
 
 let cache: Mock | null = null
 
-const MOCK_PATH = resolve(
-  process.cwd(),
-  process.env.VOICE_FIXTURE_PATH
-    ?? 'packages/fixtures/data/voice/voice-analysis.mock.json',
-)
-
+/**
+ * The default answers are imported, not read off disk.
+ *
+ * This matters on Vercel and nowhere else. A serverless bundle contains the
+ * modules the compiler can see and nothing more, and its working directory is
+ * not the repo root, so `readFileSync('packages/fixtures/...')` finds nothing
+ * there. It fails quietly, too: the catch below turns an unreadable file into
+ * an empty mock, which the voice path reads as `unintelligible`. Every voice
+ * post would degrade and no log line would say why. An import is bundled, so
+ * the rehearsal answers the same on a laptop and on a deployed preview.
+ *
+ * `VOICE_FIXTURE_PATH` still overrides it for a local experiment, and is read
+ * per call rather than once at import so a test can set it and reset.
+ */
 const loadMock = (): Mock => {
   if (cache) return cache
+  const override = process.env.VOICE_FIXTURE_PATH
+  if (!override) {
+    cache = bundled as Mock
+    return cache
+  }
   try {
-    cache = JSON.parse(readFileSync(MOCK_PATH, 'utf8')) as Mock
+    cache = JSON.parse(readFileSync(resolve(process.cwd(), override), 'utf8')) as Mock
   } catch {
     // A missing fixture file must not be louder than a missing network. The
     // voice path degrades exactly as it would with an unreachable OMNI.

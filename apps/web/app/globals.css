@@ -1,0 +1,177 @@
+/*
+ * App chrome tokens. apps/web/DESIGN.md, "Art direction".
+ *
+ * The one art rule: the chrome is quiet, the city is the colour. Everything
+ * here is neutral except --accent, which only the Post tab is allowed to use.
+ * The city viewport carries its own colour and is not themed from here.
+ */
+:root {
+  --paper: #fbfbfd;
+  --sheet: rgba(255, 255, 255, 0.82);
+  --ink: #1c1c1e;
+  --label: #6e6e73;
+  --hair: rgba(0, 0, 0, 0.1);
+  --fill: rgba(120, 120, 128, 0.12);
+  --accent: #2f6fdd;
+
+  /* The tab bar's own height, so sheets can sit exactly on top of it. */
+  --tabbar-h: calc(56px + env(safe-area-inset-bottom));
+
+  --r-card: 12px;
+  --r-sheet: 22px;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0d0d0f;
+    --sheet: rgba(28, 28, 30, 0.82);
+    --ink: #f2f2f7;
+    --label: #98989f;
+    --hair: rgba(255, 255, 255, 0.12);
+    --fill: rgba(120, 120, 128, 0.24);
+    --accent: #6ea0f5;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.45 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+button { font: inherit; color: inherit; }
+
+h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+
+/* --- posts ------------------------------------------------------------- */
+
+.posts { display: flex; flex-direction: column; gap: 24px; }
+
+.post { display: flex; flex-direction: column; gap: 6px; }
+.post-photo {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--r-card); margin-bottom: 4px; background: var(--fill);
+}
+.post-head { display: flex; align-items: baseline; gap: 8px; }
+.post-author { font-weight: 600; font-size: 15px; }
+.post-time { color: var(--label); font-size: 13px; }
+.post-text { margin: 0; font-size: 15px; }
+
+.like {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  margin-top: 2px; padding: 6px 10px 6px 8px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--label); font-size: 13px; cursor: pointer;
+  transition: color 200ms var(--ease), background 200ms var(--ease);
+}
+.like:hover { background: var(--fill); }
+.like[data-liked='true'] { color: #e0245e; }
+@media (prefers-color-scheme: dark) { .like[data-liked='true'] { color: #ff6b8e; } }
+
+.muted { color: var(--label); font-size: 15px; margin: 0; }
+
+/* --- shell ------------------------------------------------------------- */
+
+.shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+/* The map is full-bleed behind everything; the chrome floats over it. */
+.viewport { position: absolute; inset: 0; }
+
+.greeting {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+  padding: calc(16px + env(safe-area-inset-top)) 24px 16px;
+  pointer-events: none;
+}
+.greeting h1 { font-size: 22px; }
+.greeting p { margin: 2px 0 0; color: var(--label); font-size: 14px; }
+
+/* --- bottom sheets ------------------------------------------------------ */
+
+.sheet {
+  /* Above the tab bar, not under it: the bar is opaque and would clip the body. */
+  position: absolute; left: 0; right: 0; bottom: var(--tabbar-h); z-index: 3;
+  max-height: calc(78% - var(--tabbar-h)); display: flex; flex-direction: column;
+  background: var(--sheet); backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: 0 -1px 0 var(--hair), 0 -12px 40px rgba(0, 0, 0, 0.13);
+  animation: sheet-in 260ms var(--ease);
+}
+@keyframes sheet-in { from { transform: translateY(14px); opacity: 0; } }
+
+.sheet-head {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 24px 12px; flex: 0 0 auto;
+}
+.sheet-head h2 { font-size: 20px; }
+.sheet-sub { margin: 2px 0 0; color: var(--label); font-size: 14px; }
+/* Only the enum value is title-cased; "4 posts" beside it is not. */
+.mood { text-transform: capitalize; }
+.sheet-body { padding: 0 24px 24px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+.icon-btn {
+  margin-left: auto; flex: 0 0 auto; display: grid; place-items: center;
+  width: 30px; height: 30px; border: 0; border-radius: 999px;
+  background: var(--fill); color: var(--label); cursor: pointer;
+  transition: opacity 200ms var(--ease);
+}
+.icon-btn:hover { opacity: 0.7; }
+
+.summary { margin: 0 0 14px; font-size: 16px; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0 0 16px; padding: 0; }
+.tags li {
+  padding: 4px 10px; border-radius: 999px; background: var(--fill);
+  color: var(--label); font-size: 13px; text-transform: capitalize;
+}
+
+.why {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  padding: 10px 0; border: 0; border-top: 1px solid var(--hair);
+  background: transparent; font-size: 15px; text-align: left; cursor: pointer;
+}
+.chev { display: inline-flex; transition: transform 200ms var(--ease); color: var(--label); }
+.chev[data-open='true'] { transform: rotate(180deg); }
+
+.reasons { margin: 0 0 8px; padding-left: 18px; color: var(--label); font-size: 14px; }
+.reasons li { margin-bottom: 4px; }
+
+.section-label {
+  margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--hair);
+  font-size: 13px; color: var(--label); text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* --- tab bar ------------------------------------------------------------ */
+
+.tabbar {
+  position: relative; z-index: 4; margin-top: auto; display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: var(--tabbar-h); padding: 6px 4px env(safe-area-inset-bottom);
+  background: var(--sheet); backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--hair);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 0; border: 0; background: transparent; color: var(--label);
+  font-size: 11px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: color 200ms var(--ease), transform 200ms var(--ease);
+}
+.tab:active { transform: scale(0.94); }
+.tab[data-active='true'] { color: var(--ink); }
+.tab[data-accent='true'][data-active='true'],
+.tab[data-accent='true']:hover { color: var(--accent); }
+
+.balance {
+  margin-left: auto; flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
+  background: var(--fill); color: var(--label); font-size: 13px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

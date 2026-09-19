@@ -1,11 +1,13 @@
 import { createPost, hidePost, listCommunities, listPosts } from '@living-city/fixtures/store'
-import { badRequest, currentUser, json, readJson } from '@/lib/stub'
+import { badRequest, currentUser, json, readJson, withPostMeta } from '@/lib/stub'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 
 // GET /api/posts?community=&scope=  -> analyzed, unhidden posts only
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  return json({ posts: listPosts({ community: searchParams.get('community') ?? undefined }) })
+  return json({
+    posts: withPostMeta(listPosts({ community: searchParams.get('community') ?? undefined })),
+  })
 }
 
 type Body = { text?: string; image_url?: string | null; lon?: number; lat?: number; community_id?: string; is_incident_report?: boolean }

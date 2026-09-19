@@ -23,6 +23,9 @@ importers:
       '@living-city/fixtures':
         specifier: workspace:*
         version: link:../../packages/fixtures
+      '@living-city/pipeline':
+        specifier: workspace:*
+        version: link:../../packages/pipeline
       next:
         specifier: ^15.5.0
         version: 15.5.25(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

@@ -24,6 +24,12 @@ pnpm --filter @living-city/web dev
 fixtures from `packages/fixtures` and nothing calls a model or a database. Set
 `USE_FIXTURES=0` only once Pipeline's routes exist.
 
+**Stub writes do not persist.** The store is a module-level object in one
+process's memory, so it resets on every HMR reload locally, and deployed it is
+per-invocation: a like or a purchase may not be visible to the next request.
+Reads are stable, which is all Stage 1 needs against fixtures. Writes become
+real when Civic's game CRUD lands on Postgres (docs/02 section 6).
+
 To pull the real environment locally: `pnpm dlx vercel env pull`. That writes a
 gitignored `.env.local`; never commit one.
 

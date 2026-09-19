@@ -42,7 +42,7 @@ If a UI element needs colour to be understood, it is doing too much.
 |---|---|
 | Type | System stack (`-apple-system`, `SF Pro` on Apple devices). Two weights: regular for body, semibold for titles. No third font. |
 | Spacing | 8pt grid. When unsure, use more space, not less. |
-| Colour | Pale green-white surfaces; text, icons and controls stay neutral. One accent, used only for the primary action. Dark mode is a deep green-black. The tint is in surfaces only, so the one art rule still holds. |
+| Colour | Near-monochrome. The only green in the interface is the header and the particle drift behind the map, both pale. One accent, used only for the primary action. Backgrounds near-white in light mode, near-black in dark. |
 | Depth | Subtle shadow and background blur only. No gradients, no borders where space will do, no skeuomorphism. |
 | Corners | Large radii: 12px on cards, 20px+ on sheets. |
 | Tab bar | Translucent, `backdrop-filter: blur()`, hairline top border, floats over the map. |
@@ -52,6 +52,19 @@ If a UI element needs colour to be understood, it is doing too much.
 
 The map is full-bleed behind everything. The chrome floats; it never boxes the
 city in.
+
+## The header and the particles
+
+A pale green header names the city (or the selected block), says in one line
+what the current tab is for, and carries the points balance so it is visible
+from every screen rather than only inside the shop.
+
+Behind the map, a slow drift of particles: pollen, or seeds on the wind. It is
+the app's only ambient motion and it is deliberately **not** the plan's
+`effects`. Fireflies, sparkles and music notes belong to 3D, are capped at
+three by docs/04 section 3, and mean something — a block carrying them is a
+block the AI decided was festive. The drift is just air, and it must never be
+mistaken for a plan. It is pale, slow, and behind everything.
 
 ## Two layouts
 

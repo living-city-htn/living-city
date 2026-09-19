@@ -7,18 +7,24 @@
  */
 :root {
   /*
-   * Pale green-white. The tint lives in surfaces only: text, icons and controls
-   * stay neutral, so apps/web/DESIGN.md's one art rule still holds and nothing
-   * in the chrome competes with a block lighting up in moment 4.
+   * Near-monochrome again. apps/web/DESIGN.md's one art rule: the chrome is
+   * quiet, the city is the colour. The only green in the interface is the
+   * header and the particle drift behind the map, both kept pale enough that
+   * nothing competes with a block lighting up in moment 4.
    */
-  --paper: #f3f7f3;
+  --paper: #fbfbfd;
   --surface: #ffffff;
-  --sheet: rgba(255, 255, 255, 0.86);
-  --ink: #16201a;
-  --label: #5e6b62;
-  --hair: rgba(22, 32, 26, 0.1);
-  --fill: rgba(22, 32, 26, 0.06);
+  --sheet: rgba(255, 255, 255, 0.82);
+  --ink: #1c1c1e;
+  --label: #6e6e73;
+  --hair: rgba(0, 0, 0, 0.1);
+  --fill: rgba(120, 120, 128, 0.12);
   --accent: #2f6fdd;
+
+  /* The one green, and the air behind the city. */
+  --header: #e9f3ea;
+  --header-ink: #24352a;
+  --particle: rgba(122, 168, 132, 0.5);
 
   --r-card: 14px;
   --r-sheet: 24px;
@@ -31,20 +37,25 @@
 
   --tabbar-h: calc(56px + env(safe-area-inset-bottom));
   --rail-w: 0px;
+  --header-h: calc(58px + env(safe-area-inset-top));
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0d120f;
-    --surface: #151b17;
-    --sheet: rgba(21, 27, 23, 0.86);
-    --ink: #eaf1ec;
-    --label: #96a39a;
-    --hair: rgba(234, 241, 236, 0.12);
-    --fill: rgba(234, 241, 236, 0.08);
+    --paper: #0d0d0f;
+    --surface: #151517;
+    --sheet: rgba(28, 28, 30, 0.82);
+    --ink: #f2f2f7;
+    --label: #98989f;
+    --hair: rgba(255, 255, 255, 0.12);
+    --fill: rgba(120, 120, 128, 0.24);
     --accent: #6ea0f5;
+
+    --header: #1b271e;
+    --header-ink: #d8e8dc;
+    --particle: rgba(120, 170, 132, 0.34);
   }
 }
 
@@ -107,8 +118,8 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
  * 12-block city the southern blocks were landing under the bar, and moment 1
  * asks for the whole city in frame.
  */
-.viewport { position: absolute; inset: 0; bottom: var(--tabbar-h);
-  transition: bottom 260ms var(--ease); }
+.viewport { position: absolute; inset: 0; top: var(--header-h); bottom: var(--tabbar-h);
+  transition: bottom var(--base) var(--ease); }
 /* My City: also clear the sheet, so every slot stays tappable. */
 .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h, 0px)); }
 
@@ -418,3 +429,60 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 }
 .post-text { margin-top: 2px; }
 .post-actions { display: flex; align-items: center; gap: 4px; padding-top: 8px; }
+
+
+/* --- header ---------------------------------------------------------------
+   The only green in the chrome, and pale on purpose.
+*/
+
+.app-header {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: center; gap: 16px;
+  height: var(--header-h); padding: env(safe-area-inset-top) 20px 0;
+  background: var(--header); color: var(--header-ink);
+  border-bottom: 1px solid var(--hair);
+}
+.app-header-text { min-width: 0; }
+.app-header h1 { font-size: 17px; letter-spacing: -0.01em; }
+.app-header p {
+  margin: 1px 0 0; font-size: 12.5px; opacity: 0.72;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.app-header-balance {
+  margin-left: auto; flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55); font-size: 13px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-color-scheme: dark) {
+  .app-header-balance { background: rgba(255, 255, 255, 0.08); }
+}
+
+/* --- particles ------------------------------------------------------------
+   Air behind the city. Never the plan's effects — see ParticleField.tsx.
+*/
+
+.particles {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+}
+.particle {
+  position: absolute; bottom: -8%; display: block; border-radius: 999px;
+  background: var(--particle);
+  animation-name: drift; animation-timing-function: linear;
+  animation-iteration-count: infinite; will-change: transform, opacity;
+}
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translate3d(var(--drift, 0), -112vh, 0); opacity: 0; }
+}
+
+
+/*
+ * Desktop overrides for rules defined after the main breakpoint block. Same
+ * specificity as the base rules, so they have to come last to win.
+ */
+@media (min-width: 900px) {
+  /* The rail owns the full height; the header spans only the content area. */
+  .app-header { left: var(--rail-w); }
+}

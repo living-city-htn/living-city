@@ -41,7 +41,8 @@ const CSS = `
 .lc-scene { --ink: #1c1c1e; --hair: #d8d8dc; --paper: #fbfbfd; --label: #6e6e73;
   --block-warm: #f0e3d6; --block-brick: #ecd9d4; --block-cool: #dde5ee;
   --block-green: #dde8dc; --block-sunset: #f7d9b8; --block-neutral: #e8e8ec; --mark: #2f6fdd;
-  width: 100%; height: 100%; display: block; background: var(--paper);
+  /* Transparent: the drifting particles live behind this. */
+  width: 100%; height: 100%; display: block; background: transparent;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 @media (prefers-color-scheme: dark) {
   .lc-scene { --ink: #f2f2f7; --hair: #3a3a3e; --paper: #0d0d0f; --label: #98989f;

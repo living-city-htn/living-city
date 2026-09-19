@@ -128,3 +128,29 @@ to City and see it gone, switch back, take it back. Durable placements still
 wait on Civic's database-backed game service. Physical-phone checks remain open
 for Product's Gate 1. Next on Product's list is the operator panel (Stage 2):
 reset, manual trigger, preset plan, one-tap hide, and the planning ticker.
+
+## Live update (Product, Stage 2)
+
+The app polls `GET /api/city/version` every 5 seconds and re-fetches only the
+plans whose id changed (docs/02 section 10). No server push. This is what lets
+a judge watch their own block change without anyone touching the operator
+laptop, which is all of moment 8.
+
+After posting, the poster's block is marked "planning" so they know where to
+look and that it takes a moment. The mark clears when that block's plan id
+actually changes, not on a timer.
+
+Polling pauses while the document is hidden and runs again immediately on
+`visibilitychange`: a phone in a pocket should not be fetching. Note the
+asymmetry with the operator panel, which has **no** visibility guard on
+purpose - its ticker has to keep running when the operator switches tabs,
+because it is the only thing replanning blocks during moment 8.
+
+A block missing from a version response is left alone rather than blanked, so a
+partial response can never wipe the block someone is looking at. A failed poll
+is silent: the next one is five seconds away and the city on screen is still
+valid.
+
+The fallback scene maps `sunset_orange`, the festival plan's palette. It was
+falling through to neutral grey, which made the demo block the dullest thing on
+screen at the moment it is supposed to be the loudest.

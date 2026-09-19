@@ -20,7 +20,10 @@
  */
 import { env } from '../env'
 import { log } from '../log'
+import { authenticityOf } from '../doc'
 import { civicRead } from '../ports'
+import { windowStart } from '../retrieval'
+import { dissentNote, resolveConflict, type Claim, type Verdict } from '../scoring'
 import { finishRun, startRun, type AgentRunLog } from '../store'
 import { TOOLS, toolByName, toolSchema, type ToolContext } from './tools'
 
@@ -99,6 +102,46 @@ const callModel = async (messages: ChatMessage[]): Promise<ChatResponse> => {
   return (await response.json()) as ChatResponse
 }
 
+/**
+ * The conflict maths runs here, in deterministic code, before the model is
+ * asked anything. The agent is told what the evidence weighs and where it
+ * disagrees; it does not get to decide who is right by vibes.
+ *
+ * One verdict per block in the window, built from the same PostAnalysis records
+ * everything else reads.
+ */
+export const verdictsFor = (
+  options: { blockId?: string; window?: string } = {},
+): Array<{ block_id: string; verdict: Verdict; dissent_note: string }> => {
+  const port = civicRead()
+  if (!port) return []
+
+  const since = windowStart(options.window ?? '1h') ?? undefined
+  const records = port.listEvidence({ blockId: options.blockId, since, limit: 500 })
+
+  const byBlock = new Map<string, Claim[]>()
+  for (const record of records) {
+    const claims = byBlock.get(record.post.community_id) ?? []
+    claims.push({
+      post_id: record.post.id,
+      user_id: record.post.user_id,
+      created_at: record.post.created_at,
+      assertion: record.analysis.incident.type,
+      authenticity: authenticityOf(record.analysis),
+      confidence: record.analysis.confidence,
+    })
+    byBlock.set(record.post.community_id, claims)
+  }
+
+  return [...byBlock.entries()]
+    // A block where everyone agrees on "nothing is wrong" is not worth a turn.
+    .filter(([, claims]) => claims.some((c) => c.assertion !== 'none'))
+    .map(([block_id, claims]) => {
+      const verdict = resolveConflict(claims, { floor: env.confidenceFloor() })
+      return { block_id, verdict, dissent_note: dissentNote(verdict) }
+    })
+}
+
 export type RunAgentOptions = {
   /** Restrict the run to one block. The civic page always passes this. */
   blockId?: string
@@ -131,13 +174,33 @@ export const runAgent = async (options: RunAgentOptions = {}): Promise<AgentRunR
   if (!civicRead()) return fail('disabled', 'no civic read port is wired up')
 
   const window = options.window ?? '1h'
+  const verdicts = verdictsFor({ blockId: options.blockId, window })
+
+  // The deterministic verdicts go in the first message rather than behind a
+  // tool, so the model cannot skip them and start guessing. `action` is the
+  // floor: `suggest` means it may not write, whatever it concludes.
+  const brief = verdicts.length === 0
+    ? 'No block has a contested or reported incident in this window.'
+    : verdicts.map(({ block_id, verdict, dissent_note }) =>
+        `${block_id}: verdict "${verdict.assertion}" at confidence ${verdict.confidence} `
+        + `(${verdict.authors} author(s), agreement ${Math.round(verdict.agreement * 100)}%, `
+        + `permitted action: ${verdict.action}). ${dissent_note} `
+        + `Supporting posts: ${verdict.support.join(', ') || 'none'}.`).join('
+')
+
   const messages: ChatMessage[] = [
     { role: 'system', content: SYSTEM },
     {
       role: 'user',
-      content: options.blockId
-        ? `Triage block ${options.blockId} over the last ${window}.`
-        : `Triage the city over the last ${window}. Start by finding blocks with incident reports.`,
+      content: [
+        options.blockId
+          ? `Triage block ${options.blockId} over the last ${window}.`
+          : `Triage the city over the last ${window}.`,
+        '',
+        'Conflict resolution has already been computed deterministically. Do not re-derive it:',
+        brief,
+      ].join('
+'),
     },
   ]
 

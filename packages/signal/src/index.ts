@@ -59,3 +59,9 @@ export {
   civicWrite, setCivicWritePort,
   type CivicWritePort, type IncidentPatch, type NewIncident,
 } from './ports'
+export {
+  CORROBORATION_CAP, CORROBORATION_GAIN, RECENCY_HALF_LIFE_MIN, TIE_EPSILON,
+  claimWeight, corroborationFactor, dissentNote, incidentConfidence, recencyWeight,
+  resolveConflict,
+  type Claim, type DissentEntry, type ResolveOptions, type TieBreak, type Verdict,
+} from './scoring'

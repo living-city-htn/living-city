@@ -24,3 +24,12 @@ export {
 } from './client'
 export { log as signalLog } from './log'
 export { MAPPING_VERSION, ensureIndex, indexBody, type EnsureResult } from './mapping'
+export {
+  authenticityOf, buildDoc, docIdOf, embeddableText, summarise,
+  type IndexableBlock, type IndexablePost, type SignalDoc,
+} from './doc'
+export { embed, embedMany, embeddingsAvailable } from './embed'
+export {
+  backfill, indexPost, removePost, resetIngestState,
+  type BackfillResult, type BackfillRow, type IngestResult,
+} from './ingest'

@@ -1,0 +1,116 @@
+/**
+ * The seam between the web app and `packages/signal`, mirroring what
+ * `lib/pipeline.ts` does for `packages/pipeline`.
+ *
+ * Everything here is inert unless `SIGNAL_LAYER` is on. With the flag off,
+ * `ingestPost` and `removeFromSignal` return immediately, no env var is read,
+ * no index is touched and no embedding is generated - the post flow, the
+ * aggregator, Call B and the renderer behave exactly as they did before this
+ * file existed.
+ *
+ * The one thing worth knowing about the current architecture: `PostAnalysis`
+ * records live in `lib/pipeline.ts` module memory and only exist when the
+ * pipeline is on (`USE_FIXTURES=0` with a key). With fixtures serving, there
+ * are no analyses to index, so the signal layer indexes nothing from new posts
+ * and the seeded corpus comes from `pnpm signal:backfill` instead. That is a
+ * property of the stub, not of this layer.
+ */
+import type { PostAnalysis } from '@living-city/contracts'
+import { listCommunities, likeCount, listPosts } from '@living-city/fixtures/store'
+import {
+  backfill, indexPost, removePost, signalEnv,
+  type BackfillRow, type IndexableBlock, type IndexablePost,
+} from '@living-city/signal'
+import { analysisOf } from '@/lib/pipeline'
+
+/** The one switch, re-exported so routes do not each reach into the package. */
+export const signalEnabled = (): boolean => signalEnv.enabled()
+
+/**
+ * What the block contributes to a document. `CommunityGeo` carries the official
+ * area it was derived from as `source` plus the id itself; the drawn block id
+ * is the `community_id` and is indexed separately, so a judge asking "which
+ * ward" gets an answer that is not the demo's own geometry.
+ */
+const blockOf = (communityId: string): IndexableBlock | undefined => {
+  const geo = listCommunities().find((c) => c.community_id === communityId)
+  if (!geo) return undefined
+  return {
+    official_area_id: geo.source === 'synthetic' ? null : geo.community_id,
+    area_source: geo.source,
+    city_id: geo.city_id,
+  }
+}
+
+const toIndexable = (post: {
+  id: string; user_id: string; text: string; image_url?: string | null
+  lon: number; lat: number; created_at: string; community_id: string
+  is_incident_report: boolean; hidden: boolean
+}): IndexablePost => post
+
+/**
+ * Index one post. **Deliberately not awaited by the post handler.**
+ *
+ * The post has already been created and the response is already going out; an
+ * Elasticsearch write must not sit between a post being created and the block
+ * rebuilding. Errors are swallowed inside the package, so this cannot reject.
+ */
+export const ingestPost = (
+  post: Parameters<typeof toIndexable>[0],
+  analysis: PostAnalysis,
+): void => {
+  if (!signalEnabled()) return
+  void indexPost(toIndexable(post), analysis, {
+    block: blockOf(post.community_id),
+    engagement: likeCount(post.id),
+  })
+}
+
+/**
+ * What the post handler calls: one line, after Call A has returned and any
+ * auto-hide has been applied. Looks the analysis up itself so the route does
+ * not have to learn where analyses live.
+ *
+ * A post with no analysis (Call A failed, or fixtures are serving) is not
+ * indexed. The index holds evidence, and an unanalysed post is not yet evidence.
+ */
+export const ingestAnalyzedPost = (post: Parameters<typeof toIndexable>[0]): void => {
+  if (!signalEnabled()) return
+  if (post.hidden) return
+  const analysis = analysisOf(post.id)
+  if (!analysis) return
+  ingestPost(post, analysis)
+}
+
+/**
+ * Remove a hidden post from the index, awaited inside the hide request so the
+ * promise hide-post makes - gone from every surface now - covers the evidence
+ * index too. Never throws; a hide succeeds against a dead cluster and the
+ * document is removed by the next backfill.
+ */
+export const removeFromSignal = async (postId: string): Promise<void> => {
+  if (!signalEnabled()) return
+  await removePost(postId)
+}
+
+/**
+ * Every post the process can currently pair with an analysis. Hidden posts are
+ * included on purpose: `backfill` deletes them from the index, which is what
+ * makes it the repair path for a hide whose delete failed.
+ */
+export const collectBackfillRows = (): BackfillRow[] => {
+  const rows: BackfillRow[] = []
+  for (const post of listPosts({ includeHidden: true })) {
+    const analysis = analysisOf(post.id)
+    if (!analysis) continue
+    rows.push({
+      post: toIndexable(post),
+      analysis,
+      block: blockOf(post.community_id),
+      engagement: likeCount(post.id),
+    })
+  }
+  return rows
+}
+
+export const runBackfill = () => backfill(collectBackfillRows())

@@ -59,3 +59,21 @@ development:
 The blob store is public because post photos are shown in the feed, the block
 panel and the government page; private storage would mean signed URLs on every
 image, which is not in the demo script.
+
+## Phone posting (Product, Stage 1)
+
+The Post tab supports camera/gallery photos, optional captions for photos,
+text-only posts, device location, a community picker, and picking a block on
+the map. The draft stays mounted across tabs and survives a failed request;
+it does not survive a page reload. A successful response names the assigned
+community and reports the credited points and balance from that request.
+
+With `USE_FIXTURES=1`, photos are resized to at most 1280px, encoded as JPEG,
+and sent inline in the existing `image_url` field. This is a disposable fixture
+transport, not a Blob upload. In real mode, inline photos are rejected before
+creating a post; the form offers an explicit caption-only fallback. Pipeline
+must replace this transport with durable photo upload before Gate 2.
+The existing fixture store remains in memory and can reset between requests.
+
+Post-route changes require Pipeline-owner review. No contracts were changed.
+Physical iOS/Android camera and installation tests remain Gate 1 checks.

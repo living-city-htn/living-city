@@ -15,12 +15,17 @@
 import { useEffect, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
 import { CityScene, isFallbackScene, type CityPayload, type Placement } from './city'
+import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
 import TabBar, { type Tab } from './TabBar'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
 import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, type PostRow } from '@/lib/api'
 
 export default function AppShell() {
+  const [postLocation, setPostLocation] = useState<PostLocation | null>(null)
+  const [pickingLocation, setPickingLocation] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [panelVersion, setPanelVersion] = useState(0)
   const [tab, setTab] = useState<Tab>('city')
   const [city, setCity] = useState<CityPayload | null>(null)
   const [plans, setPlans] = useState<CommunityPlan[]>([])
@@ -63,6 +68,16 @@ export default function AppShell() {
     }
   }, [tab])
 
+  const posted = (result: PostResult) => {
+    const community = city?.communities.find(c => c.community_id === result.post.community_id)
+    if (typeof result.balance === 'number') setBalance(result.balance)
+    else void getMe().then(me => setBalance(me.balance)).catch(() => {})
+    const points = typeof result.points_earned === 'number' ? ` +${result.points_earned} points.` : ''
+    setNotice(result.post.hidden ? 'Post received but not shown publicly.' :
+      `Posted to ${community?.name ?? 'your community'}.${points}${result.post.status === 'pending' ? ' Being analyzed.' : ''}`)
+    setSelectedId(result.post.community_id); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
+  }
+
   const selected = city?.communities.find((c) => c.community_id === selectedId) ?? null
   const mode = tab === 'mine' ? 'mine' : 'public'
 
@@ -78,6 +93,12 @@ export default function AppShell() {
             selectedId={selectedId}
             planningIds={[]}
             onBlockSelect={setSelectedId}
+            onBlockPick={(id, point) => {
+              if (tab !== 'post' || !pickingLocation) return
+              const community = city.communities.find(c => c.community_id === id)
+              setPostLocation({ community_id: id, lon: point[0], lat: point[1], label: community?.name ?? id })
+              setPickingLocation(false)
+            }}
             onSlotTap={() => {
               /* Placing is Stage 2: my-city mode with persistence. */
             }}
@@ -100,6 +121,7 @@ export default function AppShell() {
       */}
       {tab === 'city' && selected && (
         <BlockPanel
+          key={`${selected.community_id}:${panelVersion}`}
           communityId={selected.community_id}
           name={selected.name}
           onClose={() => setSelectedId(null)}
@@ -122,21 +144,11 @@ export default function AppShell() {
         </section>
       )}
 
-      {(tab === 'post' || tab === 'shop') && (
-        <section className="sheet" aria-label={tab === 'post' ? 'Post' : 'Shop'}>
-          <header className="sheet-head">
-            <div>
-              <h2>{tab === 'post' ? 'Post' : 'Shop'}</h2>
-              <p className="sheet-sub">
-                {tab === 'post'
-                  ? 'Camera, caption and location — next up.'
-                  : 'Six items and your balance — next up.'}
-              </p>
-            </div>
-            {balance !== null && <span className="balance">{balance} pts</span>}
-          </header>
-        </section>
-      )}
+      {city && <PostComposer city={city} active={tab === 'post'} location={postLocation} onLocation={setPostLocation}
+        picking={pickingLocation} onPick={setPickingLocation} onPosted={posted} />}
+      {tab === 'post' && !city && <section className="sheet"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
+      {tab === 'shop' && <section className="sheet" aria-label="Shop"><header className="sheet-head"><div><h2>Shop</h2><p className="sheet-sub">Six items and your balance — next up.</p></div>{balance !== null && <span className="balance">{balance} pts</span>}</header></section>}
+      {notice && <div className="post-notice" role="status"><span>{notice}</span><button className="form-button" onClick={() => setNotice('')} aria-label="Dismiss confirmation">Dismiss</button></div>}
 
       <TabBar active={tab} onChange={setTab} />
     </div>

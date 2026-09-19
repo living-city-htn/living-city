@@ -1,5 +1,6 @@
-import { createPost, hidePost, listCommunities, listPosts } from '@living-city/fixtures/store'
-import { badRequest, currentUser, json, readJson, withPostMeta } from '@/lib/stub'
+import { balance, createPost, hidePost, listCommunities, listPosts } from '@living-city/fixtures/store'
+import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } from '@/lib/stub'
+import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
 
 // GET /api/posts?community=&scope=  -> analyzed, unhidden posts only
@@ -10,15 +11,14 @@ export async function GET(req: Request) {
   })
 }
 
-type Body = { text?: string; image_url?: string | null; lon?: number; lat?: number; community_id?: string; is_incident_report?: boolean }
-
-// POST /api/posts -> create, assign to a community, run Call A, credit points.
-// Pipeline owns the real one. The stub skips Call A and assigns by nearest centroid,
-// which is also Pipeline's documented fallback for a missing assignCommunity().
+// Product's fixture photo transport; Pipeline replaces it with Blob upload.
 export async function POST(req: Request) {
-  const body = await readJson<Body>(req)
-  if (!body?.text) return badRequest('text is required')
-
+  const parsed = parsePostInput(await readJson<unknown>(req), listCommunities().map(c => c.community_id))
+  if (!parsed.ok) return badRequest(parsed.error)
+  const body = parsed.value
+  if (!USE_FIXTURES && body.image_url?.startsWith('data:')) {
+    return json({ error: 'Photo upload is not ready yet. You can post your caption without the photo.', code: 'PHOTO_UNAVAILABLE' }, 503)
+  }
   let communityId = body.community_id
   if (!communityId) {
     if (typeof body.lon !== 'number' || typeof body.lat !== 'number') {
@@ -37,17 +37,22 @@ export async function POST(req: Request) {
   }
   if (!communityId) return badRequest('could not assign a community')
 
+  const user = currentUser()
+  const before = balance(user.id)
+  const selected = listCommunities().find(c => c.community_id === communityId)
   const post = createPost({
-    user_id: currentUser().id,
+    user_id: user.id,
     text: body.text,
     image_url: body.image_url ?? null,
-    lon: body.lon ?? 0,
-    lat: body.lat ?? 0,
+    lon: body.lon ?? selected?.centroid[0] ?? 0,
+    lat: body.lat ?? selected?.centroid[1] ?? 0,
     community_id: communityId,
     is_incident_report: body.is_incident_report,
   })
 
-  if (!pipelineEnabled()) return json({ post }, 201)
+  const pointsEarned = balance(user.id) - before
+  const response = () => json({ post, balance: balance(user.id), points_earned: pointsEarned }, 201)
+  if (!pipelineEnabled()) return response()
 
   // Call A runs inline, before the response, because Vercel has no worker to
   // drain a queue (docs/02 section 4.2). The post is `pending` and invisible
@@ -58,5 +63,5 @@ export async function POST(req: Request) {
   post.status = verdict.status
   if (verdict.hidden) hidePost(post.id, 'auto')
 
-  return json({ post }, 201)
+  return response()
 }

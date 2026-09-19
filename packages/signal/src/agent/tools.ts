@@ -25,7 +25,7 @@ import { blockTrends } from '../aggregations'
 import { searchEvidence, type EvidenceHit } from '../retrieval'
 import { civicRead, civicWrite, type IncidentPatch } from '../ports'
 import {
-  annotate, annotationOf, listActions, markReverted, record, staffTouched, suggest,
+  annotate, annotationOf, listActions, lockField, markReverted, record, staffTouched, suggest,
   type AgentActionKind, type IncidentAnnotation,
 } from '../store'
 
@@ -496,9 +496,10 @@ export const revertAction = (actionId: string, by = 'staff'): ToolResult<{ actio
 
   markReverted(actionId, by)
   if (action.target_incident_id) {
-    // The lock, and the reason this is not just a rollback.
-    const incident = write.getIncident(action.target_incident_id)
-    if (incident) annotate(incident.id, {})
+    // The lock, and the reason this is more than a rollback: a staff member
+    // undoing an action has decided this row, so the agent may not redo it on
+    // the next run.
+    lockField(action.target_incident_id)
   }
   return ok({ action_id: actionId, kind: action.kind })
 }
@@ -532,7 +533,7 @@ export const TOOLS = [
       },
       required: [],
     },
-    run: (args: unknown) => search_evidence(args as SearchEvidenceArgs),
+    run: (args: unknown, _ctx: ToolContext) => search_evidence(args as SearchEvidenceArgs),
   },
   {
     name: 'block_summary',
@@ -543,7 +544,7 @@ export const TOOLS = [
       properties: { block_id: str, window: str },
       required: ['block_id'],
     },
-    run: (args: unknown) => block_summary(args as BlockSummaryArgs),
+    run: (args: unknown, _ctx: ToolContext) => block_summary(args as BlockSummaryArgs),
   },
   {
     name: 'lookup_incidents',
@@ -555,7 +556,7 @@ export const TOOLS = [
       properties: { block_id: str, status: { type: 'string', enum: ['reported', 'verified'] } },
       required: [],
     },
-    run: (args: unknown) => lookup_incidents(args as LookupIncidentsArgs),
+    run: (args: unknown, _ctx: ToolContext) => lookup_incidents(args as LookupIncidentsArgs),
   },
   {
     name: 'file_incident',

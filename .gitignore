@@ -22,3 +22,13 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Secrets: everything local, except the committed template (docs/05 section 8).
+.env*
+!.env.example
+
+# Agent tooling dropped in by the Neon/Vercel integration. Machine-generated and
+# per-person, so it does not belong in a four-person shared repo.
+.agents/
+.claude/skills/
+skills-lock.json

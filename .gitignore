@@ -22,3 +22,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Pipeline run output (post-analysis.json, plans.json, community-state.json)
+packages/pipeline/out/

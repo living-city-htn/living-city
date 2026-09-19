@@ -1,0 +1,503 @@
+{
+  "_readme": [
+    "Expected Call A output for every post in posts.seed.json. Pipeline-owned",
+    "(docs/roles/pipeline.md, Stage 0: 'post-analysis.mock.json, 10 expected",
+    "outputs including one incident'). Hand-written against docs/03 sections",
+    "3.1 and 4.1, not recorded from a model run.",
+    "",
+    "Two jobs. First, it is the target when tuning the Call A prompt: run",
+    "`npm --workspace @living-city/pipeline run run:a` and diff against this.",
+    "Second, it lets everything downstream of Call A - the aggregator, the",
+    "validator, the plan routes - run with no API key and no spend:",
+    "`npm --workspace @living-city/pipeline run run:all -- --offline`.",
+    "",
+    "Watch these five posts in particular:",
+    "  p-007, p-020, p-022  the three seeded incidents (docs/04 section 3)",
+    "  p-012, p-021         near-misses that must NOT produce an incident",
+    "  p-011                prompt injection: data, never instructions (rule 13)",
+    "",
+    "image_evidence assumes the seed photos are reachable. They are not in the",
+    "repo yet, so a live run will flag image_missing on those posts instead.",
+    "That divergence is rule 9 working, not a failure."
+  ],
+  "taxonomy_version": "1.0",
+  "analyses": [
+    {
+      "post_id": "p-001",
+      "schema_version": "1.0",
+      "about_location": 90,
+      "confidence": 82,
+      "language": "en",
+      "dimensions": {
+        "energy": 70, "social": 75, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": 60, "food": 55, "commerce": 40, "culture": null, "fitness": null
+      },
+      "valence": 70,
+      "activity_type": "socializing",
+      "place_type": "street",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["patio", "crowded", "night_out"],
+      "keywords": ["patio season", "king st"],
+      "image_evidence": ["outdoor tables", "string lights", "crowd"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-002",
+      "schema_version": "1.0",
+      "about_location": 85,
+      "confidence": 80,
+      "language": "en",
+      "dimensions": {
+        "energy": 40, "social": 45, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": 80, "commerce": 50, "culture": null, "fitness": null
+      },
+      "valence": 65,
+      "activity_type": "eating",
+      "place_type": "restaurant",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["crowded"],
+      "keywords": ["ramen", "line down block"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-003",
+      "schema_version": "1.0",
+      "about_location": 88,
+      "confidence": 78,
+      "language": "zh",
+      "dimensions": {
+        "energy": null, "social": 50, "creativity": null, "stress": null, "calm": 60,
+        "nature": 35, "nightlife": null, "food": 55, "commerce": 40, "culture": null, "fitness": null
+      },
+      "valence": 60,
+      "activity_type": "relaxing",
+      "place_type": "cafe",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["coffee", "cozy", "crowded"],
+      "keywords": ["new coffee shop", "weekend crowd", "across from park"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-004",
+      "schema_version": "1.0",
+      "about_location": 92,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": 65, "social": 70, "creativity": null, "stress": null, "calm": null,
+        "nature": 30, "nightlife": null, "food": 70, "commerce": 75, "culture": 30, "fitness": null
+      },
+      "valence": 70,
+      "activity_type": "shopping",
+      "place_type": "market",
+      "temporal_scope": "recurring",
+      "event_scale": "small",
+      "tags": ["farmers_market", "crowded", "families"],
+      "keywords": ["saturday market", "tomatoes", "plants"],
+      "image_evidence": ["market stalls", "crowd", "produce"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-005",
+      "schema_version": "1.0",
+      "about_location": 95,
+      "confidence": 88,
+      "language": "en",
+      "dimensions": {
+        "energy": 30, "social": null, "creativity": 85, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": 65, "fitness": null
+      },
+      "valence": 75,
+      "activity_type": "sightseeing",
+      "place_type": "street",
+      "temporal_scope": "persistent",
+      "event_scale": "none",
+      "tags": ["mural", "street_art"],
+      "keywords": ["mural", "old furniture building"],
+      "image_evidence": ["mural", "brick wall", "sidewalk"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-006",
+      "schema_version": "1.0",
+      "about_location": 80,
+      "confidence": 75,
+      "language": "en",
+      "dimensions": {
+        "energy": 55, "social": 35, "creativity": null, "stress": 40, "calm": null,
+        "nature": null, "nightlife": null, "food": 45, "commerce": 60, "culture": null, "fitness": null
+      },
+      "valence": 30,
+      "activity_type": "commuting",
+      "place_type": "office",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["coffee", "crowded"],
+      "keywords": ["office tower", "coffee run", "rush hour"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-007",
+      "schema_version": "1.0",
+      "about_location": 90,
+      "confidence": 88,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": 45, "calm": null,
+        "nature": 40, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": -35,
+      "activity_type": "unknown",
+      "place_type": "street",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["construction"],
+      "keywords": ["fallen maple", "blocked sidewalk"],
+      "image_evidence": ["fallen tree", "sidewalk", "broken branches"],
+      "content_flags": [],
+      "incident": {
+        "type": "fallen_tree",
+        "severity": 2,
+        "location_hint": "sidewalk on Queen",
+        "evidence": "form"
+      }
+    },
+    {
+      "post_id": "p-008",
+      "schema_version": "1.0",
+      "about_location": 85,
+      "confidence": 70,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": 10, "creativity": null, "stress": 30, "calm": 45,
+        "nature": null, "nightlife": 20, "food": null, "commerce": null, "culture": 40, "fitness": null
+      },
+      "valence": 40,
+      "activity_type": "studying",
+      "place_type": "school",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["library", "students", "late_night", "quiet"],
+      "keywords": ["third floor", "library", "2am"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-009",
+      "schema_version": "1.0",
+      "about_location": 93,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": 80, "social": 78, "creativity": 70, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": 50, "fitness": null
+      },
+      "valence": 78,
+      "activity_type": "performing",
+      "place_type": "plaza",
+      "temporal_scope": "moment",
+      "event_scale": "small",
+      "tags": ["live_music", "students", "crowded"],
+      "keywords": ["speaker rig", "courtyard", "dance floor"],
+      "image_evidence": ["crowd", "speakers", "courtyard"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-010",
+      "schema_version": "1.0",
+      "about_location": 75,
+      "confidence": 70,
+      "language": "en",
+      "dimensions": {
+        "energy": 35, "social": 40, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": 60, "commerce": 45, "culture": null, "fitness": null
+      },
+      "valence": 45,
+      "activity_type": "eating",
+      "place_type": "shop",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["students", "crowded"],
+      "keywords": ["bubble tea", "campus line"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-011",
+      "schema_version": "1.0",
+      "about_location": 5,
+      "confidence": 95,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": null,
+      "activity_type": "unknown",
+      "place_type": "unknown",
+      "temporal_scope": "unknown",
+      "event_scale": "none",
+      "tags": [],
+      "keywords": [],
+      "image_evidence": [],
+      "content_flags": ["instruction_like", "not_about_place"],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-012",
+      "schema_version": "1.0",
+      "about_location": 80,
+      "confidence": 78,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": 10, "calm": 40,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": 45,
+      "activity_type": "commuting",
+      "place_type": "street",
+      "temporal_scope": "persistent",
+      "event_scale": "none",
+      "tags": ["construction", "traffic"],
+      "keywords": ["ring road", "resurfacing", "reopened"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-013",
+      "schema_version": "1.0",
+      "about_location": 88,
+      "confidence": 75,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": 25, "creativity": 65, "stress": null, "calm": 60,
+        "nature": 40, "nightlife": null, "food": null, "commerce": null, "culture": 30, "fitness": null
+      },
+      "valence": 70,
+      "activity_type": "sightseeing",
+      "place_type": "park",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["street_art", "cozy", "quiet"],
+      "keywords": ["painted rocks", "residence path"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-014",
+      "schema_version": "1.0",
+      "about_location": 90,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": 70, "social": 70, "creativity": null, "stress": null, "calm": null,
+        "nature": 30, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": 85
+      },
+      "valence": 70,
+      "activity_type": "exercising",
+      "place_type": "park",
+      "temporal_scope": "recurring",
+      "event_scale": "small",
+      "tags": ["sports_game", "students"],
+      "keywords": ["intramural soccer", "until dark"],
+      "image_evidence": ["soccer field", "players", "dusk sky"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-015",
+      "schema_version": "1.0",
+      "about_location": 88,
+      "confidence": 78,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": 70, "creativity": null, "stress": null, "calm": 40,
+        "nature": null, "nightlife": null, "food": 55, "commerce": 45, "culture": null, "fitness": null
+      },
+      "valence": 72,
+      "activity_type": "socializing",
+      "place_type": "cafe",
+      "temporal_scope": "persistent",
+      "event_scale": "none",
+      "tags": ["coffee", "students", "campus"],
+      "keywords": ["coffee cart", "arts building"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-016",
+      "schema_version": "1.0",
+      "about_location": 92,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": 15, "social": 10, "creativity": null, "stress": null, "calm": 80,
+        "nature": 85, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": 68,
+      "activity_type": "relaxing",
+      "place_type": "waterfront",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["quiet", "waterfront", "dog_walking"],
+      "keywords": ["herons", "lake", "morning"],
+      "image_evidence": ["lake", "water birds", "path"],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-017",
+      "schema_version": "1.0",
+      "about_location": 90,
+      "confidence": 82,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": 5, "creativity": null, "stress": null, "calm": 85,
+        "nature": 55, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": 75,
+      "activity_type": "relaxing",
+      "place_type": "park",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["quiet", "cozy", "garden"],
+      "keywords": ["bench", "reading"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-018",
+      "schema_version": "1.0",
+      "about_location": 85,
+      "confidence": 80,
+      "language": "en",
+      "dimensions": {
+        "energy": 60, "social": 50, "creativity": null, "stress": 35, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": 30, "culture": null, "fitness": null
+      },
+      "valence": 25,
+      "activity_type": "commuting",
+      "place_type": "transit",
+      "temporal_scope": "recurring",
+      "event_scale": "none",
+      "tags": ["crowded", "traffic"],
+      "keywords": ["ion", "standing room", "rush hour"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-019",
+      "schema_version": "1.0",
+      "about_location": 90,
+      "confidence": 70,
+      "language": "zh",
+      "dimensions": {
+        "energy": null, "social": 40, "creativity": 70, "stress": null, "calm": 55,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": 55, "fitness": null
+      },
+      "valence": 78,
+      "activity_type": "performing",
+      "place_type": "transit",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["live_music", "cozy"],
+      "keywords": ["guitar", "platform", "waiting"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-020",
+      "schema_version": "1.0",
+      "about_location": 88,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": 45, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": -40,
+      "activity_type": "commuting",
+      "place_type": "street",
+      "temporal_scope": "persistent",
+      "event_scale": "none",
+      "tags": [],
+      "keywords": ["streetlights out", "dark walk home"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": {
+        "type": "power_outage",
+        "severity": 2,
+        "location_hint": "stretch between the two stops",
+        "evidence": "form"
+      }
+    },
+    {
+      "post_id": "p-021",
+      "schema_version": "1.0",
+      "about_location": 25,
+      "confidence": 85,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": null, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": 10,
+      "activity_type": "unknown",
+      "place_type": "home",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": [],
+      "keywords": ["own breaker", "false alarm"],
+      "image_evidence": [],
+      "content_flags": [],
+      "incident": { "type": "none", "severity": 0, "location_hint": null, "evidence": "none" }
+    },
+    {
+      "post_id": "p-022",
+      "schema_version": "1.0",
+      "about_location": 92,
+      "confidence": 88,
+      "language": "en",
+      "dimensions": {
+        "energy": null, "social": null, "creativity": null, "stress": 50, "calm": null,
+        "nature": null, "nightlife": null, "food": null, "commerce": null, "culture": null, "fitness": null
+      },
+      "valence": -35,
+      "activity_type": "unknown",
+      "place_type": "street",
+      "temporal_scope": "moment",
+      "event_scale": "none",
+      "tags": ["rain", "traffic"],
+      "keywords": ["pooling water", "intersection", "bus stop"],
+      "image_evidence": ["standing water", "curb", "cars"],
+      "content_flags": [],
+      "incident": {
+        "type": "flooding",
+        "severity": 2,
+        "location_hint": "intersection by the bus stop",
+        "evidence": "form"
+      }
+    }
+  ]
+}

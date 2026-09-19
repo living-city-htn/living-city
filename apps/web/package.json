@@ -13,6 +13,7 @@
   "dependencies": {
     "@living-city/contracts": "workspace:*",
     "@living-city/fixtures": "workspace:*",
+    "@living-city/pipeline": "workspace:*",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -12,15 +12,18 @@
  * section 4.5), which is also what lets 3D's component drop into the same
  * props without touching this file.
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
 import { CityScene, isFallbackScene, type CityPayload, type Placement } from './city'
 import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
 import ShopPanel from './ShopPanel'
+import MyCityPanel from './MyCityPanel'
 import TabBar, { type Tab } from './TabBar'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
-import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, type PostRow } from '@/lib/api'
+import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getShopCatalog, type PostRow } from '@/lib/api'
+import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
+import type { ShopItem } from '@living-city/fixtures'
 
 export default function AppShell() {
   const [postLocation, setPostLocation] = useState<PostLocation | null>(null)
@@ -34,6 +37,15 @@ export default function AppShell() {
   const [feed, setFeed] = useState<PostRow[]>([])
   const [balance, setBalance] = useState<number | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [myCity, setMyCity] = useState<MyCitySnapshot | null>(null)
+  const [catalog, setCatalog] = useState<ShopItem[]>([])
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [placeBusy, setPlaceBusy] = useState(false)
+  const [placeError, setPlaceError] = useState('')
+  const [placeMessage, setPlaceMessage] = useState('')
+  const [needsRefresh, setNeedsRefresh] = useState(false)
+  const placeInFlight = useRef(false)
+  const [sheetHeight, setSheetHeight] = useState(0)
 
   useEffect(() => {
     let live = true
@@ -69,6 +81,74 @@ export default function AppShell() {
     }
   }, [tab])
 
+  const refreshMyCity = useCallback(async () => {
+    if (placeInFlight.current) return
+    setPlaceError('')
+    setPlaceMessage('')
+    try {
+      const snapshot = await loadMyCity()
+      setMyCity(snapshot)
+      setPlacements(snapshot.placements)
+      setBalance(snapshot.balance)
+      setNeedsRefresh(false)
+    } catch {
+      setNeedsRefresh(true)
+      setPlaceError('Could not load your city. Check your connection and try again.')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tab !== 'mine') return
+    void refreshMyCity()
+    if (catalog.length === 0) void getShopCatalog().then(setCatalog).catch(() => {})
+  }, [tab, refreshMyCity, catalog.length])
+
+  /**
+   * One slot, both directions (PRD 8.12): a filled slot gives the item back, an
+   * empty one takes the selected item. A placement write moves a unit between
+   * inventory and the slot, so it is never retried automatically.
+   */
+  const slotTapped = async (communityId: string, slotId: string) => {
+    if (tab !== 'mine' || placeInFlight.current || needsRefresh) return
+    const existing = myCity?.placements.find(
+      (p) => p.community_id === communityId && p.slot_id === slotId,
+    )
+    if (!existing && !selectedTag) {
+      setPlaceMessage('Pick an item below first, then tap a slot.')
+      return
+    }
+
+    placeInFlight.current = true
+    setPlaceBusy(true)
+    setPlaceError('')
+    setPlaceMessage('')
+    try {
+      if (existing) {
+        if (!existing.id) throw new Error('missing id')
+        await removePlacement(existing.id)
+        setPlaceMessage('Taken back into your items.')
+      } else if (selectedTag) {
+        await placeItem(communityId, slotId, selectedTag)
+        setPlaceMessage('Placed. Only you can see it.')
+      }
+      // The server owns inventory and placements, so re-read rather than
+      // guessing what the write did.
+      const snapshot = await loadMyCity()
+      setMyCity(snapshot)
+      setPlacements(snapshot.placements)
+      setBalance(snapshot.balance)
+      if (selectedTag && (snapshot.inventory[selectedTag] ?? 0) === 0) setSelectedTag(null)
+    } catch (failure) {
+      setNeedsRefresh(true)
+      setPlaceError(
+        failure instanceof Error ? failure.message : 'That did not go through. Refresh your city.',
+      )
+    } finally {
+      placeInFlight.current = false
+      setPlaceBusy(false)
+    }
+  }
+
   const posted = (result: PostResult) => {
     const community = city?.communities.find(c => c.community_id === result.post.community_id)
     if (typeof result.balance === 'number') setBalance(result.balance)
@@ -83,8 +163,14 @@ export default function AppShell() {
   const mode = tab === 'mine' ? 'mine' : 'public'
 
   return (
-    <div className="shell">
-      <div className="viewport">
+    <div className="shell" style={{ ['--sheet-h' as string]: `${Math.round(sheetHeight)}px` }}>
+      {/*
+        In My City the slots on the map are the touch target (PRD 8.12), so the
+        scene's box stops above the sheet instead of running behind it. Any
+        scene fills this box, so 3D's component gets the same behaviour without
+        a change to its props.
+      */}
+      <div className="viewport" data-inset={tab === 'mine' && sheetHeight > 0}>
         {city && (
           <CityScene
             city={city}
@@ -100,9 +186,7 @@ export default function AppShell() {
               setPostLocation({ community_id: id, lon: point[0], lat: point[1], label: community?.name ?? id })
               setPickingLocation(false)
             }}
-            onSlotTap={() => {
-              /* Placing is Stage 2: my-city mode with persistence. */
-            }}
+            onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
           />
         )}
       </div>
@@ -149,6 +233,22 @@ export default function AppShell() {
         picking={pickingLocation} onPick={setPickingLocation} onPosted={posted} />}
       {tab === 'post' && !city && <section className="sheet"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
       <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance} />
+      <MyCityPanel
+        active={tab === 'mine'}
+        snapshot={myCity}
+        catalog={catalog}
+        selectedTag={selectedTag}
+        onSelect={(tag) => {
+          setSelectedTag(tag)
+          setPlaceMessage('')
+        }}
+        busy={placeBusy}
+        error={placeError}
+        message={placeMessage}
+        needsRefresh={needsRefresh}
+        onRefresh={() => void refreshMyCity()}
+        onHeight={setSheetHeight}
+      />
       {notice && <div className="post-notice" role="status"><span>{notice}</span><button className="form-button" onClick={() => setNotice('')} aria-label="Dismiss confirmation">Dismiss</button></div>}
 
       <TabBar active={tab} onChange={setTab} />

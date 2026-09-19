@@ -28,6 +28,12 @@ export type Placement = {
   community_id: string
   slot_id: string
   item_tag: string
+  /**
+   * The row id, which `DELETE /api/me/placements/:id` needs. Optional because
+   * the scene contract in docs/roles/3d.md is only the three fields above and
+   * a scene must never need it; My City is what reads it.
+   */
+  id?: string
 }
 
 export type CitySceneProps = {

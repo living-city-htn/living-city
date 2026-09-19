@@ -7,9 +7,15 @@
  * button has something to reset. Every function here is replaced by the real
  * owner's implementation in Stage 2; keep the signatures, swap the body.
  *
- * Module state resets whenever the dev server reloads. That is fine, and the
- * reset route makes it explicit.
+ * State is durable when DATABASE_URL is set: `read` and `write` below carry the
+ * whole state to and from one JSONB row, so every serverless instance sees the
+ * same city. Without a database it stays in module memory, which is fine for
+ * local development and is why the reset route exists.
+ *
+ * Every mutating route must go through `write`. Reading `state` directly outside
+ * `read`/`write` will see whatever this instance happened to load last.
  */
+import { durable, load, overwrite, save, type Serialized } from './persist'
 import {
   DEMO_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
   seedPosts, seedUsers, shopItems, slots,
@@ -88,6 +94,72 @@ export function reset(): void {
   }
 }
 reset()
+
+/* --- durability ---------------------------------------------------------- */
+
+const serialize = (s: State): Serialized => ({
+  posts: s.posts, users: s.users,
+  likes: [...s.likes],
+  balances: [...s.balances],
+  inventory: [...s.inventory].map(([user, items]) => [user, [...items]] as [string, Array<[string, number]>]),
+  placements: s.placements,
+  plans: [...s.plans],
+  incidents: s.incidents,
+  updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused,
+})
+
+const deserialize = (d: Serialized): State => ({
+  posts: d.posts as SeedPost[],
+  users: d.users as SeedUser[],
+  likes: new Set(d.likes),
+  balances: new Map(d.balances),
+  inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
+  placements: d.placements as State['placements'],
+  plans: new Map(d.plans as Array<[string, CommunityPlan]>),
+  incidents: d.incidents as Incident[],
+  updatedAt: d.updatedAt, seq: d.seq, qrPaused: d.qrPaused,
+})
+
+let version = 0
+
+async function hydrate(): Promise<void> {
+  const row = await load()
+  if (row) {
+    state = deserialize(row.data)
+    version = row.version
+    return
+  }
+  // First request against an empty database: seed it.
+  reset()
+  await overwrite(serialize(state))
+  version = 1
+}
+
+/** Read the shared state, then answer from it. */
+export async function read<T>(fn: () => T): Promise<T> {
+  if (durable()) await hydrate()
+  return fn()
+}
+
+/**
+ * Mutate the shared state. The mutation re-runs against a fresh read if someone
+ * else wrote first, which is what two judges posting at once looks like.
+ */
+export async function write<T>(fn: () => T): Promise<T> {
+  if (!durable()) return fn()
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await hydrate()
+    const result = fn()
+    if (await save(serialize(state), version)) return result
+  }
+  throw new Error('Could not save: the city is being written to to too quickly.')
+}
+
+/** The operator's reset wins outright rather than retrying. */
+export async function resetDurable(): Promise<void> {
+  reset()
+  if (durable()) await overwrite(serialize(state))
+}
 
 const touch = () => { state.updatedAt = new Date().toISOString() }
 

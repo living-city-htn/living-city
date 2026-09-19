@@ -1,4 +1,4 @@
-import { listPosts, planFor } from '@living-city/fixtures/store'
+import { listPosts, planFor, read } from '@living-city/fixtures/store'
 import { json, notFound, type RouteCtx } from '@/lib/stub'
 
 // GET /api/communities/:id/state -> SemanticState (current, baseline)
@@ -7,7 +7,11 @@ import { json, notFound, type RouteCtx } from '@/lib/stub'
 export async function GET(_req: Request, ctx: RouteCtx<{ id: string }>) {
   const { id } = await ctx.params
   const communityId = decodeURIComponent(id)
-  const plan = planFor(communityId)
+  const snapshot = await read(() => ({
+    plan: planFor(communityId),
+    postCount: listPosts({ community: communityId }).length,
+  }))
+  const plan = snapshot.plan
   if (!plan) return notFound('no such community')
   return json({
     community_id: communityId,
@@ -15,7 +19,7 @@ export async function GET(_req: Request, ctx: RouteCtx<{ id: string }>) {
     mood: plan.mood,
     top_tags: plan.identity_tags,
     reasons: plan.stability.reasons,
-    post_count: listPosts({ community: communityId }).length,
+    post_count: snapshot.postCount,
     data_sufficiency: 'stub',
   })
 }

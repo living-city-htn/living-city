@@ -1,4 +1,4 @@
-import { listIncidents } from '@living-city/fixtures/store'
+import { listIncidents, read } from '@living-city/fixtures/store'
 import { json } from '@/lib/stub'
 
 // GET /api/civic/incidents?community=&type=&status=
@@ -6,10 +6,10 @@ import { json } from '@/lib/stub'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   return json({
-    incidents: listIncidents({
+    incidents: await read(() => listIncidents({
       community: searchParams.get('community') ?? undefined,
       type: searchParams.get('type') ?? undefined,
       status: searchParams.get('status') ?? undefined,
-    }),
+    })),
   })
 }

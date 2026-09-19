@@ -1,4 +1,4 @@
-import { allPlans, cityVersion, replan } from '@living-city/fixtures/store'
+import { allPlans, cityVersion, read, replan, write } from '@living-city/fixtures/store'
 import { json } from '@/lib/stub'
 import { pipelineEnabled, planTick } from '@/lib/pipeline'
 
@@ -8,10 +8,12 @@ import { pipelineEnabled, planTick } from '@/lib/pipeline'
 export async function POST() {
   if (pipelineEnabled()) {
     const { replanned, checked } = await planTick()
-    return json({ replanned, checked, version: cityVersion() })
+    return json({ replanned, checked, version: await read(cityVersion) })
   }
   // Stub: no hashes, so a no-op that still returns the shape the panel shows.
-  return json({ replanned: [], checked: allPlans().length, version: cityVersion() })
+  return json(await read(() => ({
+    replanned: [], checked: allPlans().length, version: cityVersion(),
+  })))
 }
 
 // Convenience for the panel's "trigger all" control.
@@ -19,8 +21,10 @@ export async function PUT() {
   if (pipelineEnabled()) {
     // force: plan every block whether or not its input hash moved.
     const { replanned, checked } = await planTick({ force: true })
-    return json({ replanned, checked, version: cityVersion() })
+    return json({ replanned, checked, version: await read(cityVersion) })
   }
-  const replanned = allPlans().map((p) => replan(p.community_id)?.community_id).filter(Boolean)
-  return json({ replanned, version: cityVersion() })
+  return json(await write(() => ({
+    replanned: allPlans().map((p) => replan(p.community_id)?.community_id).filter(Boolean),
+    version: cityVersion(),
+  })))
 }

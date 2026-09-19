@@ -15,8 +15,10 @@ import MyCityPanel from './MyCityPanel'
 import TabBar, { type Tab } from './TabBar'
 import AppHeader from './AppHeader'
 import BlockPanel from './BlockPanel'
-import PostList from './PostList'
-import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getPlan, getShopCatalog, type PostRow } from '@/lib/api'
+import FeedPage from './FeedPage'
+import { postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
+import './post-confirmation.css'
+import { getAllPlans, getCity, getMe, getMyPlacements, getPlan, getShopCatalog } from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
 import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '@/lib/live'
 
@@ -40,13 +42,12 @@ const SCREEN_TITLE: Record<Tab, string> = {
 export default function AppShell() {
   const [postLocation, setPostLocation] = useState<PostLocation | null>(null)
   const [pickingLocation, setPickingLocation] = useState(false)
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState<PostFeedback | null>(null)
   const [panelVersion, setPanelVersion] = useState(0)
   const [tab, setTab] = useState<Tab>('city')
   const [city, setCity] = useState<CityPayload | null>(null)
   const [plans, setPlans] = useState<CommunityPlan[]>([])
   const [placements, setPlacements] = useState<Placement[]>([])
-  const [feed, setFeed] = useState<PostRow[]>([])
   const [balance, setBalance] = useState<number | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [myCity, setMyCity] = useState<MyCitySnapshot | null>(null)
@@ -90,18 +91,6 @@ export default function AppShell() {
     return () => { for (const t of Object.values(timers)) clearTimeout(t) }
   }, [])
 
-  // The feed is the one tab whose data can change while you are away from it.
-  useEffect(() => {
-    if (tab !== 'feed') return
-    let live = true
-    getFeed()
-      .then((posts) => live && setFeed(posts))
-      .catch(() => {})
-    return () => {
-      live = false
-    }
-  }, [tab])
-
   /**
    * Live update (docs/02 section 10): poll the cheap version endpoint, re-fetch
    * only the plans whose id changed, and clear the "planning" mark on any block
@@ -140,6 +129,7 @@ export default function AppShell() {
           delete planningTimers.current[id]
         }
         setPlanningIds((ids) => ids.filter((id) => !done.has(id)))
+        setNotice(current => current && current.state !== 'hidden' && done.has(current.communityId) ? { ...current, state: 'updated' } : current)
       } catch {
         // A missed poll is not worth telling anyone about; the next one is in
         // five seconds and the city on screen is still valid.
@@ -233,19 +223,19 @@ export default function AppShell() {
     const community = city?.communities.find(c => c.community_id === result.post.community_id)
     if (typeof result.balance === 'number') setBalance(result.balance)
     else void getMe().then(me => setBalance(me.balance)).catch(() => {})
-    const points = typeof result.points_earned === 'number' ? ` +${result.points_earned} points.` : ''
-    setNotice(result.post.hidden ? 'Post received but not shown publicly.' :
-      `Posted to ${community?.name ?? 'your community'}.${points}${result.post.status === 'pending' ? ' Being analyzed.' : ''}`)
-    // Moment 8: mark the block so the judge knows where to look and that it
-    // takes a moment. The poll clears it when the plan id actually changes;
-    // this timer clears it when nothing ever does.
+    setNotice(postFeedback(result, community?.name ?? 'your community'))
     const marked = result.post.community_id
-    setPlanningIds(ids => ids.includes(marked) ? ids : [...ids, marked])
-    clearTimeout(planningTimers.current[marked])
-    planningTimers.current[marked] = setTimeout(() => {
-      setPlanningIds(ids => ids.filter(id => id !== marked))
-      delete planningTimers.current[marked]
-    }, PLANNING_GIVES_UP_AFTER)
+    // Hidden posts must never promise a public city update.
+    if (!result.post.hidden) {
+      setPlanningIds(ids => ids.includes(marked) ? ids : [...ids, marked])
+      clearTimeout(planningTimers.current[marked])
+      planningTimers.current[marked] = setTimeout(() => {
+        setPlanningIds(ids => ids.filter(id => id !== marked))
+        setNotice(current => current?.communityId === marked && current.state !== 'hidden'
+          ? { ...current, state: 'unavailable' } : current)
+        delete planningTimers.current[marked]
+      }, PLANNING_GIVES_UP_AFTER)
+    }
     setSelectedId(result.post.community_id); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
   }
 
@@ -302,19 +292,8 @@ export default function AppShell() {
         />
       )}
 
-      {tab === 'feed' && (
-        <section className="page-screen feed-page" aria-label="Feed">
-          <header className="sheet-head">
-            <div>
-              <h2>Feed</h2>
-              <p className="sheet-sub">Newest first, across every block</p>
-            </div>
-          </header>
-          <div className="sheet-body">
-            <PostList posts={feed} onLiked={setBalance} empty="No posts yet." />
-          </div>
-        </section>
-      )}
+      <FeedPage active={tab === 'feed'} communities={city?.communities ?? []} onLiked={setBalance}
+        onCommunity={id => { setSelectedId(id); setTab('city') }} />
 
       {city && (
         <PostComposer
@@ -324,7 +303,8 @@ export default function AppShell() {
         />
       )}
       {tab === 'post' && !city && <section className="page-screen"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
-      <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance} />
+      <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance}
+        onDecorate={tag => { setSelectedTag(tag); setTab('mine') }} />
       <MyCityPanel
         active={tab === 'mine'}
         snapshot={myCity}
@@ -341,7 +321,19 @@ export default function AppShell() {
         onRefresh={() => void refreshMyCity()}
         onHeight={setSheetHeight}
       />
-      {notice && <div className="post-notice" role="status"><span>{notice}</span><button className="form-button" onClick={() => setNotice('')} aria-label="Dismiss confirmation">Dismiss</button></div>}
+      {notice && <section className="post-confirmation" aria-label="Post confirmation">
+        <div role="status">
+          {notice.points !== null && notice.points > 0 && <span className="reward">+{notice.points} points earned</span>}
+          <p>{feedbackMessage(notice)}</p>
+        </div>
+        <div className="confirmation-actions">
+          {notice.state !== 'hidden' && <button className="form-button" onClick={() => {
+            setSelectedId(notice.communityId); setTab('city'); setNotice(null)
+          }}>View community</button>}
+          <button className="form-button" onClick={() => { setTab('shop'); setNotice(null) }}>Visit shop</button>
+          <button className="form-button" onClick={() => setNotice(null)}>Dismiss</button>
+        </div>
+      </section>}
 
       <TabBar active={tab} onChange={setTab} />
     </div>

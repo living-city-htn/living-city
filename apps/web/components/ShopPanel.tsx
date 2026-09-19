@@ -5,7 +5,8 @@ import type { ShopItem } from '@living-city/fixtures'
 import { loadShop, purchaseItem, type ShopSnapshot } from '@/lib/shop'
 import ItemDrawing from './ItemDrawing'
 
-export default function ShopPanel({ active, onBalanceChanged }: {
+export default function ShopPanel({ active, onBalanceChanged, onDecorate }: {
+  onDecorate?: (tag: string) => void
   active: boolean
   onBalanceChanged: (balance: number) => void
 }) {
@@ -14,6 +15,7 @@ export default function ShopPanel({ active, onBalanceChanged }: {
   const [buying, setBuying] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [purchasedTag, setPurchasedTag] = useState<string | null>(null)
   const [needsRefresh, setNeedsRefresh] = useState(false)
   const purchaseInFlight = useRef(false)
   const loadVersion = useRef(0)
@@ -24,6 +26,7 @@ export default function ShopPanel({ active, onBalanceChanged }: {
     setLoading(true)
     setError('')
     setMessage('')
+    setPurchasedTag(null)
     try {
       const snapshot = await loadShop()
       if (version !== loadVersion.current) return
@@ -50,6 +53,7 @@ export default function ShopPanel({ active, onBalanceChanged }: {
     setBuying(item.item_tag)
     setError('')
     setMessage('')
+    setPurchasedTag(null)
     try {
       const result = await purchaseItem(item.item_tag)
       // The current API confirms one purchased unit and returns the actual balance.
@@ -57,6 +61,7 @@ export default function ShopPanel({ active, onBalanceChanged }: {
       setShop({ ...shop, balance: result.balance,
         inventory: { ...shop.inventory, [item.item_tag]: (shop.inventory[item.item_tag] ?? 0) + 1 } })
       onBalanceChanged(result.balance)
+      setPurchasedTag(item.item_tag)
       setMessage(`${item.label} added to your collection.`)
     } catch (failure) {
       setNeedsRefresh(true)
@@ -68,15 +73,16 @@ export default function ShopPanel({ active, onBalanceChanged }: {
   }
 
   return (
-    <section className="sheet shop-sheet" aria-label="Shop" style={!active ? { display: 'none' } : undefined}>
-      <header className="sheet-head">
-        <div><h2>Make it yours</h2><p className="sheet-sub">Small touches for your personal city.</p></div>
+    <section className="page-screen shop-page" aria-label="Shop" style={!active ? { display: 'none' } : undefined}>
+      <header className="page-heading">
+        <div><p className="eyebrow">Your next little upgrade</p><h2>Make it yours</h2><p>Small touches. A city that feels like you.</p></div>
+        {shop && <div className="shop-wallet" aria-label={`${shop.balance} points available`}><span aria-hidden="true">✦</span><strong>{shop.balance}</strong><span>points to spend</span></div>}
       </header>
-      <div className="sheet-body shop-body" aria-busy={loading}>
+      <div className="shop-body" aria-busy={loading}>
         {loading && <p className="muted" role="status">Loading your shop…</p>}
         {error && <div className="shop-feedback"><p role="alert">{error}</p>
           <button className="form-button" disabled={loading || buying !== null} onClick={() => void refresh()}>Refresh shop</button></div>}
-        {message && <p className="shop-feedback" role="status">{message}</p>}
+        {message && <div className="shop-feedback shop-success"><p role="status">{message}</p>{purchasedTag && onDecorate && <button className="form-button" onClick={() => onDecorate(purchasedTag)}>Decorate My City <span aria-hidden="true">→</span></button>}</div>}
         {!loading && shop && <>
           <p className="shop-explainer">Earn points by posting and liking. Owned items stay here until you place them.</p>
           {shop.items.length === 0 ? <p className="muted">No decorations are available yet. Check back soon.</p> :

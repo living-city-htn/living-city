@@ -11,3 +11,8 @@ Validation: `pnpm --filter @living-city/web typecheck` passed. Browser verificat
 Next PRs: Feed/Shop/Post content and transitions; City compact/expanded details and inventory tray. Keep `.page-screen` as the full-page layout contract. The existing `.sheet` style is retained for intermediate scene panels; upcoming scene-specific components should have their own layout classes. Shop grid uses the named `shop` CSS container. Keep the original shell layout components mounted when adding navigation callbacks.
 
 Known dependency: the local scene export is still the flat fallback. The 3D teammate owns the real city delivery; do not replace or expand that contract during UI work. Light theme remains explicitly pinned for the demo.
+
+## Part 2 — Feed, Shop, Post journey
+Full-page Feed keeps its cards mounted across refresh/navigation so pending likes retain their guard. Community buttons open City. Shop shows balance and a confirmed-purchase Decorate action. Composer keeps drafts, adds Close/Back and keyboard-accessible file controls. Post receipts distinguish saving from city replanning and use only confirmed points. No API route/schema changes.
+
+Next: scene selectors, compact inspectors/inventory, and final responsive/demo checks. Merge foundation first, then journey. Production deployment remains merge-driven.

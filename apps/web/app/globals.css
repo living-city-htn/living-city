@@ -396,6 +396,20 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 }
 .composer-where { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 
+/* Voice note, the third input. Absent entirely unless NEXT_PUBLIC_VOICE_POSTS=1. */
+.composer-voice { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.composer-voice audio { width: 100%; }
+.composer-voice .voice-stop { color: var(--danger, #b3261e); font-variant-numeric: tabular-nums; }
+.composer-voice[data-state='recording'] .voice-stop::before {
+  content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 8px;
+  border-radius: 50%; background: currentColor; vertical-align: baseline;
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+@keyframes voice-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) {
+  .composer-voice[data-state='recording'] .voice-stop::before { animation: none; }
+}
+
 /* Collapsed while choosing a block, so the map underneath is reachable. */
 .pick-bar {
   position: fixed; left: 0; right: 0; bottom: var(--tabbar-h); z-index: 6;

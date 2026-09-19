@@ -12,11 +12,12 @@
  * Props and events are exactly docs/roles/3d.md. `blockPick` emits [lon, lat],
  * not scene space, because the post flow uses it as a location (PRD 8.12).
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
+import { poseForSelection, type CameraPose } from './camera-focus'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
@@ -105,6 +106,54 @@ function FrameCity({ radius }: { radius: number }) {
     }
     cam.updateProjectionMatrix()
   }, [camera, size.width, size.height, radius])
+  return null
+}
+
+/**
+ * The reference view has two useful camera scales: the complete city and the
+ * selected community. Keep the same isometric angle at both scales so a tap
+ * feels like looking closer at the same miniature, not jumping to another map.
+ */
+function SelectionFocus({
+  selectedId, selectedOrigin, controls, active,
+}: {
+  selectedId: string | null
+  selectedOrigin: [number, number] | null
+  controls: RefObject<ComponentRef<typeof OrbitControls> | null>
+  active: MutableRefObject<boolean>
+}) {
+  const camera = useThree((s) => s.camera)
+  const home = useRef<CameraPose | null>(null)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    active.current = true
+  }, [selectedId, active])
+
+  useFrame((_, delta) => {
+    const control = controls.current
+    if (!control) return
+    if (!home.current) {
+      home.current = {
+        position: camera.position.toArray() as CameraPose['position'],
+        target: control.target.toArray() as CameraPose['target'],
+      }
+    }
+    if (!active.current) return
+
+    const pose = poseForSelection(home.current, selectedOrigin)
+    const position = new THREE.Vector3(...pose.position)
+    const target = new THREE.Vector3(...pose.target)
+    const amount = reducedMotion ? 1 : Math.min(1, delta * 8)
+    camera.position.lerp(position, amount)
+    control.target.lerp(target, amount)
+    control.update()
+
+    if (camera.position.distanceToSquared(position) < 0.0001 && control.target.distanceToSquared(target) < 0.0001) {
+      active.current = false
+    }
+  })
+
   return null
 }
 
@@ -583,6 +632,8 @@ export default function CityScene({
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
   const shell = useShellColours()
+  const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
+  const focusActive = useRef(true)
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(
@@ -639,6 +690,10 @@ export default function CityScene({
       }),
     [city.communities, planFor, centre, scale],
   )
+  const selectedOrigin = useMemo(
+    () => blocks.find(({ community }) => community.community_id === selectedId)?.origin ?? null,
+    [blocks, selectedId],
+  )
 
   if (!ready) return null
 
@@ -673,6 +728,12 @@ export default function CityScene({
       />
 
       <FrameCity radius={CITY_UNITS * 0.5} />
+      <SelectionFocus
+        selectedId={selectedId}
+        selectedOrigin={selectedOrigin}
+        controls={controls}
+        active={focusActive}
+      />
 
       {blocks.map(({ community, plan, origin, cells }) => (
         <Block
@@ -707,10 +768,12 @@ export default function CityScene({
       </mesh>
 
       <OrbitControls
+        ref={controls}
         makeDefault
         enablePan
         enableDamping
         dampingFactor={0.08}
+        onStart={() => { focusActive.current = false }}
         minDistance={9}
         maxDistance={90}
         minPolarAngle={Math.PI / 9}

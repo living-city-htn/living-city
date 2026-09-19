@@ -445,7 +445,17 @@ function CivicHallLabel({ drill, position }: { drill: boolean; position: [number
 
 function CivicDrillControl({ active, onStart, onStop }: { active: boolean; onStart: () => void; onStop: () => void }) {
   return <Html fullscreen>
-    <aside className={styles.control} aria-label="City Hall simulation controls">
+    {/*
+      Html lives above the R3F canvas. Without stopping its events here, a
+      button press also reaches the ground plane, clears the selected block,
+      and makes the drill appear to immediately cancel.
+    */}
+    <aside
+      className={styles.control}
+      aria-label="City Hall simulation controls"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
       <p className={styles.eyebrow}>City Hall operations</p>
       <h2>{active ? 'Tornado drill' : 'Normal simulation'}</h2>
       <p>{active ? 'Local alert, wind path, and debris are visible for this rehearsal.' : 'The city is operating normally. Start the drill when presenting.'}</p>
@@ -730,10 +740,6 @@ export default function CityScene({
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const focusActive = useRef(true)
   const [drillActive, setDrillActive] = useState(false)
-
-  useEffect(() => {
-    if (selectedId !== CIVIC_HALL_COMMUNITY_ID) setDrillActive(false)
-  }, [selectedId])
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(

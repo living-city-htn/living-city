@@ -55,6 +55,55 @@ type Clusters = {
 
 type Payload = { trends: Trends; rising: Rising; clusters: Clusters }
 
+type Annotation = {
+  corroborating_post_ids: string[]
+  merged_incident_ids: string[]
+  merged_into: string | null
+  escalated_at: string | null
+  low_confidence: boolean
+  confidence: number | null
+}
+
+type AgentIncident = {
+  id: string
+  post_id: string
+  community_id: string
+  type: string
+  severity: number
+  source: string
+  status: string
+  annotation: Annotation
+  staff_decided: boolean
+}
+
+type AgentAction = {
+  id: string
+  kind: string
+  target_incident_id: string | null
+  evidence_post_ids: string[]
+  reason: string
+}
+
+type Dissent = {
+  block_id: string
+  note: string
+  confidence: number
+  agreement: number
+  contradicting: Array<{ post_id: string; assertion: string; weight: number }>
+}
+
+type AgentPayload = {
+  runs: Array<{ run_id: string; outcome: string; calls: number; cost_usd: number; duration_ms: number; actions: number; error: string | null }>
+  actions: AgentAction[]
+  suggestions: Array<{ id: string; kind: string; reason: string; confidence: number }>
+  guards: { disabled: boolean; spent_usd: number; ceiling_usd: number; runs_last_minute: number; calls_per_minute: number }
+  incidents: AgentIncident[]
+  dissent: Dissent[]
+  run?: { run_id: string; outcome: string; cost_usd: number; duration_ms: number }
+  narrative?: string
+  error?: string | null
+}
+
 const Source = ({ metadata }: { metadata: Metadata }) => (
   <span className="op-hint">
     {metadata.degraded ? 'store fallback' : 'elasticsearch'}
@@ -72,6 +121,8 @@ export default function SignalPanel() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showQueries, setShowQueries] = useState(false)
+  const [agent, setAgent] = useState<AgentPayload | null>(null)
+  const [running, setRunning] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -86,7 +137,39 @@ export default function SignalPanel() {
       .finally(() => setLoading(false))
   }, [])
 
+  const loadAgent = useCallback(() => {
+    fetch('/api/civic/signal/agent', { headers: STAFF_HEADER })
+      .then((response) => (response.ok ? (response.json() as Promise<AgentPayload>) : null))
+      .then((payload) => { if (payload) setAgent(payload) })
+      .catch(() => {})
+  }, [])
+
+  const runAgent = useCallback(() => {
+    setRunning(true)
+    fetch('/api/civic/signal/agent', {
+      method: 'POST',
+      headers: { ...STAFF_HEADER, 'content-type': 'application/json' },
+      body: JSON.stringify({ window: '24h' }),
+    })
+      .then((response) => (response.ok ? (response.json() as Promise<AgentPayload>) : null))
+      .then((payload) => { if (payload) setAgent(payload) })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .finally(() => setRunning(false))
+  }, [])
+
+  /** Staff undoing one action. The agent may not redo it on the next run. */
+  const revert = useCallback((actionId: string) => {
+    fetch('/api/civic/signal/agent', {
+      method: 'POST',
+      headers: { ...STAFF_HEADER, 'content-type': 'application/json' },
+      body: JSON.stringify({ revert: actionId }),
+    })
+      .then(() => loadAgent())
+      .catch(() => {})
+  }, [loadAgent])
+
   useEffect(load, [load])
+  useEffect(loadAgent, [loadAgent])
 
   if (off) {
     return (
@@ -183,6 +266,88 @@ export default function SignalPanel() {
                 .join('\n\n')}
             </pre>
           )}
+        </>
+      )}
+
+      <hr className="op-hint" style={{ opacity: 0.25, margin: '1.25rem 0' }} />
+
+      <div className="op-row op-row-spread">
+        <h3 style={{ margin: 0 }}>Civic agent</h3>
+        <button className="op-btn op-btn-sm" onClick={runAgent} disabled={running || agent?.guards.disabled}>
+          {running ? 'Running…' : 'Run the agent'}
+        </button>
+      </div>
+      <p className="op-hint">
+        One agent in a tool-calling loop, several model calls. Runs only when you
+        press this, never between a post and the block rebuilding.
+        {agent && ` Spent $${agent.guards.spent_usd.toFixed(4)} of $${agent.guards.ceiling_usd.toFixed(2)}.`}
+        {agent?.guards.disabled && ' Disabled: spend ceiling crossed.'}
+      </p>
+
+      {agent?.run && (
+        <p className="op-hint">
+          {agent.run.outcome === 'ok'
+            ? `Run ${agent.run.run_id}: ${agent.run.duration_ms}ms, $${agent.run.cost_usd.toFixed(4)}.`
+            : `Run ${agent.run.run_id} ended ${agent.run.outcome}.`}
+          {agent.error ? ` ${agent.error}` : ''}
+          {agent.narrative ? ` ${agent.narrative}` : ''}
+        </p>
+      )}
+
+      {/* The fifteen-second read: the incident, what was merged into it, how
+          many posts corroborate it, and what contradicts it. */}
+      <ul className="op-blocks">
+        {(!agent || agent.incidents.length === 0) && (
+          <li className="op-hint">No incidents yet.</li>
+        )}
+        {agent?.incidents
+          .filter((incident) => !incident.annotation.merged_into)
+          .sort((a, b) => Number(!!b.annotation.escalated_at) - Number(!!a.annotation.escalated_at))
+          .map((incident) => {
+            const merged = incident.annotation.merged_incident_ids
+            const corroboration = incident.annotation.corroborating_post_ids.length + 1
+            const dissent = agent.dissent.find((d) => d.block_id === incident.community_id)
+            const action = agent.actions.find((a) => a.target_incident_id === incident.id)
+            return (
+              <li key={incident.id}>
+                <span className="op-block-name">
+                  {incident.annotation.escalated_at ? '▲ ' : ''}
+                  {incident.type.replace(/_/g, ' ')} · {incident.community_id}
+                </span>
+                <code>
+                  severity {incident.severity}
+                  {merged.length > 0 ? ` · ${merged.length} duplicate${merged.length === 1 ? '' : 's'} merged` : ''}
+                  {` · ${corroboration} report${corroboration === 1 ? '' : 's'}`}
+                </code>
+                <span className="op-hint">
+                  {dissent ? dissent.note : 'No contradicting reports.'}
+                  {incident.annotation.low_confidence ? ' · flagged low confidence' : ''}
+                  {incident.source === 'agent' ? ' · filed by the agent' : ''}
+                  {incident.staff_decided ? ' · staff decided, agent locked out' : ''}
+                </span>
+                {action && (
+                  <span className="op-hint">
+                    “{action.reason}”{' '}
+                    <button className="op-btn op-btn-sm" onClick={() => revert(action.id)}>Undo</button>
+                  </span>
+                )}
+              </li>
+            )
+          })}
+      </ul>
+
+      {agent && agent.suggestions.length > 0 && (
+        <>
+          <h3>Below the confidence floor — suggestions only</h3>
+          <ul className="op-blocks">
+            {agent.suggestions.map((suggestion) => (
+              <li key={suggestion.id}>
+                <span className="op-block-name">{suggestion.kind.replace(/_/g, ' ')}</span>
+                <code>confidence {suggestion.confidence}</code>
+                <span className="op-hint">{suggestion.reason}</span>
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </section>

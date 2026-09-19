@@ -21,12 +21,8 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
   width: 'device-width',
   initialScale: 1,
-  // No pinch-zoom on the page: pinch belongs to the city (PRD 8.12), and a
-  // double-tap that zooms the document would fight every block tap.
-  maximumScale: 1,
-  userScalable: false,
   // One colour while dark mode is held (see globals.css).
-  themeColor: '#e9f3ea',
+  themeColor: '#F5F8FC',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

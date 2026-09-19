@@ -1,13 +1,7 @@
 'use client'
 
-/**
- * The five tabs from apps/web/DESIGN.md, "Screen structure".
- *
- * Post sits in the centre and is the only element allowed the accent colour:
- * it is the one action moment 8 depends on a stranger performing without
- * instruction. The fifth tab is Feed, not Settings — see the Decisions section
- * of DESIGN.md.
- */
+import { CityMark } from './AppHeader'
+
 export const TABS = ['feed', 'city', 'post', 'shop', 'mine'] as const
 export type Tab = (typeof TABS)[number]
 
@@ -51,6 +45,7 @@ export default function TabBar({
 }) {
   return (
     <nav className="tabbar" aria-label="Main">
+      <div className="rail-brand"><CityMark /><span>Living<br />City<span className="rail-brand-caption">Made by all of us</span></span></div>
       {TABS.map((tab) => (
         <button
           key={tab}
@@ -67,6 +62,7 @@ export default function TabBar({
           <span>{LABEL[tab]}</span>
         </button>
       ))}
+      <div className="rail-footer"><span className="rail-footer-icon" aria-hidden="true">✦</span><strong>Your moments.<br />Our city.</strong><span>Share a little of your day.<br />Watch the neighbourhood grow.</span></div>
     </nav>
   )
 }

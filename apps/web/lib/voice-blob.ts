@@ -29,6 +29,11 @@ export type StoredAudio = {
   key: string | null
   mimeType: string
   bytes: number
+  /**
+   * The clip as base64, carried forward so the voice call does not have to
+   * fetch back what we just uploaded. One read, one upload, one call.
+   */
+  base64: string
 }
 
 const EXTENSIONS: Record<string, string> = {
@@ -80,8 +85,10 @@ export const storeAudio = async (
   const decoded = decodeAudioDataUrl(dataUrl)
   if (!decoded) return null
 
+  const base64 = decoded.bytes.toString('base64')
   const inline: StoredAudio = {
-    url: dataUrl, key: null, mimeType: decoded.mimeType, bytes: decoded.bytes.length,
+    url: dataUrl, key: null, mimeType: decoded.mimeType,
+    bytes: decoded.bytes.length, base64,
   }
   if (!blobConfigured()) return inline
 
@@ -95,7 +102,10 @@ export const storeAudio = async (
       contentType: decoded.mimeType,
       addRandomSuffix: false,
     })
-    return { url: result.url, key, mimeType: decoded.mimeType, bytes: decoded.bytes.length }
+    return {
+      url: result.url, key, mimeType: decoded.mimeType,
+      bytes: decoded.bytes.length, base64,
+    }
   } catch {
     return inline
   }

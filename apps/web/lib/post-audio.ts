@@ -142,6 +142,33 @@ export const toDataUrl = (blob: Blob): Promise<string> =>
     reader.readAsDataURL(blob)
   })
 
+/**
+ * What a judge reads when the voice call did not work. Step 4 of T3: five
+ * rungs, five distinct user-visible states, and every one of them ends with the
+ * post having succeeded.
+ *
+ * The wording never apologises for the post and never implies it failed,
+ * because it did not. Kept next to the recorder so the strings that describe
+ * voice live in one file.
+ */
+export const voiceNotice = (degraded: string): string | null => {
+  switch (degraded) {
+    case 'none': return null
+    case 'disabled': return null
+    case 'timeout':
+      return 'Your voice note took too long to process, so your post went up with its caption.'
+    case 'unreachable':
+      return 'Voice processing is offline right now, so your post went up with its caption.'
+    case 'credits':
+      return 'Voice processing is unavailable right now, so your post went up with its caption.'
+    case 'unsupported_format':
+      return 'This phone recorded in a format we cannot read, so your post went up with its caption.'
+    case 'unintelligible':
+      return 'We could not make out any speech, so your post went up with its caption.'
+    default: return null
+  }
+}
+
 export type RecorderHandle = {
   stop: () => void
   cancel: () => void

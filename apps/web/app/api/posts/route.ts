@@ -5,7 +5,23 @@ import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } f
 import { nearestCommunity } from '@/lib/post-location'
 import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
-import { VOICE_POSTS, storeAudio, type StoredAudio } from '@/lib/voice-blob'
+import { VOICE_POSTS, discardAudio, storeAudio, type StoredAudio } from '@/lib/voice-blob'
+import { analyzeVoice, type VoiceResult } from '@living-city/pipeline'
+import { voiceNotice } from '@/lib/post-audio'
+
+/**
+ * What the composer needs to show the right one of the five degraded states.
+ * Null for a post that carried no voice note, so an ordinary post's response
+ * body is unchanged.
+ */
+const voiceSummary = (voice: VoiceResult | null) => (voice
+  ? {
+    state: voice.degraded,
+    heard: voice.analysis !== null,
+    cues: voice.analysis?.audio_cues ?? [],
+    notice: voiceNotice(voice.degraded),
+  }
+  : null)
 
 // GET /api/posts?community=&scope=  -> analyzed, unhidden posts only
 export async function GET(req: Request) {
@@ -64,13 +80,32 @@ export async function POST(req: Request) {
     }))
   }
 
-  if (!pipelineEnabled()) return json(created, 201)
+  // The voice call, before Call A because its transcript is folded into Call
+  // A's payload. Never throws: every failure is a rung with a log line and a
+  // notice, and the post carries on with its caption.
+  let voice: VoiceResult | null = null
+  if (audio) {
+    voice = await analyzeVoice({
+      audio: { mimeType: audio.mimeType, data: audio.base64 },
+      caption: body.text,
+      blockName: selected?.name ?? null,
+      localTime: created.post.created_at,
+      hasPhoto: Boolean(body.image_url),
+    })
+    // Retention, honoured the moment the transcript exists. Not awaited: the
+    // judge is standing there, and a slow delete must not hold the response.
+    void discardAudio(audio)
+  }
+
+  if (!pipelineEnabled()) {
+    return json({ ...created, voice: voiceSummary(voice) }, 201)
+  }
 
   // Call A runs inline, before the response, because Vercel has no worker to
   // drain a queue (docs/02 section 4.2). The post is `pending` and invisible
   // in every feed until it returns; an `unsafe` verdict hides it outright.
   created.post.status = 'pending'
-  const verdict = await analyzeNewPost(created.post)
+  const verdict = await analyzeNewPost(created.post, voice)
 
   // The row above is detached once the write commits, so the verdict is applied
   // by id against freshly loaded state.
@@ -81,5 +116,5 @@ export async function POST(req: Request) {
   })
   created.post.status = verdict.status
 
-  return json(created, 201)
+  return json({ ...created, voice: voiceSummary(voice) }, 201)
 }

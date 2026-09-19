@@ -21,7 +21,8 @@ import { preparePhoto } from '@/lib/post-photo'
 import { nearestCommunity } from '@/lib/post-location'
 import {
   VOICE_POSTS, checkRecording, createRecorder, formatDuration, recorderMessage,
-  secondsRemaining, toDataUrl, type Recording, type RecorderHandle, type RecorderState,
+  secondsRemaining, toDataUrl, voiceNotice, type Recording, type RecorderHandle,
+  type RecorderState,
 } from '@/lib/post-audio'
 
 export type PostLocation = { community_id?: string; lon?: number; lat?: number; label: string }
@@ -52,6 +53,7 @@ export default function PostComposer({
   const [error, setError] = useState('')
   const [photoUnavailable, setPhotoUnavailable] = useState(false)
   const [uncertain, setUncertain] = useState(false)
+  const [notice, setNotice] = useState('')
   const [recState, setRecState] = useState<RecorderState>('idle')
   const [recording, setRecording] = useState<Recording | null>(null)
   const [elapsed, setElapsed] = useState(0)
@@ -163,6 +165,7 @@ export default function PostComposer({
     setBusy(true)
     setError('')
     setUncertain(false)
+    setNotice('')
     try {
       // Only a post that carries a voice note pays for one. A clip that cannot
       // be read is dropped here and the caption posts without it.
@@ -185,6 +188,9 @@ export default function PostComposer({
         return
       }
       if (!data.post?.id || !data.post?.community_id) throw new Error('Unexpected response')
+      // The post succeeded. If the voice call did not, say which rung it hit
+      // and nothing more: the post is up either way.
+      setNotice(data.voice?.notice ?? voiceNotice(data.voice?.state ?? 'none') ?? '')
       setText('')
       setPhoto(null)
       setPhotoUnavailable(false)
@@ -260,6 +266,7 @@ export default function PostComposer({
               Write without a photo
             </button>
 
+            {notice && <p className="muted" role="status">{notice}</p>}
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
         ) : (

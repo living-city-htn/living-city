@@ -21,8 +21,9 @@
  */
 import { communityGeo, type CommunityGeo, type CommunityPlan, type PostAnalysis } from '@living-city/contracts'
 import {
-  analyzePost, buildTimeContext, emptyCycleState, loadTaxonomy, resolveImage,
-  runCommunityCycle, type AggregatablePost, type CommunityCycleState,
+  analyzePost, buildTimeContext, emptyCycleState, foldVoiceIntoText, loadTaxonomy,
+  resolveImage, runCommunityCycle, type AggregatablePost, type CommunityCycleState,
+  type VoiceResult,
 } from '@living-city/pipeline'
 import { listCommunities, listPosts, likeCount } from '@living-city/fixtures/store'
 
@@ -41,6 +42,15 @@ export const pipelineEnabled = (): boolean =>
 
 type State = {
   analyses: Map<string, PostAnalysis>
+  /**
+   * What OMNI heard, kept beside the analysis rather than inside it.
+   *
+   * `PostAnalysis` is a frozen contract and T3 forbids changing it, so audio
+   * cues, the speech mood and the voice confidence live here and are read by
+   * the civic display and the corroboration weight. The proposed contract
+   * field is the REQUESTS entry in docs/08.
+   */
+  voice: Map<string, VoiceResult>
   incidents: Map<string, PostAnalysis['incident'] & { post_id: string; community_id: string }>
   cycles: Map<string, CommunityCycleState>
   plans: Map<string, CommunityPlan>
@@ -48,6 +58,7 @@ type State = {
 
 const state: State = {
   analyses: new Map(),
+  voice: new Map(),
   incidents: new Map(),
   cycles: new Map(),
   plans: new Map(),
@@ -55,6 +66,7 @@ const state: State = {
 
 export const resetPipelineState = (): void => {
   state.analyses.clear()
+  state.voice.clear()
   state.incidents.clear()
   state.cycles.clear()
   state.plans.clear()
@@ -79,6 +91,9 @@ const geoOf = (communityId: string): CommunityGeo | null =>
 export const analysisOf = (postId: string): PostAnalysis | null =>
   state.analyses.get(postId) ?? null
 
+export const voiceOf = (postId: string): VoiceResult | null =>
+  state.voice.get(postId) ?? null
+
 export const planOf = (communityId: string): CommunityPlan | null =>
   state.plans.get(communityId) ?? null
 
@@ -100,7 +115,8 @@ export const analyzeNewPost = async (post: {
   created_at: string
   community_id: string
   is_incident_report: boolean
-}): Promise<{ status: 'pending' | 'analyzed'; hidden: boolean; hidden_reason: 'auto' | null }> => {
+}, voice: VoiceResult | null = null,
+): Promise<{ status: 'pending' | 'analyzed'; hidden: boolean; hidden_reason: 'auto' | null }> => {
   const taxonomy = loadTaxonomy()
   const geo = geoOf(post.community_id)
 
@@ -113,7 +129,10 @@ export const analyzeNewPost = async (post: {
     imageState,
     input: {
       post_id: post.id,
-      text: post.text.slice(0, 1000),
+      // The transcript is the resident's own words, spoken instead of typed,
+      // so it belongs in the text Call A already reads. Labelled, and capped
+      // at what PostInput.text allows. Call A's OUTPUT schema is untouched.
+      text: foldVoiceIntoText(post.text, voice?.analysis ?? null),
       image_caption: null,
       community_id: post.community_id,
       community_name: geo?.name ?? null,
@@ -136,6 +155,7 @@ export const analyzeNewPost = async (post: {
   }
 
   state.analyses.set(post.id, result.analysis)
+  if (voice) state.voice.set(post.id, voice)
 
   // docs/02 section 4.7: an incident record is created whenever the analysis
   // carries one. Hidden posts never produce incidents.

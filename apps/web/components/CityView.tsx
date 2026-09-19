@@ -104,6 +104,8 @@ const CSS = `
 }
 .lc-viewport { flex: 1; min-height: 0; }
 .lc-strip { display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+  /* Installed, the home indicator sits under this strip. */
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--hair); backdrop-filter: blur(20px); }
 .lc-read { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .lc-read span { color: var(--label); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

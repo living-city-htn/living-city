@@ -16,6 +16,8 @@ import TabBar, { type Tab } from './TabBar'
 import AppHeader from './AppHeader'
 import BlockPanel from './BlockPanel'
 import FeedPage from './FeedPage'
+import CommunityPicker from './CommunityPicker'
+import './shell-feedback.css'
 import { postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
 import './post-confirmation.css'
 import { getAllPlans, getCity, getMe, getMyPlacements, getPlan, getShopCatalog } from '@/lib/api'
@@ -46,6 +48,8 @@ export default function AppShell() {
   const [panelVersion, setPanelVersion] = useState(0)
   const [tab, setTab] = useState<Tab>('city')
   const [city, setCity] = useState<CityPayload | null>(null)
+  const [cityError, setCityError] = useState(false)
+  const [cityAttempt, setCityAttempt] = useState(0)
   const [plans, setPlans] = useState<CommunityPlan[]>([])
   const [placements, setPlacements] = useState<Placement[]>([])
   const [balance, setBalance] = useState<number | null>(null)
@@ -66,6 +70,7 @@ export default function AppShell() {
 
   useEffect(() => {
     let live = true
+    setCityError(false)
     ;(async () => {
       const payload = await getCity()
       if (!live) return
@@ -80,11 +85,11 @@ export default function AppShell() {
       setPlans(loadedPlans)
       setPlacements(mine)
       setBalance(me?.balance ?? null)
-    })().catch(() => {})
+    })().catch(() => { if (live) setCityError(true) })
     return () => {
       live = false
     }
-  }, [])
+  }, [cityAttempt])
 
   useEffect(() => {
     const timers = planningTimers.current
@@ -249,11 +254,27 @@ export default function AppShell() {
 
       <div
         className="viewport"
+        role="region"
         hidden={!sceneVisible}
         inert={!sceneVisible}
         aria-label={mode === 'mine' ? 'Your personal city' : 'Community city'}
         data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}
       >
+        {city && <CommunityPicker communities={city.communities} selectedId={selectedId} picking={tab === 'post' && pickingLocation}
+          onSelect={id => {
+            setSelectedId(id)
+            if (id && tab === 'post' && pickingLocation) {
+              const community = city.communities.find(c => c.community_id === id)
+              if (community) {
+                setPostLocation({ community_id: id, label: community.name })
+                setPickingLocation(false)
+              }
+            }
+          }} />}
+        {!city && <div className="scene-state">
+          <p role={cityError ? 'alert' : 'status'}>{cityError ? 'Could not load your city. Check your connection and try again.' : 'Opening your city…'}</p>
+          {cityError && <button className="form-button" onClick={() => setCityAttempt(v => v + 1)}>Try again</button>}
+        </div>}
         <div className="city-layer">
         {city && (
           <CityScene
@@ -302,11 +323,15 @@ export default function AppShell() {
           onDismiss={() => { setPickingLocation(false); setTab('city') }}
         />
       )}
-      {tab === 'post' && !city && <section className="page-screen"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
+      {tab === 'post' && !city && <section className="page-screen"><div className="scene-state"><p role={cityError ? 'alert' : 'status'}>{cityError ? 'Could not load communities.' : 'Loading communities…'}</p>{cityError && <button className="form-button" onClick={() => setCityAttempt(v => v + 1)}>Try again</button>}</div></section>}
       <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance}
         onDecorate={tag => { setSelectedTag(tag); setTab('mine') }} />
       <MyCityPanel
         active={tab === 'mine'}
+        onBrowseShop={() => setTab('shop')}
+        selectedName={selected?.name}
+        slots={city?.slots.filter(slot => slot.community_id === selectedId) ?? []}
+        onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
         snapshot={myCity}
         catalog={catalog}
         selectedTag={selectedTag}

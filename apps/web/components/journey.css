@@ -29,7 +29,7 @@
 .shop-wallet strong { font-size: 26px; line-height: 1; }
 .shop-wallet > span:last-child { font-size: 11px; font-weight: 700; }
 .shop-page .shop-body { width: 100%; max-width: 1120px; margin: 0 auto; overflow: visible; padding: 0; }
-.shop-page .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px; }
+.shop-page .shop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .shop-page .shop-item { padding: 18px; border-radius: 24px; background: white; border: 1px solid #dce6ef; box-shadow: 0 4px 0 #e5edf4; }
 .shop-page .shop-item-top { min-height: 115px; background: #edf5fb; border-radius: 16px; position: relative; margin-bottom: 16px; }
 .shop-page .shop-item:nth-child(3n+2) .shop-item-top { background: #eef5df; }

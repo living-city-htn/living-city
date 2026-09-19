@@ -60,10 +60,15 @@ export const getBlockState = (id: string) =>
 export const getBlockPosts = (id: string) =>
   get<{ posts: PostRow[] }>(`/api/communities/${encodeURIComponent(id)}/posts`).then((d) => d.posts)
 
-export const toggleLike = (postId: string) =>
-  fetch(`/api/posts/${encodeURIComponent(postId)}/like`, { method: 'POST' }).then(
-    (r) => r.json() as Promise<{ liked: boolean; balance: number; likes: number }>,
-  )
+export async function toggleLike(postId: string): Promise<{ liked: boolean; balance: number; likes: number }> {
+  const response = await fetch(`/api/posts/${encodeURIComponent(postId)}/like`, { method: 'POST' })
+  if (!response.ok) throw new Error('Could not confirm your like.')
+  const data = await response.json()
+  if (typeof data.liked !== 'boolean' || !Number.isFinite(data.balance) || !Number.isFinite(data.likes)) {
+    throw new Error('Could not confirm your like.')
+  }
+  return { liked: data.liked, balance: data.balance, likes: data.likes }
+}
 
 /** All plans at once; there is no bulk route in docs/02 section 8. */
 export async function getAllPlans(ids: string[]): Promise<CommunityPlan[]> {

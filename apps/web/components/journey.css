@@ -1,0 +1,71 @@
+/* Screen content; positioning and navigation remain in the app layout. */
+.feed-page.page-screen, .shop-page.page-screen { padding: 24px 32px 40px; }
+.page-heading { width: 100%; max-width: 1120px; margin-left: auto; margin-right: auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.page-heading h2 { font-size: clamp(26px, 3vw, 38px); line-height: 1.15; letter-spacing: -.035em; margin: 6px 0 10px; }
+.page-heading p { margin: 0; max-width: 560px; }
+.eyebrow { color: #347855; font-size: 13px; font-weight: 700; }
+.feed-page.page-screen { max-width: none; }
+.feed-layout { width: 100%; display: grid; grid-template-columns: minmax(0, 680px) minmax(220px, 280px); gap: 28px; align-items: start; max-width: 1040px; margin: 0 auto; }
+.feed-stream { min-width: 0; }
+.feed-stream .posts { gap: 20px; }
+.feed-stream .post { padding: 22px; border: 1px solid #dce6ef; border-radius: 24px; background: white; box-shadow: 0 4px 0 #e5edf4; overflow: hidden; }
+.feed-stream .post-head { padding: 0; }
+.feed-stream .post-avatar { width: 42px; height: 42px; background: #e5f1e8; color: #347855; }
+.feed-stream .post-text { font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.feed-stream .post-photo { width: 100%; max-height: 520px; object-fit: contain; background: #eef3f8; border-radius: 16px; margin: 16px 0 0; }
+.post-community { min-height: 44px; margin: 10px 0 0; padding: 6px 12px; color: #2465a7; border: 0; background: #eaf3fc; border-radius: 18px; font: inherit; font-size: 12px; font-weight: 800; text-align: left; cursor: pointer; }
+.post-actions .like { min-height: 44px; min-width: 44px; padding: 8px 12px; gap: 8px; border-radius: 14px; }
+.post-actions .like[data-liked='true'] { color: #b33155; background: #fcecf1; }
+.community-directory { padding: 22px; background: white; border: 1px solid #dce6ef; border-radius: 24px; }
+.community-directory h2 { font-size: 18px; margin: 0 0 6px; }
+.community-directory p { color: #52677b; font-size: 13px; margin: 0 0 16px; }
+.community-directory ul { list-style: none; padding: 0; margin: 0; }
+.community-directory button { display: flex; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; text-align: left; font: inherit; font-size: 13px; background: none; border: 0; border-top: 1px solid #edf2f6; color: inherit; cursor: pointer; }
+.community-directory button span { align-self: center; }
+.community-directory button:hover { color: #2878d0; }
+.journey-state { padding: 32px; background: white; border-radius: 24px; border: 1px solid #dce6ef; line-height: 1.6; }
+.shop-wallet { flex-shrink: 0; display: grid; grid-template-columns: auto auto; gap: 2px 10px; padding: 15px 20px; border-radius: 22px; background: #fff0b8; color: #5b4812; }
+.shop-wallet > span:first-child { grid-row: span 2; align-self: center; font-size: 32px; }
+.shop-wallet strong { font-size: 26px; line-height: 1; }
+.shop-wallet > span:last-child { font-size: 11px; font-weight: 700; }
+.shop-page .shop-body { width: 100%; max-width: 1120px; margin: 0 auto; overflow: visible; padding: 0; }
+.shop-page .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px; }
+.shop-page .shop-item { padding: 18px; border-radius: 24px; background: white; border: 1px solid #dce6ef; box-shadow: 0 4px 0 #e5edf4; }
+.shop-page .shop-item-top { min-height: 115px; background: #edf5fb; border-radius: 16px; position: relative; margin-bottom: 16px; }
+.shop-page .shop-item:nth-child(3n+2) .shop-item-top { background: #eef5df; }
+.shop-page .shop-item:nth-child(3n) .shop-item-top { background: #fff4d6; }
+.shop-page .shop-item-top svg { width: 68px; height: 68px; margin: auto; color: #347855; }
+.shop-page .shop-owned { position: absolute; top: 8px; right: 8px; background: white; border-radius: 9px; padding: 4px 7px; white-space: nowrap; font-size: 10px; }
+.shop-page .shop-item h3 { font-size: 17px; min-height: 2.5em; line-height: 1.25; }
+.shop-page .shop-buy { min-height: 44px; white-space: normal; border-radius: 12px; }
+.shop-success { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; background: #e8f3e8; border-radius: 18px; margin-bottom: 20px; }
+.shop-success p { margin: 0; }
+.composer-topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 24px; }
+.composer .capture { padding: 32px 24px; gap: 16px; max-width: 560px; width: 100%; margin: 0 auto; }
+.capture-lead h2 { font-size: clamp(30px, 4vw, 42px); line-height: 1.1; letter-spacing: -.035em; margin: 16px 0; }
+.capture-illustration { display: grid; place-items: center; width: 80px; height: 80px; border-radius: 26px; background: #fff0b8; color: #347855; font-size: 44px; margin: 0 auto; transform: rotate(-8deg); }
+.composer .capture-primary, .composer .capture-secondary { position: relative; min-height: 56px; cursor: pointer; }
+.composer .capture-primary input, .composer .capture-secondary input { display: block; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.capture-primary:focus-within, .capture-secondary:focus-within { outline: 3px solid #2878d0; outline-offset: 4px; }
+.composer .composer-head { gap: 12px; }
+.composer .composer-head h2 { font-size: clamp(18px, 2vw, 24px); }
+.composer .composer-back { min-width: 44px; min-height: 44px; }
+.composer .composer-where { padding: 20px; border: 1px solid #dce6ef; border-radius: 20px; background: white; }
+.composer .composer-where select { max-width: 100%; }
+.composer .photo-actions { flex-wrap: wrap; }
+@media (max-width: 899px) {
+  .feed-page.page-screen, .shop-page.page-screen { padding: 20px 16px 28px; }
+  .feed-layout { grid-template-columns: minmax(0, 1fr); }
+  .community-directory { display: none; }
+  .page-heading { align-items: flex-start; gap: 14px; }
+  .feed-page .page-heading { flex-wrap: wrap; }
+  .shop-page .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .shop-page .shop-item { padding: 12px; }
+  .shop-page .page-heading { flex-direction: column; }
+  .shop-wallet { grid-template-columns: auto auto auto; align-items: center; padding: 12px 16px; }
+  .shop-wallet > span:first-child { grid-row: auto; font-size: 24px; }
+  .shop-wallet strong { font-size: 22px; }
+  .shop-success { align-items: flex-start; flex-direction: column; }
+  .feed-stream .post { padding: 16px; }
+}
+@media (max-width: 349px) { .shop-page .shop-grid { grid-template-columns: minmax(0, 1fr); } }

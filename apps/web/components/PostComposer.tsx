@@ -27,9 +27,6 @@ export type PostResult = {
   points_earned?: number
 }
 
-/** Past this far down, letting go closes the sheet. */
-const DISMISS_AT = 120
-
 export default function PostComposer({
   city, location, onLocation, picking, onPick, onPosted, onDismiss, active,
 }: {
@@ -51,12 +48,8 @@ export default function PostComposer({
   const [error, setError] = useState('')
   const [photoUnavailable, setPhotoUnavailable] = useState(false)
   const [uncertain, setUncertain] = useState(false)
-  const [drag, setDrag] = useState(0)
   const submitting = useRef(false)
   const locationRequest = useRef(0)
-  const dragFrom = useRef<number | null>(null)
-  /* Mirrors `drag` so pointerup can read it without a state updater. */
-  const dragNow = useRef(0)
 
   const choosePhoto = async (file?: File) => {
     if (!file) return
@@ -146,33 +139,6 @@ export default function PostComposer({
     }
   }
 
-  /*
-   * Drag to dismiss starts on the grabber only. Anywhere else and it would
-   * fight the caption field and the scrolling body, which is how this gesture
-   * usually goes wrong.
-   */
-  const grabber = {
-    onPointerDown: (e: React.PointerEvent) => {
-      dragFrom.current = e.clientY
-      e.currentTarget.setPointerCapture(e.pointerId)
-    },
-    onPointerMove: (e: React.PointerEvent) => {
-      if (dragFrom.current === null) return
-      dragNow.current = Math.max(0, e.clientY - dragFrom.current)
-      setDrag(dragNow.current)
-    },
-    onPointerUp: () => {
-      if (dragFrom.current === null) return
-      dragFrom.current = null
-      const shouldClose = dragNow.current > DISMISS_AT
-      dragNow.current = 0
-      setDrag(0)
-      // Outside the updater: React runs those during render, and calling the
-      // parent's setState there is a "setState while rendering" warning.
-      if (shouldClose) onDismiss()
-    },
-  }
-
   if (!active) return null
 
   // Collapsed to a bar so the whole map is reachable underneath.
@@ -189,25 +155,22 @@ export default function PostComposer({
 
   return (
     <section
-      className="composer"
+      className="composer page-screen"
       aria-label="Create a post"
-      style={drag ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined}
     >
-      <div className="grabber" {...grabber} role="presentation">
-        <span />
-      </div>
+      <div className="composer-topbar"><span className="eyebrow">A moment for your city</span><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
 
       {step === 'choose' ? (
         <div className="composer-body capture">
           <div className="capture-lead">
-            <h2>Share a moment</h2>
-            <p>A photo of where you are does the most for your block.</p>
+            <span className="capture-illustration" aria-hidden="true">✦</span><h2>Share a moment</h2>
+            <p>The places, people, and little things that make your neighbourhood yours.</p>
           </div>
 
           <label className="capture-primary">
             {preparing ? 'Preparing photo…' : 'Take a photo'}
             <input
-              aria-label="Take a photo" type="file" accept="image/*" capture="environment"
+              disabled={preparing || busy} aria-label="Take a photo" type="file" accept="image/*" capture="environment"
               onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
             />
           </label>
@@ -215,12 +178,12 @@ export default function PostComposer({
           <label className="capture-secondary">
             Choose from library
             <input
-              aria-label="Choose from library" type="file" accept="image/*"
+              disabled={preparing || busy} aria-label="Choose from library" type="file" accept="image/*"
               onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
             />
           </label>
 
-          <button className="capture-text" onClick={() => setStep('compose')}>
+          <button className="capture-text" disabled={preparing || busy} onClick={() => setStep('compose')}>
             Write without a photo
           </button>
 
@@ -233,7 +196,7 @@ export default function PostComposer({
         >
           <header className="composer-head">
             <button
-              type="button" className="composer-back" aria-label="Back"
+              type="button" className="composer-back" aria-label="Back to photo choices" disabled={busy || preparing}
               onClick={() => { setStep('choose'); setError('') }}
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
@@ -242,7 +205,7 @@ export default function PostComposer({
               </svg>
             </button>
             <h2>{photo ? 'Add a caption' : 'What’s happening?'}</h2>
-            <button className="composer-post" type="submit" disabled={!canPost || busy}>
+            <button className="composer-post" type="submit" disabled={!canPost || busy || preparing}>
               {busy ? 'Posting…' : uncertain ? 'Try again' : 'Post'}
             </button>
           </header>

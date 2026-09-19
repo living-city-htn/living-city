@@ -1,0 +1,529 @@
+{
+  "plans": [
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:uptown-waterloo",
+      "plan_id": "kw:uptown-waterloo:2026-09-18T12:00:00Z",
+      "summary": "Busy evening street life around a compact retail core.",
+      "archetype": "market_street",
+      "identity_tags": [
+        "modern",
+        "brick",
+        "upscale"
+      ],
+      "density": 4,
+      "height_profile": "mid_high",
+      "building_composition": {
+        "residential": 30,
+        "retail": 25,
+        "cafe_bar": 20,
+        "office": 15,
+        "cultural_civic": 10,
+        "campus_industrial": 0
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 3,
+        "behaviors": [
+          "walking",
+          "dining",
+          "shopping"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "outdoor_seating",
+          "prominence": 3
+        },
+        {
+          "tag": "string_lights",
+          "prominence": 2
+        }
+      ],
+      "mood": "vibrant",
+      "palette": "warm_pastel",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "warm",
+        "accents": [
+          "streetlamps_warm",
+          "window_glow"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:downtown-kitchener",
+      "plan_id": "kw:downtown-kitchener:2026-09-18T12:00:00Z",
+      "summary": "Dense commercial core with a strong market and mural culture.",
+      "archetype": "commercial_core",
+      "identity_tags": [
+        "historic",
+        "brick",
+        "colorful"
+      ],
+      "density": 5,
+      "height_profile": "mid_high",
+      "building_composition": {
+        "residential": 20,
+        "retail": 30,
+        "cafe_bar": 15,
+        "office": 25,
+        "cultural_civic": 10,
+        "campus_industrial": 0
+      },
+      "vegetation": {
+        "level": 1,
+        "types": [
+          "street_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 4,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 4,
+        "behaviors": [
+          "walking",
+          "shopping",
+          "queueing"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "market_stalls",
+          "prominence": 3
+        },
+        {
+          "tag": "mural",
+          "prominence": 2
+        }
+      ],
+      "mood": "busy",
+      "palette": "brick_red",
+      "lighting": {
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
+        "accents": [
+          "streetlamps_cool"
+        ]
+      },
+      "effects": [],
+      "hero_asset": {
+        "tag": "market_hall",
+        "prominence": 2
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:university-district",
+      "plan_id": "kw:university-district:2026-09-18T12:00:00Z",
+      "summary": "Campus district running late into the night on study and impromptu gatherings.",
+      "archetype": "campus_hub",
+      "identity_tags": [
+        "student",
+        "modern",
+        "minimal"
+      ],
+      "density": 3,
+      "height_profile": "mid",
+      "building_composition": {
+        "residential": 25,
+        "retail": 10,
+        "cafe_bar": 15,
+        "office": 5,
+        "cultural_civic": 10,
+        "campus_industrial": 35
+      },
+      "vegetation": {
+        "level": 3,
+        "types": [
+          "park_lawn",
+          "mature_trees"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 5,
+        "crowd_clusters": 3,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "studying",
+          "cycling",
+          "sitting"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 2
+        },
+        {
+          "tag": "bike_racks",
+          "prominence": 2
+        }
+      ],
+      "mood": "focused",
+      "palette": "cool_pastel",
+      "lighting": {
+        "signature_time": "night",
+        "intensity": 2,
+        "color_temp": "cool",
+        "accents": [
+          "window_glow",
+          "streetlamps_cool"
+        ]
+      },
+      "effects": [],
+      "hero_asset": {
+        "tag": "university_hall",
+        "prominence": 3
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:laurier-campus",
+      "plan_id": "kw:laurier-campus:2026-09-18T12:00:00Z",
+      "summary": "Smaller campus with steady outdoor social life on the green.",
+      "archetype": "campus_hub",
+      "identity_tags": [
+        "student",
+        "wood",
+        "cozy"
+      ],
+      "density": 3,
+      "height_profile": "mid",
+      "building_composition": {
+        "residential": 30,
+        "retail": 5,
+        "cafe_bar": 10,
+        "office": 5,
+        "cultural_civic": 15,
+        "campus_industrial": 35
+      },
+      "vegetation": {
+        "level": 4,
+        "types": [
+          "park_lawn",
+          "mature_trees",
+          "hedges"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 2,
+        "vehicle_traffic": 1,
+        "behaviors": [
+          "walking",
+          "sitting",
+          "jogging"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 2
+        },
+        {
+          "tag": "sports_court",
+          "prominence": 1
+        }
+      ],
+      "mood": "playful",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "golden_hour",
+        "intensity": 3,
+        "color_temp": "warm",
+        "accents": [
+          "streetlamps_warm"
+        ]
+      },
+      "effects": [],
+      "hero_asset": null,
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:victoria-park",
+      "plan_id": "kw:victoria-park:2026-09-18T12:00:00Z",
+      "summary": "Quiet green space used for slow mornings and solitary reading.",
+      "archetype": "green_retreat",
+      "identity_tags": [
+        "historic",
+        "family"
+      ],
+      "density": 1,
+      "height_profile": "low",
+      "building_composition": {
+        "residential": 40,
+        "retail": 5,
+        "cafe_bar": 10,
+        "office": 0,
+        "cultural_civic": 15,
+        "campus_industrial": 30
+      },
+      "vegetation": {
+        "level": 5,
+        "types": [
+          "mature_trees",
+          "park_lawn",
+          "flower_beds"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 1,
+        "crowd_clusters": 0,
+        "vehicle_traffic": 0,
+        "behaviors": [
+          "walking",
+          "sitting",
+          "dog_walking"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "benches",
+          "prominence": 1
+        }
+      ],
+      "mood": "serene",
+      "palette": "earthy_green",
+      "lighting": {
+        "signature_time": "dawn",
+        "intensity": 2,
+        "color_temp": "warm",
+        "accents": []
+      },
+      "effects": [],
+      "hero_asset": {
+        "tag": "fountain_plaza",
+        "prominence": 1
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    },
+    {
+      "schema_version": "1.0",
+      "taxonomy_version": "0.0.0-fallback",
+      "community_id": "kw:midtown-ion",
+      "plan_id": "kw:midtown-ion:2026-09-18T12:00:00Z",
+      "summary": "Transit spine with steady flow and little reason to linger.",
+      "archetype": "transit_hub",
+      "identity_tags": [
+        "modern",
+        "glass",
+        "minimal"
+      ],
+      "density": 3,
+      "height_profile": "low_mid",
+      "building_composition": {
+        "residential": 35,
+        "retail": 20,
+        "cafe_bar": 10,
+        "office": 20,
+        "cultural_civic": 5,
+        "campus_industrial": 10
+      },
+      "vegetation": {
+        "level": 2,
+        "types": [
+          "street_trees",
+          "planters"
+        ]
+      },
+      "activity": {
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
+        "vehicle_traffic": 4,
+        "behaviors": [
+          "walking",
+          "queueing",
+          "cycling"
+        ]
+      },
+      "decorations": [
+        {
+          "tag": "bus_shelter",
+          "prominence": 2
+        },
+        {
+          "tag": "kiosks",
+          "prominence": 1
+        }
+      ],
+      "mood": "busy",
+      "palette": "soft_grey",
+      "lighting": {
+        "signature_time": "dusk",
+        "intensity": 2,
+        "color_temp": "cool",
+        "accents": [
+          "streetlamps_cool"
+        ]
+      },
+      "effects": [],
+      "hero_asset": {
+        "tag": "transit_station",
+        "prominence": 2
+      },
+      "stability": {
+        "change_magnitude": "none",
+        "retained_from_previous": [],
+        "reasons": [
+          "fallback fixture, not model output"
+        ]
+      },
+      "confidence": 50
+    }
+  ],
+  "preset_festival": {
+    "schema_version": "1.0",
+    "taxonomy_version": "0.0.0-fallback",
+    "community_id": "kw:victoria-park",
+    "plan_id": "kw:victoria-park:preset-festival",
+    "summary": "Evening festival has taken over the park: lights, a stage, and a crowd.",
+    "archetype": "green_retreat",
+    "identity_tags": [
+      "historic",
+      "family",
+      "colorful"
+    ],
+    "density": 1,
+    "height_profile": "low",
+    "building_composition": {
+      "residential": 40,
+      "retail": 5,
+      "cafe_bar": 10,
+      "office": 0,
+      "cultural_civic": 15,
+      "campus_industrial": 30
+    },
+    "vegetation": {
+      "level": 5,
+      "types": [
+        "mature_trees",
+        "park_lawn",
+        "flower_beds"
+      ]
+    },
+    "activity": {
+      "pedestrian_density": 5,
+      "crowd_clusters": 4,
+      "vehicle_traffic": 0,
+      "behaviors": [
+        "dancing",
+        "dining",
+        "performing",
+        "sitting",
+        "walking"
+      ]
+    },
+    "decorations": [
+      {
+        "tag": "string_lights",
+        "prominence": 3
+      },
+      {
+        "tag": "stage",
+        "prominence": 3
+      },
+      {
+        "tag": "food_trucks",
+        "prominence": 2
+      },
+      {
+        "tag": "lanterns",
+        "prominence": 2
+      }
+    ],
+    "mood": "festive",
+    "palette": "sunset_orange",
+    "lighting": {
+      "signature_time": "night",
+      "intensity": 5,
+      "color_temp": "warm",
+      "accents": [
+        "string_lights",
+        "lanterns",
+        "spotlights"
+      ]
+    },
+    "effects": [
+      "music_notes",
+      "sparkles",
+      "fireflies"
+    ],
+    "hero_asset": {
+      "tag": "fountain_plaza",
+      "prominence": 2
+    },
+    "stability": {
+      "change_magnitude": "moderate",
+      "retained_from_previous": [
+        "archetype",
+        "density",
+        "height_profile",
+        "building_composition",
+        "vegetation"
+      ],
+      "reasons": [
+        "identity retained, mood and lighting changed by evening event"
+      ]
+    },
+    "confidence": 90
+  }
+}

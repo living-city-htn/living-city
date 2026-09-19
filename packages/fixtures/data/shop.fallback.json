@@ -1,0 +1,17 @@
+{
+  "_readme": [
+    "PLACEHOLDER. The 3D owner's asset manifest is the real source of the six shop",
+    "items and their price tiers (docs/roles/3d.md, Gate 0). These exist only so the",
+    "shop screen and buy flow have something to run against before that lands.",
+    "Tags are real decoration enum values from docs/03 section 5.3."
+  ],
+  "taxonomy_version": "0.0.0-fallback",
+  "items": [
+    { "item_tag": "benches",         "price": 20, "category": "decoration", "label": "Park bench" },
+    { "item_tag": "planters",        "price": 20, "category": "vegetation", "label": "Flower planter" },
+    { "item_tag": "string_lights",   "price": 40, "category": "decoration", "label": "String lights" },
+    { "item_tag": "food_trucks",     "price": 60, "category": "decoration", "label": "Food truck" },
+    { "item_tag": "fountain",        "price": 80, "category": "decoration", "label": "Fountain" },
+    { "item_tag": "sculpture",       "price": 80, "category": "decoration", "label": "Sculpture" }
+  ]
+}

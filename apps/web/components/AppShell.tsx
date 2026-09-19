@@ -301,8 +301,13 @@ export default function AppShell() {
         </section>
       )}
 
-      {city && <PostComposer city={city} active={tab === 'post'} location={postLocation} onLocation={setPostLocation}
-        picking={pickingLocation} onPick={setPickingLocation} onPosted={posted} />}
+      {city && (
+        <PostComposer
+          city={city} active={tab === 'post'} location={postLocation} onLocation={setPostLocation}
+          picking={pickingLocation} onPick={setPickingLocation} onPosted={posted}
+          onDismiss={() => { setPickingLocation(false); setTab('city') }}
+        />
+      )}
       {tab === 'post' && !city && <section className="sheet"><header className="sheet-head"><p role="status">Loading communities. If this takes too long, reload the page.</p></header></section>}
       <ShopPanel active={tab === 'shop'} onBalanceChanged={setBalance} />
       <MyCityPanel

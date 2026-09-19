@@ -89,7 +89,25 @@ html, body {
   overscroll-behavior: none;
 }
 
-button { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
+
+/* Form controls, so the composer reads as an app screen rather than a form. */
+textarea, select {
+  width: 100%; padding: 12px 13px; background: var(--fill);
+  border: 1px solid transparent; border-radius: var(--r-card);
+  font-size: 16px; /* under 16px iOS zooms the page on focus */
+  resize: none; -webkit-appearance: none; appearance: none;
+  transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+textarea:focus, select:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+textarea::placeholder { color: var(--label); }
+select {
+  background-image: linear-gradient(45deg, transparent 50%, var(--label) 50%),
+    linear-gradient(135deg, var(--label) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 51%, calc(100% - 13px) 51%;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  padding-right: 36px;
+}
 
 h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 
@@ -506,4 +524,109 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 @media (min-width: 900px) {
   /* The rail owns the full height; the header spans only the content area. */
   .app-header { left: var(--rail-w); }
+}
+
+/* --- composer -------------------------------------------------------------
+   Moment 3 opens the way a camera app opens: the capture is the screen, not a
+   field on a form. Full height, above the tab bar, pull the grabber to close.
+*/
+
+/*
+ * Stops above the tab bar rather than covering it. The grabber is the intended
+ * way out, but moment 8 hands this to strangers and a gesture that does not
+ * land must never trap someone on a screen with no visible exit.
+ */
+.composer {
+  position: fixed; left: 0; right: 0; bottom: var(--tabbar-h); top: 0; z-index: 6;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+  animation: composer-in var(--base) var(--ease);
+  transition: transform var(--base) var(--ease);
+}
+@keyframes composer-in { from { transform: translateY(100%); } }
+
+.grabber {
+  flex: 0 0 auto; display: grid; place-items: center;
+  padding: calc(8px + env(safe-area-inset-top)) 0 6px;
+  cursor: grab; touch-action: none;
+}
+.grabber span {
+  display: block; width: 38px; height: 4px; border-radius: 999px; background: var(--hair);
+}
+.grabber:active { cursor: grabbing; }
+
+.composer-body {
+  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 4px 20px calc(24px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 12px;
+}
+.composer-body fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+/* Step one: the camera is the screen. */
+.capture { justify-content: center; align-items: center; text-align: center; gap: 14px; }
+.capture-lead h2 { font-size: 24px; }
+.capture-lead p { margin: 6px 0 0; color: var(--label); font-size: 15px; max-width: 26ch; }
+
+.capture-primary, .capture-secondary, .capture-text {
+  width: min(100%, 340px); border-radius: 14px; text-align: center; cursor: pointer;
+  transition: opacity var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+.capture-primary {
+  padding: 17px; background: var(--accent); color: #fff; font-size: 17px; font-weight: 600;
+}
+.capture-secondary {
+  padding: 15px; background: var(--fill); color: var(--ink); font-size: 16px;
+}
+.capture-text {
+  padding: 12px; border: 0; background: transparent; color: var(--label); font-size: 15px;
+}
+.capture-primary:active, .capture-secondary:active { opacity: 0.8; }
+.capture-primary input, .capture-secondary input { display: none; }
+
+/* Step two. */
+.composer-head {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 10px;
+  padding: 6px 0 12px; background: var(--surface);
+}
+.composer-head h2 { flex: 1; font-size: 17px; text-align: center; }
+.composer-back {
+  display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto;
+  border: 0; border-radius: 999px; background: var(--fill); color: var(--ink); cursor: pointer;
+}
+.composer-post {
+  flex: 0 0 auto; border: 0; border-radius: 999px; padding: 8px 16px;
+  background: var(--accent); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: opacity var(--fast) var(--ease);
+}
+.composer-post:disabled { opacity: 0.4; cursor: default; }
+
+.composer-photo { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.composer-photo img {
+  width: 100%; max-height: 42vh; object-fit: cover;
+  border-radius: var(--r-card); background: var(--fill);
+}
+.composer-where { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+
+/* Collapsed while choosing a block, so the map underneath is reachable. */
+.pick-bar {
+  position: fixed; left: 0; right: 0; bottom: var(--tabbar-h); z-index: 6;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  background: var(--sheet); backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--hair);
+  animation: sheet-in var(--base) var(--ease);
+}
+.pick-bar p { margin: 0; flex: 1; font-size: 15px; }
+
+@media (min-width: 900px) {
+  .composer {
+    left: calc(var(--rail-w) + 20px); right: auto; width: 400px;
+    top: 20px; bottom: 20px; border-radius: var(--r-sheet);
+    border: 1px solid var(--hair);
+    animation: sheet-in-side var(--base) var(--ease);
+  }
+  .pick-bar { left: var(--rail-w); }
 }

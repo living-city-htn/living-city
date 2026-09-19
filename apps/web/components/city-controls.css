@@ -1,5 +1,5 @@
 /* Scene controls are independent from full-page destinations. */
-.city-inspector, .inventory-panel { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: calc(var(--tabbar-h, 64px) + 12px); background: var(--surface, #fff); color: var(--ink, #18324b); border: 1px solid var(--hair, #dce5ed); border-radius: 22px; box-shadow: 0 8px 30px #18324b14; overflow: auto; overscroll-behavior: contain; }
+.city-inspector, .inventory-panel { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: calc(var(--tabbar-h, 64px) + 12px); background: var(--surface, #fff); color: var(--ink); border: 1px solid var(--hair, #dce5ed); border-radius: 16px; box-shadow: 0 8px 30px #0000000a; overflow: auto; overscroll-behavior: contain; }
 .city-inspector { max-height: 38%; }
 .city-inspector[data-expanded="true"] { max-height: calc(100% - var(--header-h, 64px) - var(--tabbar-h, 64px) - 24px); }
 .city-inspector .sheet-head, .inventory-panel .sheet-head { padding: 16px 18px 8px; }
@@ -15,7 +15,7 @@
 .inventory-panel .shop-explainer { margin: 4px 0 10px; }
 .inventory-panel .tray { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; margin: 0; list-style: none; }
 .inventory-panel .tray-item { width: 100px; min-height: 88px; border-radius: 14px; }
-.inventory-panel .tray-item[data-selected="true"] { outline: 3px solid #2878d0; outline-offset: -3px; background: #eaf3ff; color: #18324b; }
+.inventory-panel .tray-item[data-selected="true"] { outline: 3px solid var(--accent); outline-offset: -3px; background: var(--fill); color: var(--ink); }
 .inventory-empty { display: flex; gap: 12px; align-items: center; }
 .inventory-empty p { flex: 1; margin: 8px 0; }
 .inventory-shop { flex-shrink: 0; min-height: 44px; }
@@ -44,12 +44,12 @@
   .placement-controls > p { margin: 6px 0 0; font-size: 13px; }
 }
 @media (min-width: 900px) {
-  .city-inspector { left: auto; right: 20px; width: 340px; top: calc(var(--header-h, 72px) + 20px); bottom: 20px; max-height: none; }
+  .city-inspector { left: auto; right: 20px; width: 340px; top: calc(var(--header-h, 72px) + 20px); bottom: calc(var(--tabbar-h) + 20px); max-height: none; }
   .city-inspector[data-expanded="true"] { max-height: none; }
   .city-inspector:not([data-expanded="true"]) .inspector-details { display: block; }
   .city-inspector:not([data-expanded="true"]) .summary { display: block; }
   .inspector-toggle { display: none; }
-  .inventory-panel { left: calc(var(--rail-w, 208px) + 20px); right: 20px; bottom: 20px; max-height: 38%; }
+  .inventory-panel { left: calc(var(--rail-w, 208px) + 20px); right: 20px; bottom: calc(var(--tabbar-h) + 20px); max-height: 38%; }
   .inventory-panel .sheet-head { padding-bottom: 4px; }
   .inventory-panel .sheet-body { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr); gap: 0 24px; }
   .inventory-panel .shop-explainer, .inventory-panel .shop-feedback { grid-column: 1 / -1; }

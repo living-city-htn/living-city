@@ -1,4 +1,4 @@
-.post-confirmation { position: absolute; z-index: 8; bottom: calc(var(--tabbar-h) + 16px); left: calc(var(--rail-w) + 16px); width: min(430px, calc(100% - var(--rail-w) - 32px)); background: var(--surface); border: 2px solid var(--leaf); border-radius: 20px; box-shadow: 0 6px 24px #18324b26; padding: 16px; }
+.post-confirmation { position: absolute; z-index: 8; bottom: calc(var(--tabbar-h) + 16px); left: calc(var(--rail-w) + 16px); width: min(430px, calc(100% - var(--rail-w) - 32px)); background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; box-shadow: 0 6px 24px #00000014; padding: 16px; }
 .post-confirmation p { margin: 0 0 12px; font-size: 14px; }
-.post-confirmation .reward { display: inline-block; background: #fff3c9; color: #674b12; border-radius: 10px; padding: 4px 10px; margin-bottom: 10px; font-weight: 800; }
+.post-confirmation .reward { display: inline-block; background: var(--fill); color: var(--ink); border-radius: 10px; padding: 4px 10px; margin-bottom: 10px; font-weight: 600; }
 .confirmation-actions { display: flex; flex-wrap: wrap; gap: 8px; }

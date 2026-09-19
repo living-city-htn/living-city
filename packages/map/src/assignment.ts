@@ -1,3 +1,8 @@
+import kitchenerAreas from '../data/raw/kitchener-planning-communities.json'
+import waterlooAreas from '../data/raw/waterloo-district-plans.json'
+import city from '../data/processed/city.json'
+import mappings from '../data/processed/official-area-mapping.json'
+
 /**
  * Assignment uses official polygons only. Drawn blocks appear here solely as
  * the guaranteed-visible fallback when an official area has no mapped block
@@ -24,6 +29,66 @@ export type DrawnBlock = {
 export type AssignmentData = {
   officialAreas: readonly OfficialArea[]
   blocks: readonly DrawnBlock[]
+}
+
+type RawFeature = {
+  properties?: Record<string, unknown>
+  geometry?: unknown
+}
+
+const areaMappings = new Map(
+  mappings.official_area_mappings.map((mapping) => [mapping.official_area_id, mapping.community_id]),
+)
+
+const featuresOf = (collection: unknown): RawFeature[] => {
+  if (!collection || typeof collection !== 'object') return []
+  const features = (collection as { features?: unknown }).features
+  return Array.isArray(features) ? features as RawFeature[] : []
+}
+
+const asPolygon = (geometry: unknown): Polygon | null => {
+  if (!geometry || typeof geometry !== 'object') return null
+  const candidate = geometry as { type?: unknown; coordinates?: unknown }
+  if (candidate.type !== 'Polygon' || !Array.isArray(candidate.coordinates)) return null
+  return candidate as Polygon
+}
+
+const stringProperty = (properties: Record<string, unknown> | undefined, name: string) => {
+  const value = properties?.[name]
+  return typeof value === 'string' ? value.trim() : String(value ?? '').trim()
+}
+
+const areasFrom = (
+  source: unknown,
+  officialAreaId: (properties: Record<string, unknown> | undefined) => string,
+): OfficialArea[] => featuresOf(source).flatMap((feature) => {
+  const polygon = asPolygon(feature.geometry)
+  const official_area_id = officialAreaId(feature.properties)
+  if (!polygon || !official_area_id) return []
+  return [{
+    official_area_id,
+    block_id: areaMappings.get(official_area_id) ?? null,
+    polygon,
+  }]
+})
+
+/**
+ * The only place the checked-in raw sources are read. Their polygons remain
+ * untouched; processed city geometry is used only for the guaranteed-visible
+ * nearest-block fallback.
+ */
+export const defaultAssignmentData: AssignmentData = {
+  officialAreas: [
+    ...areasFrom(kitchenerAreas, (properties) => `kitchener:${stringProperty(properties, 'PLANNINGCOMMUNITYID')}`),
+    ...areasFrom(waterlooAreas, (properties) => {
+      const districtId = stringProperty(properties, 'PLANNINGDI')
+      return `waterloo:${districtId || stringProperty(properties, 'DISTNAME')}`
+    }),
+  ],
+  blocks: city.communities.map((community) => ({
+    community_id: community.community_id,
+    centroid: [community.centroid[0]!, community.centroid[1]!],
+  })),
 }
 
 const isOnSegment = (point: Position, start: Position, end: Position) => {
@@ -80,7 +145,11 @@ const nearestBlock = (point: Position, blocks: readonly DrawnBlock[]) => {
  * Resolves a post to its drawn community id. A valid block set guarantees a
  * visible result even when official source data is incomplete.
  */
-export const assignCommunity = (lon: number, lat: number, data: AssignmentData): string | null => {
+export const assignCommunity = (
+  lon: number,
+  lat: number,
+  data: AssignmentData = defaultAssignmentData,
+): string | null => {
   const point: Position = [lon, lat]
   const area = data.officialAreas.find((candidate) => contains(point, candidate.polygon))
   return area?.block_id ?? nearestBlock(point, data.blocks)

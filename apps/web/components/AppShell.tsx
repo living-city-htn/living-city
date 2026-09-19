@@ -310,6 +310,7 @@ export default function AppShell() {
           key={`${selected.community_id}:${panelVersion}`}
           communityId={selected.community_id}
           name={selected.name}
+          planId={plans.find((p) => p.community_id === selected.community_id)?.plan_id}
           onClose={() => setSelectedId(null)}
           onLiked={setBalance}
         />

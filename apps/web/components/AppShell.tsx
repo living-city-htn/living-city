@@ -26,6 +26,17 @@ import PostList from './PostList'
 import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getPlan, getShopCatalog, type PostRow } from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
 import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '@/lib/live'
+
+/**
+ * How long a block stays marked "planning" before the mark gives up.
+ *
+ * docs/04 section 8 budgets about 28 seconds from post to rebuild. Past this we
+ * stop claiming something is coming, because the alternative is what a
+ * rehearsal on the deployed build actually produced: a judge watching a marked
+ * block spin forever because nothing replanned it. A stuck mark is worse than
+ * no mark — it promises a change the city may never make.
+ */
+const PLANNING_GIVES_UP_AFTER = 45_000
 import type { ShopItem } from '@living-city/fixtures'
 
 /** One line per tab, so the header always says what this screen is for. */
@@ -57,6 +68,7 @@ export default function AppShell() {
   const [placeMessage, setPlaceMessage] = useState('')
   const [needsRefresh, setNeedsRefresh] = useState(false)
   const placeInFlight = useRef(false)
+  const planningTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const plansRef = useRef<CommunityPlan[]>([])
   plansRef.current = plans
   const [sheetHeight, setSheetHeight] = useState(0)
@@ -82,6 +94,11 @@ export default function AppShell() {
     return () => {
       live = false
     }
+  }, [])
+
+  useEffect(() => {
+    const timers = planningTimers.current
+    return () => { for (const t of Object.values(timers)) clearTimeout(t) }
   }, [])
 
   // The feed is the one tab whose data can change while you are away from it.
@@ -129,6 +146,10 @@ export default function AppShell() {
         setPlans((current) => mergePlans(current, fresh))
         // The block changed, so whatever we were waiting for has landed.
         const done = new Set(fresh.map((p) => p.community_id))
+        for (const id of done) {
+          clearTimeout(planningTimers.current[id])
+          delete planningTimers.current[id]
+        }
         setPlanningIds((ids) => ids.filter((id) => !done.has(id)))
       } catch {
         // A missed poll is not worth telling anyone about; the next one is in
@@ -227,8 +248,15 @@ export default function AppShell() {
     setNotice(result.post.hidden ? 'Post received but not shown publicly.' :
       `Posted to ${community?.name ?? 'your community'}.${points}${result.post.status === 'pending' ? ' Being analyzed.' : ''}`)
     // Moment 8: mark the block so the judge knows where to look and that it
-    // takes a moment. The poll clears it when the plan id actually changes.
-    setPlanningIds(ids => ids.includes(result.post.community_id) ? ids : [...ids, result.post.community_id])
+    // takes a moment. The poll clears it when the plan id actually changes;
+    // this timer clears it when nothing ever does.
+    const marked = result.post.community_id
+    setPlanningIds(ids => ids.includes(marked) ? ids : [...ids, marked])
+    clearTimeout(planningTimers.current[marked])
+    planningTimers.current[marked] = setTimeout(() => {
+      setPlanningIds(ids => ids.filter(id => id !== marked))
+      delete planningTimers.current[marked]
+    }, PLANNING_GIVES_UP_AFTER)
     setSelectedId(result.post.community_id); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
   }
 

@@ -1,5 +1,5 @@
-import CityView from '@/components/CityView'
+import AppShell from '@/components/AppShell'
 
 export default function Home() {
-  return <CityView />
+  return <AppShell />
 }

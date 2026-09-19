@@ -1,3 +1,4 @@
+import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import RegisterServiceWorker from '@/components/RegisterServiceWorker'
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif' }}>
+      <body>
         {children}
         <RegisterServiceWorker />
       </body>

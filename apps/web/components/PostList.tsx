@@ -1,0 +1,86 @@
+'use client'
+
+/**
+ * The post row, shared by the block panel and the Feed tab.
+ *
+ * Seed posts point at image paths that do not exist yet (real photos arrive
+ * from Blob once Pipeline's upload lands), so a missing image collapses to
+ * nothing rather than showing a broken tile.
+ */
+import { useState } from 'react'
+import type { PostRow } from '@/lib/api'
+import { toggleLike } from '@/lib/api'
+
+const when = (iso: string) => {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+  if (mins < 60) return `${Math.max(mins, 1)}m`
+  if (mins < 60 * 24) return `${Math.round(mins / 60)}h`
+  return `${Math.round(mins / 1440)}d`
+}
+
+function Post({ post, onLiked }: { post: PostRow; onLiked: (balance: number) => void }) {
+  const [liked, setLiked] = useState(post.liked)
+  const [likes, setLikes] = useState(post.likes)
+  const [broken, setBroken] = useState(false)
+
+  const like = async () => {
+    // Optimistic: a like must feel instant on a phone (PRD section 9).
+    const next = !liked
+    setLiked(next)
+    setLikes((n) => n + (next ? 1 : -1))
+    try {
+      const r = await toggleLike(post.id)
+      setLiked(r.liked)
+      setLikes(r.likes)
+      onLiked(r.balance)
+    } catch {
+      setLiked(!next)
+      setLikes((n) => n + (next ? -1 : 1))
+    }
+  }
+
+  return (
+    <article className="post">
+      {post.image_url && !broken && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img className="post-photo" src={post.image_url} alt="" onError={() => setBroken(true)} />
+      )}
+      <div className="post-head">
+        <span className="post-author">{post.author_name}</span>
+        <span className="post-time">{when(post.created_at)}</span>
+      </div>
+      <p className="post-text">{post.text}</p>
+      <button className="like" data-liked={liked} onClick={like} aria-pressed={liked}>
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+          <path
+            d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 1 1 19.4 13z"
+            fill={liked ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {likes > 0 && <span>{likes}</span>}
+      </button>
+    </article>
+  )
+}
+
+export default function PostList({
+  posts,
+  onLiked,
+  empty = 'Nothing here yet.',
+}: {
+  posts: PostRow[]
+  onLiked: (balance: number) => void
+  empty?: string
+}) {
+  if (posts.length === 0) return <p className="muted">{empty}</p>
+  return (
+    <div className="posts">
+      {posts.map((p) => (
+        <Post key={p.id} post={p} onLiked={onLiked} />
+      ))}
+    </div>
+  )
+}

@@ -18,7 +18,11 @@
     "next": "^15.5.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.171.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^10.0.0",
+    "@living-city/modeling": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -26,6 +30,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "@types/three": "^0.171.0"
   }
 }

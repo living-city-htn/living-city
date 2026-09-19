@@ -30,6 +30,9 @@
   --r-sheet: 24px;
 
   /* One easing and three durations, used everywhere. Nothing teleports. */
+  /* Numbers are readouts, so they get the precise face. Prose does not. */
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --fast: 140ms;
   --base: 220ms;
@@ -93,9 +96,10 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 }
 .post-head { display: flex; align-items: baseline; gap: 8px; }
 .post-author { font-weight: 600; font-size: 15px; }
-.post-time { color: var(--label); font-size: 13px; }
+.post-time { color: var(--label); font: 400 12px/1 var(--mono); }
 .post-text { margin: 0; font-size: 15px; }
 
+.like span { font: 600 12px/1 var(--mono); }
 .like {
   display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
   margin-top: 2px; padding: 6px 10px 6px 8px; border: 0; border-radius: 999px;
@@ -209,9 +213,9 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .tab[data-accent='true']:hover { color: var(--accent); }
 
 .balance {
-  margin-left: auto; flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
-  background: var(--fill); color: var(--label); font-size: 13px; font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  margin-left: auto; flex: 0 0 auto; padding: 5px 11px; border-radius: 999px;
+  background: var(--fill); color: var(--label);
+  font: 600 12.5px/1 var(--mono); font-variant-numeric: tabular-nums;
 }
 
 /* Phone composer: shared sheet and theme tokens. */
@@ -449,8 +453,9 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .app-header-balance {
-  margin-left: auto; flex: 0 0 auto; padding: 5px 12px; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55); font-size: 13px; font-weight: 600;
+  margin-left: auto; flex: 0 0 auto; padding: 5px 11px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  font: 600 12.5px/1 var(--mono); letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 @media (prefers-color-scheme: dark) {
@@ -467,13 +472,15 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .particle {
   position: absolute; bottom: -8%; display: block; border-radius: 999px;
   background: var(--particle);
+  /* Softened so they read as pollen on the light rather than stray pixels. */
+  filter: blur(0.6px);
   animation-name: drift; animation-timing-function: linear;
   animation-iteration-count: infinite; will-change: transform, opacity;
 }
 @keyframes drift {
   0% { transform: translate3d(0, 0, 0); opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
+  12% { opacity: var(--peak, 0.9); }
+  88% { opacity: var(--peak, 0.9); }
   100% { transform: translate3d(var(--drift, 0), -112vh, 0); opacity: 0; }
 }
 

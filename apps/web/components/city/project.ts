@@ -10,7 +10,8 @@
 import type { CommunityGeo } from '@living-city/fixtures'
 
 export const VIEW = 1000
-const PAD = 40
+/* Small: the city should fill the frame, not float in it (PRD 8.11). */
+const PAD = 14
 
 export type Point = [number, number]
 

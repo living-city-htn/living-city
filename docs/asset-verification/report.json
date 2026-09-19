@@ -1,0 +1,38 @@
+{
+  "widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ],
+  "journey": [
+    "benches",
+    "planters",
+    "string_lights",
+    "food_trucks",
+    "fountain",
+    "sculpture"
+  ],
+  "failures": [
+    "purchase failure shows recovery",
+    "gallery model failure shows recovery",
+    "city survives failed model requests"
+  ],
+  "screenshots": [
+    "city-390",
+    "shop-390",
+    "my-city-390",
+    "city-1440",
+    "shop-1440",
+    "my-city-1440",
+    "placed-benches",
+    "placed-planters",
+    "placed-string_lights",
+    "placed-food_trucks",
+    "placed-fountain",
+    "placed-sculpture",
+    "gallery-1440",
+    "procedural-fallback"
+  ]
+}

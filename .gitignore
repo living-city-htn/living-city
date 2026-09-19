@@ -34,3 +34,7 @@ packages/pipeline/out/
 .agents/
 .claude/skills/
 skills-lock.json
+
+# Source photos for the seed posts. The resized copies live in
+# apps/web/public/seed; the originals are too big to clone.
+dummy_post_images/

@@ -14,17 +14,28 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
-import { CityScene, isFallbackScene, type CityPayload, type Placement } from './city'
+import { CityScene, type CityPayload, type Placement } from './city'
 import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
 import ShopPanel from './ShopPanel'
 import MyCityPanel from './MyCityPanel'
 import TabBar, { type Tab } from './TabBar'
+import AppHeader from './AppHeader'
+import ParticleField from './ParticleField'
 import BlockPanel from './BlockPanel'
 import PostList from './PostList'
 import { getAllPlans, getCity, getFeed, getMe, getMyPlacements, getPlan, getShopCatalog, type PostRow } from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
 import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '@/lib/live'
 import type { ShopItem } from '@living-city/fixtures'
+
+/** One line per tab, so the header always says what this screen is for. */
+const HEADER_LINE: Record<Tab, string> = {
+  feed: 'Everything happening across the city',
+  city: 'Tap a block to see what it feels like',
+  post: 'Share where you are right now',
+  shop: 'Spend your points on decorations',
+  mine: 'Your city — only you can see it',
+}
 
 export default function AppShell() {
   const [postLocation, setPostLocation] = useState<PostLocation | null>(null)
@@ -232,7 +243,15 @@ export default function AppShell() {
         scene fills this box, so 3D's component gets the same behaviour without
         a change to its props.
       */}
+      <AppHeader
+        title={selected?.name ?? 'Kitchener-Waterloo'}
+        subtitle={HEADER_LINE[tab]}
+        balance={balance}
+      />
+
       <div className="viewport" data-inset={tab === 'mine' && sheetHeight > 0}>
+        <ParticleField />
+        <div className="city-layer">
         {city && (
           <CityScene
             city={city}
@@ -251,16 +270,8 @@ export default function AppShell() {
             onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
           />
         )}
-      </div>
-
-      {tab === 'city' && !selected && (
-        <div className="greeting">
-          <h1>Hello, welcome to Kitchener-Waterloo</h1>
-          <p>
-            {isFallbackScene ? 'Flat outlines — the 3D city lands soon.' : 'Tap a block to see what it feels like.'}
-          </p>
         </div>
-      )}
+      </div>
 
       {/*
         City only. In My City a block tap opens its decoration slots rather than
@@ -281,9 +292,8 @@ export default function AppShell() {
           <header className="sheet-head">
             <div>
               <h2>Feed</h2>
-              <p className="sheet-sub">Everything happening across the city</p>
+              <p className="sheet-sub">Newest first, across every block</p>
             </div>
-            {balance !== null && <span className="balance">{balance} pts</span>}
           </header>
           <div className="sheet-body">
             <PostList posts={feed} onLiked={setBalance} empty="No posts yet." />

@@ -42,16 +42,41 @@ If a UI element needs colour to be understood, it is doing too much.
 |---|---|
 | Type | System stack (`-apple-system`, `SF Pro` on Apple devices). Two weights: regular for body, semibold for titles. No third font. |
 | Spacing | 8pt grid. When unsure, use more space, not less. |
-| Colour | Neutral greys plus one accent used only for the primary action. Backgrounds are near-white in light mode, near-black in dark. |
+| Colour | Near-monochrome. The only green in the interface is the header and the particle drift behind the map, both pale. One accent, used only for the primary action. Backgrounds near-white in light mode, near-black in dark. |
 | Depth | Subtle shadow and background blur only. No gradients, no borders where space will do, no skeuomorphism. |
 | Corners | Large radii: 12px on cards, 20px+ on sheets. |
 | Tab bar | Translucent, `backdrop-filter: blur()`, hairline top border, floats over the map. |
-| Motion | Short and springy, 200-300ms. Every state change animates; nothing teleports. |
+| Motion | One easing curve and three durations (`--fast` 140ms, `--base` 220ms, `--slow` 320ms), smooth rather than springy. Every state change animates; nothing teleports. `prefers-reduced-motion` turns it all off. |
 | Dark mode | Required, not optional. The city has a night lighting mode and the chrome follows it. |
 | Panels | Bottom sheets that slide over the map, not full-screen pushes. The city stays visible. |
 
 The map is full-bleed behind everything. The chrome floats; it never boxes the
 city in.
+
+## The header and the particles
+
+A pale green header names the city (or the selected block), says in one line
+what the current tab is for, and carries the points balance so it is visible
+from every screen rather than only inside the shop.
+
+Behind the map, a slow drift of particles: pollen, or seeds on the wind. It is
+the app's only ambient motion and it is deliberately **not** the plan's
+`effects`. Fireflies, sparkles and music notes belong to 3D, are capped at
+three by docs/04 section 3, and mean something — a block carrying them is a
+block the AI decided was festive. The drift is just air, and it must never be
+mistaken for a plan. It is pale, slow, and behind everything.
+
+## Two layouts
+
+Mobile is the real layout — it is the phone in the judge's hand, and every
+decision above is made for it. Desktop is a considered adaptation of the same
+screen, not a second design:
+
+| | Mobile | Desktop (>= 900px) |
+|---|---|---|
+| Navigation | Bottom tab bar, translucent, floating over the map | Left rail, opaque, 232px |
+| Panels | Bottom sheets that slide up | A docked column beside the rail, opaque because a translucent panel over twelve blocks is unreadable |
+| Map | Full width, stops above the tab bar | Fills everything right of the rail |
 
 ## Screen structure
 

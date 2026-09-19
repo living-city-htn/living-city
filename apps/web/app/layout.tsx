@@ -25,15 +25,14 @@ export const viewport: Viewport = {
   // double-tap that zooms the document would fight every block tap.
   maximumScale: 1,
   userScalable: false,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fbfbfd' },
-    { media: '(prefers-color-scheme: dark)', color: '#0d0d0f' },
-  ],
+  // One colour while dark mode is held (see globals.css).
+  themeColor: '#e9f3ea',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    /* data-theme pins the app to light while dark mode is on hold. */
+    <html lang="en" data-theme="light">
       <body>
         {children}
         <RegisterServiceWorker />

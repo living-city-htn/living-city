@@ -38,21 +38,31 @@ const PALETTE: Record<string, string> = {
 }
 
 const CSS = `
-.lc-scene { --ink: #1c1c1e; --hair: #d8d8dc; --paper: #fbfbfd; --label: #6e6e73;
+.lc-scene { --ink: #2b332e; --hair: #d8d8dc; --paper: #fbfbfd; --label: #67736b;
   --block-warm: #f0e3d6; --block-brick: #ecd9d4; --block-cool: #dde5ee;
   --block-green: #dde8dc; --block-sunset: #f7d9b8; --block-neutral: #e8e8ec; --mark: #2f6fdd;
-  width: 100%; height: 100%; display: block; background: var(--paper);
+  /* Transparent: the drifting particles live behind this. */
+  width: 100%; height: 100%; display: block; background: transparent;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 @media (prefers-color-scheme: dark) {
-  .lc-scene { --ink: #f2f2f7; --hair: #3a3a3e; --paper: #0d0d0f; --label: #98989f;
+  :root:not([data-theme='light']) .lc-scene { --ink: #cfe0d4; --hair: #3a3a3e; --paper: #0d0d0f; --label: #8d9a91;
     --block-warm: #3a3229; --block-brick: #3a2c29; --block-cool: #26303c;
     --block-green: #28332a; --block-sunset: #4a3520; --block-neutral: #2a2a2e; --mark: #6ea0f5; }
 }
-.lc-block { fill: var(--block-neutral); stroke: var(--ink); stroke-width: 2;
-  stroke-linejoin: round; cursor: pointer; transition: opacity 200ms ease, stroke-width 200ms ease; }
-.lc-block[data-state="hovered"] { stroke-width: 4; }
-.lc-block[data-state="selected"] { stroke-width: 5; }
-.lc-block[data-dim="true"] { opacity: .45; }
+/*
+ * Blocks read as pieces resting on a surface, not as regions on a map: a soft
+ * drop shadow, a softened ink outline, and a lift on hover and selection. This
+ * is as far as the fallback goes — raised slabs, toon shading and animated life
+ * are 3D's (PRD 8.11), and this component is deleted when their scene lands.
+ */
+.lc-block { fill: var(--block-neutral); stroke: var(--ink); stroke-width: 1.5;
+  stroke-linejoin: round; cursor: pointer; filter: url(#lc-drop);
+  transition: opacity 220ms var(--ease, ease), stroke-width 220ms var(--ease, ease),
+    transform 220ms var(--ease, ease);
+  transform-box: fill-box; transform-origin: center; }
+.lc-block[data-state="hovered"] { stroke-width: 2.2; transform: translateY(-2px) scale(1.012); }
+.lc-block[data-state="selected"] { stroke-width: 3; transform: translateY(-3px) scale(1.02); }
+.lc-block[data-dim="true"] { opacity: .5; }
 .lc-planning { fill: none; stroke: var(--mark); stroke-width: 3; stroke-dasharray: 10 8;
   pointer-events: none; animation: lc-march 1s linear infinite; }
 @keyframes lc-march { to { stroke-dashoffset: -18; } }
@@ -126,6 +136,12 @@ export default function FlatCityScene({
       onClick={() => onBlockSelect?.(null)}
     >
       <style>{CSS}</style>
+      <defs>
+        {/* One soft shadow, shared by every block. */}
+        <filter id="lc-drop" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#1d2a22" floodOpacity="0.16" />
+        </filter>
+      </defs>
 
       {blocks.map(({ community, geom }) => {
         const id = community.community_id

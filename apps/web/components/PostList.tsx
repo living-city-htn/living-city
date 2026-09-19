@@ -39,17 +39,14 @@ function Post({ post, onLiked }: { post: PostRow; onLiked: (balance: number) => 
     }
   }
 
-  return (
-    <article className="post">
-      {post.image_url && !broken && (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img className="post-photo" src={post.image_url} alt="" onError={() => setBroken(true)} />
-      )}
-      <div className="post-head">
-        <span className="post-author">{post.author_name}</span>
-        <span className="post-time">{when(post.created_at)}</span>
-      </div>
-      <p className="post-text">{post.text}</p>
+  // With a photo this reads like a photo feed: author, image, actions, caption.
+  // Without one there is nothing to sit between the text and the actions, so
+  // the caption comes first and the actions close the row.
+  const initials = post.author_name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2)
+  const hasPhoto = Boolean(post.image_url) && !broken
+
+  const actions = (
+    <div className="post-actions">
       <button className="like" data-liked={liked} onClick={like} aria-pressed={liked}>
         <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
           <path
@@ -62,6 +59,31 @@ function Post({ post, onLiked }: { post: PostRow; onLiked: (balance: number) => 
         </svg>
         {likes > 0 && <span>{likes}</span>}
       </button>
+    </div>
+  )
+
+  return (
+    <article className="post" data-photo={hasPhoto}>
+      <div className="post-head">
+        <span className="post-avatar" aria-hidden="true">{initials}</span>
+        <span className="post-author">{post.author_name}</span>
+        <span className="post-time">{when(post.created_at)}</span>
+      </div>
+      {post.image_url && !broken && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img className="post-photo" src={post.image_url} alt="" onError={() => setBroken(true)} />
+      )}
+      {hasPhoto ? (
+        <>
+          {actions}
+          <p className="post-text">{post.text}</p>
+        </>
+      ) : (
+        <>
+          <p className="post-text">{post.text}</p>
+          {actions}
+        </>
+      )}
     </article>
   )
 }

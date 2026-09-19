@@ -76,7 +76,7 @@ export default function MyCityPanel({
   const placed = snapshot?.placements.length ?? 0
 
   return (
-    <section ref={ref} className="inventory-panel" aria-label="My City" style={!active ? { display: 'none' } : undefined}>
+    <section ref={ref} className="inventory-panel" aria-label="My City" data-shown={active} inert={!active}>
       <header className="sheet-head">
         <div>
           <h2>Your decorations</h2>

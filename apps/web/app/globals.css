@@ -6,6 +6,8 @@
   --r-card: 12px; --r-sheet: 16px;
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(.22,.61,.36,1); --fast: 140ms; --base: 220ms; --slow: 320ms;
+  /* How far a screen rises as it arrives. Zeroed for reduced motion. */
+  --rise: 8px;
   --tabbar-h: calc(72px + env(safe-area-inset-bottom)); --rail-w: 0px;
   --header-h: calc(92px + env(safe-area-inset-top));
   color-scheme: light;
@@ -21,9 +23,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 button { touch-action: manipulation; }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-}
 
 /* Form controls, so the composer reads as an app screen rather than a form. */
 textarea, select {
@@ -178,6 +177,34 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 /* Used by .pick-bar and the block card. This was referenced by name long
    before it existed, so neither of them actually animated. */
 @keyframes sheet-in { from { opacity: 0; transform: translateY(12px); } }
+
+/*
+ * One way to hide a destination.
+ *
+ * There were three: an inline display:none on the feed, shop and My City, the
+ * hidden attribute on the scene, and the composer returning nothing at all.
+ * display:none cannot be transitioned, so none of them could carry a tab
+ * change, and each one collapsed its box on the way out.
+ *
+ * `visibility` keeps a screen out of the accessibility tree and out of the tab
+ * order the way display:none did, but it keeps the box — so nothing re-lays
+ * out and the scene's canvas never changes size. `inert` covers the moment
+ * while an outgoing screen is still fading and technically still visible.
+ */
+[data-shown] {
+  transition: opacity var(--base) var(--ease), transform var(--base) var(--ease), visibility 0s;
+}
+[data-shown='false'] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(var(--rise));
+  transition-delay: 0s, 0s, var(--base);
+}
+/* The scene fades faster and never moves: a transform would hand the WebGL
+   canvas its own compositor layer for as long as the fade lasts. */
+.viewport[data-shown] { transition: opacity var(--fast) var(--ease), visibility 0s; }
+.viewport[data-shown='false'] { transform: none; transition-delay: 0s, var(--fast); }
 
 .shop-body { min-height: 110px; }
 .shop-explainer { margin: 0 0 20px; color: var(--label); font-size: 14px; }
@@ -396,4 +423,23 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   .app-header h1 { font-size: 20px; }
   .app-header p { font-size: 12px; }
   .sheet-head, .sheet-body { padding-inline: 16px; }
+}
+
+/*
+ * Reduced motion, last so it wins over everything above.
+ *
+ * There used to be a second copy of this further down that set the durations
+ * to a hundredth of a millisecond instead. It never did anything: this block
+ * sets the properties themselves to none, which beats any duration.
+ *
+ * Switching transitions off also makes the visibility delay moot, so screens
+ * swap instantly rather than lingering invisible on the way out.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root { --rise: 0px; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

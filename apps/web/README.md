@@ -60,7 +60,22 @@ The blob store is public because post photos are shown in the feed, the block
 panel and the government page; private storage would mean signed URLs on every
 image, which is not in the demo script.
 
-## Phone posting (Product, Stage 1)
+## Phone posting (Product, Stage 1, rebuilt in Stage 2)
+
+The Post tab opens the way a camera app opens: the capture is the screen, not a
+field on a form. Three states — `choose` (camera first, with a way out to text
+only), `compose` (the photo, then a caption, then where it happened), and a
+collapsed bar while picking a block so the map underneath stays tappable.
+
+Pull the grabber down past 120px to close. The gesture starts on the grabber
+only, because anywhere else it fights the caption field and the scrolling body.
+The composer stops above the tab bar rather than covering it: the grabber is
+the intended way out, but moment 8 hands this to strangers and a gesture that
+does not land must never trap someone on a screen with no visible exit.
+
+Everything the earlier form did is kept — see below.
+
+### The original notes still apply
 
 The Post tab supports camera/gallery photos, optional captions for photos,
 text-only posts, device location, a community picker, and picking a block on

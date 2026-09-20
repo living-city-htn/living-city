@@ -63,4 +63,23 @@ describe('omniProvider', () => {
       confidence: 92,
     })
   })
+
+  it('accepts a JSON object wrapped in an otherwise unusable model reply', async () => {
+    globalThis.fetch = (async (_url: unknown, init: { body: string }) => {
+      requests.push({ body: JSON.parse(init.body) })
+      return new Response(stream([
+        'Here is the analysis:\n```json\n{"transcript":"Music is playing","audio_cues":["music"],',
+        '"speech_mood":"excited","confidence":88}\n```',
+      ]), { headers: { 'content-type': 'text/event-stream' } })
+    }) as typeof fetch
+
+    const response = await omniProvider().complete(request)
+
+    expect(response.json).toEqual({
+      transcript: 'Music is playing',
+      audio_cues: ['music'],
+      speech_mood: 'excited',
+      confidence: 88,
+    })
+  })
 })

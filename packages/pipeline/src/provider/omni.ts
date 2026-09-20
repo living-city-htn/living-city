@@ -100,6 +100,37 @@ const streamText = async (response: Response): Promise<string> => {
 }
 
 /**
+ * Audio-capable proxy models can add prose or a Markdown fence despite JSON
+ * mode. Accept only a complete JSON object; voice/index.ts still validates the
+ * result against the four-field voice contract before it can affect a post.
+ */
+const parseJsonObject = (raw: string): unknown | null => {
+  const trimmed = raw.trim()
+  const candidates = new Set<string>([trimmed])
+
+  for (const match of trimmed.matchAll(/```(?:json)?\s*([\s\S]*?)\s*```/gi)) {
+    if (match[1]) candidates.add(match[1].trim())
+  }
+
+  const firstObject = trimmed.indexOf('{')
+  const lastObject = trimmed.lastIndexOf('}')
+  if (firstObject >= 0 && lastObject > firstObject) {
+    candidates.add(trimmed.slice(firstObject, lastObject + 1))
+  }
+
+  for (const candidate of candidates) {
+    try {
+      const value = JSON.parse(candidate)
+      if (value && typeof value === 'object' && !Array.isArray(value)) return value
+    } catch {
+      // Try the next bounded candidate. Unparseable content remains a failure.
+    }
+  }
+
+  return null
+}
+
+/**
  * Distinguishes "we are out of credits" from "the service is down", because
  * T3's ladder gives them different log lines and the operator needs to know
  * which one is happening on stage.
@@ -175,12 +206,8 @@ export const omniProvider = (): ModelProvider => ({
         const raw = await streamText(response)
         if (!raw.trim()) throw new ModelError('OMNI returned nothing', 'parse', attempt)
 
-        let json: unknown
-        try {
-          json = JSON.parse(raw)
-        } catch {
-          throw new ModelError('OMNI did not return JSON', 'parse', attempt)
-        }
+        const json = parseJsonObject(raw)
+        if (!json) throw new ModelError('OMNI did not return JSON', 'parse', attempt)
 
         return {
           json, raw, attempts: attempt, model: req.model,

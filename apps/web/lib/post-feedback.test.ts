@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { feedbackMessage, postFeedback } from './post-feedback'
+import { confirmationPresentation, feedbackMessage, postFeedback } from './post-feedback'
 
 describe('post confirmation', () => {
   const result = { post: { id: 'p', community_id: 'kw:a', status: 'analyzed' as const, hidden: false } }
@@ -21,5 +21,16 @@ describe('post confirmation', () => {
   })
   it('distinguishes a delayed update from a failed post', () => {
     expect(feedbackMessage({ ...postFeedback(result, 'Uptown'), state: 'unavailable' })).toContain('Your post is saved')
+  })
+
+  it('gives the receipt a clear city-update stage', () => {
+    expect(confirmationPresentation(postFeedback(result, 'Beechwood'))).toEqual({
+      eyebrow: 'City update',
+      title: 'Preparing Beechwood’s next look',
+    })
+    expect(confirmationPresentation({ ...postFeedback(result, 'Beechwood'), state: 'updated' })).toEqual({
+      eyebrow: 'City updated',
+      title: 'Beechwood has a new city plan',
+    })
   })
 })

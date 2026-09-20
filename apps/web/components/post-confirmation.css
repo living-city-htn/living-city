@@ -1,4 +1,23 @@
-.post-confirmation { position: absolute; z-index: 8; bottom: calc(var(--tabbar-h) + 16px); left: calc(var(--rail-w) + 16px); width: min(430px, calc(100% - var(--rail-w) - 32px)); background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; box-shadow: 0 6px 24px #00000014; padding: 16px; }
-.post-confirmation p { margin: 0 0 12px; font-size: 14px; }
-.post-confirmation .reward { display: inline-block; background: var(--fill); color: var(--ink); border-radius: 10px; padding: 4px 10px; margin-bottom: 10px; font-weight: 600; }
-.confirmation-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.post-confirmation {
+  position: absolute; z-index: 8; bottom: calc(var(--tabbar-h) + 16px); left: calc(var(--rail-w) + 16px);
+  width: min(430px, calc(100% - var(--rail-w) - 32px)); padding: 18px;
+  background: var(--surface); border: 1px solid var(--hair); border-radius: 16px;
+  box-shadow: 0 10px 32px #18324b14;
+}
+.confirmation-title-row { display: flex; align-items: center; gap: 8px; }
+.confirmation-status-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--accent); }
+.post-confirmation[data-state='updated'] .confirmation-status-dot { background: #2c6b3f; }
+.post-confirmation[data-state='unavailable'] .confirmation-status-dot { background: #9a6400; }
+.post-confirmation[data-state='hidden'] .confirmation-status-dot { background: var(--label); }
+.confirmation-eyebrow { margin: 0; color: var(--label); font: 600 11px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.post-confirmation h2 { margin: 7px 0 0; font-size: 18px; line-height: 1.25; letter-spacing: -.015em; }
+.post-confirmation .reward { display: inline-block; margin-top: 12px; padding: 5px 9px; border-radius: 8px; background: var(--fill); color: var(--ink); font-size: 13px; font-weight: 600; }
+.confirmation-detail { margin: 10px 0 0; color: var(--label); font-size: 14px; line-height: 1.45; }
+.confirmation-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.confirmation-actions .form-button { min-height: 44px; }
+.confirmation-actions .form-button:first-child { background: var(--accent); color: #fff; font-weight: 600; }
+.confirmation-actions .form-button:last-child { padding-inline: 8px; background: transparent; color: var(--label); }
+@media (max-width: 359px) {
+  .post-confirmation { left: 12px; width: calc(100% - 24px); padding: 16px; }
+  .confirmation-actions .form-button { flex: 1 1 auto; }
+}

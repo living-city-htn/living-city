@@ -91,7 +91,7 @@ function Post({ post, onLiked, community, onCommunity }: { post: PostRow; onLike
       {community && onCommunity && <button className="post-community" onClick={() => onCommunity(post.community_id)}>{community}<span aria-hidden="true"> ›</span></button>}
       {post.image_url && !broken && (
         /* eslint-disable-next-line @next/next/no-img-element */
-        <img className="post-photo" src={post.image_url} alt="" onError={() => setBroken(true)} />
+        <img className="post-photo" src={post.image_url} alt={post.text ? '' : 'Photo attached to post'} onError={() => setBroken(true)} />
       )}
       {hasPhoto ? (
         <>

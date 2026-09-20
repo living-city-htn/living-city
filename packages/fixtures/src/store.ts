@@ -59,12 +59,14 @@ export type UserBuilding = {
   created_at: string
 }
 
-type State = {
+export type FixtureState = {
   posts: SeedPost[]
   users: SeedUser[]
   likes: Set<string>                                  // `${user_id}:${post_id}`
-  /** Like keys that have already paid out. Points are earned once per pair. */
+  /** Legacy persisted alias retained during the credit-ledger migration. */
   rewardedLikes: Set<string>
+  likeCredits: Set<string>                            // one points credit per like pair
+  likeCreditBlockedPostIds: Set<string>               // unreconstructable pre-migration history
   balances: Map<string, number>
   inventory: Map<string, Map<string, number>>         // user -> item_tag -> qty
   placements: Array<{ id: string; user_id: string; community_id: string; slot_id: string; item_tag: string; created_at: string }>
@@ -80,7 +82,7 @@ type State = {
   qrPaused: boolean
 }
 
-let state: State
+let state: FixtureState
 
 /**
  * Incidents the stub derives from the seed posts. In the real system Call A
@@ -181,6 +183,8 @@ export function reset(): void {
     // The seed's likes are history and paid out whenever they happened, so
     // nobody can unlike one and like it again to be paid for it now.
     rewardedLikes: new Set(seeded),
+    likeCredits: new Set(seeded),
+    likeCreditBlockedPostIds: new Set(),
     balances: new Map(seedUsers.map((u) => [u.id, u.balance])),
     inventory: new Map(),
     placements: [],
@@ -197,9 +201,12 @@ reset()
 
 /* --- durability ---------------------------------------------------------- */
 
-const serialize = (s: State): Serialized => ({
+const serialize = (s: FixtureState): Serialized => ({
   posts: s.posts, users: s.users,
-  likes: [...s.likes], rewardedLikes: [...s.rewardedLikes],
+  likes: [...s.likes],
+  rewardedLikes: [...s.rewardedLikes],
+  likeCredits: [...s.likeCredits],
+  likeCreditBlockedPostIds: [...s.likeCreditBlockedPostIds],
   balances: [...s.balances],
   inventory: [...s.inventory].map(([user, items]) => [user, [...items]] as [string, Array<[string, number]>]),
   placements: s.placements,
@@ -209,26 +216,60 @@ const serialize = (s: State): Serialized => ({
   updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused, recentWrites: s.recentWrites,
 })
 
-const deserialize = (d: Serialized): State => ({
-  posts: d.posts as SeedPost[],
-  users: d.users as SeedUser[],
-  likes: new Set(d.likes), rewardedLikes: new Set(d.rewardedLikes ?? d.likes),
-  balances: new Map(d.balances),
-  inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
-  placements: d.placements as State['placements'],
-  // Older rows predate this field; an absent one is an empty list, not a crash.
-  buildings: (d.buildings ?? []) as UserBuilding[],
-  plans: new Map(d.plans as Array<[string, CommunityPlan]>),
-  incidents: d.incidents as Incident[],
-  updatedAt: d.updatedAt, seq: d.seq, qrPaused: d.qrPaused, recentWrites: d.recentWrites ?? [],
-})
+const largestIdSuffix = (rows: unknown[], prefix: string): number => rows.reduce<number>((maximum, row) => {
+  if (row === null || typeof row !== 'object') return maximum
+  const id = (row as { id?: unknown }).id
+  const match = typeof id === 'string' ? new RegExp(`^${prefix}-(\\d+)$`).exec(id) : null
+  const suffix = match?.[1] ? Number(match[1]) : 0
+  return Number.isSafeInteger(suffix) ? Math.max(maximum, suffix) : maximum
+}, 0)
+
+/**
+ * Pure so migration behavior can be regression-tested without a database.
+ * Routes must still use read/write rather than replacing the live state.
+ */
+export const deserializeState = (d: Serialized): FixtureState => {
+  const posts = d.posts as SeedPost[]
+  const placements = d.placements as FixtureState['placements']
+  const persistedCredits = d.likeCredits ?? d.rewardedLikes
+  const legacyCreditBlockedPostIds = d.likeCreditBlockedPostIds
+    ?? (persistedCredits === undefined
+      ? posts.map((post) => post.id)
+      : [])
+  const credits = new Set(persistedCredits ?? d.likes)
+
+  return {
+    posts,
+    users: d.users as SeedUser[],
+    likes: new Set(d.likes),
+    // Keep the legacy field in sync while rows written before the rename are
+    // still in circulation. Both names describe the same one-time ledger.
+    rewardedLikes: new Set(credits),
+    likeCredits: credits,
+    // A legacy row cannot reveal which inactive likes were already rewarded.
+    // Conservatively withhold a new reward for its existing posts; new posts
+    // and a reset state retain normal one-time credits.
+    likeCreditBlockedPostIds: new Set(legacyCreditBlockedPostIds),
+    balances: new Map(d.balances),
+    inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
+    placements,
+    // Older rows predate this field; an absent one is an empty list, not a crash.
+    buildings: (d.buildings ?? []) as UserBuilding[],
+    plans: new Map(d.plans as Array<[string, CommunityPlan]>),
+    incidents: d.incidents as Incident[],
+    updatedAt: d.updatedAt,
+    seq: Math.max(d.seq, largestIdSuffix(d.posts, 'p'), largestIdSuffix(d.placements, 'pl')),
+    qrPaused: d.qrPaused,
+    recentWrites: d.recentWrites ?? [],
+  }
+}
 
 let version = 0
 
 async function hydrate(): Promise<void> {
   const row = await load()
   if (row) {
-    state = deserialize(row.data)
+    state = deserializeState(row.data)
     version = row.version
     return
   }
@@ -378,20 +419,29 @@ export function credit(userId: string, delta: number): number {
  * someone keeps tapping, which is the cap docs/01 section 8.8 asks for without
  * needing a clock to enforce it.
  */
-export function toggleLike(userId: string, postId: string): { liked: boolean; balance: number } {
+export type ToggleLikeResult =
+  | { ok: true; liked: boolean; balance: number }
+  | { ok: false; reason: 'post not found' | 'cannot like own post' }
+
+export function toggleLike(userId: string, postId: string): ToggleLikeResult {
+  const post = state.posts.find((candidate) => candidate.id === postId)
+  if (!post) return { ok: false, reason: 'post not found' }
+  if (post.user_id === userId) return { ok: false, reason: 'cannot like own post' }
+
   const key = `${userId}:${postId}`
   if (state.likes.has(key)) {
     state.likes.delete(key)
-    return { liked: false, balance: balance(userId) }
+    return { ok: true, liked: false, balance: balance(userId) }
   }
   state.likes.add(key)
-  if (!state.rewardedLikes.has(key)) {
-    state.rewardedLikes.add(key)
+  // Points are earned for the relationship, not for repeatedly flipping it.
+  if (!state.likeCredits.has(key) && !state.likeCreditBlockedPostIds.has(postId)) {
     credit(userId, 1)                                 // like given: 1. docs/01 section 8.8.
-    const post = state.posts.find((p) => p.id === postId)
-    if (post) credit(post.user_id, 2)                 // like received: 2.
+    credit(post.user_id, 2)                           // like received: 2.
+    state.likeCredits.add(key)
+    state.rewardedLikes.add(key)
   }
-  return { liked: true, balance: balance(userId) }
+  return { ok: true, liked: true, balance: balance(userId) }
 }
 export const likeCount = (postId: string) =>
   [...state.likes].filter((k) => k.endsWith(`:${postId}`)).length
@@ -413,11 +463,23 @@ export function buy(userId: string, itemTag: string): { ok: boolean; reason?: st
 export const placementsOf = (userId: string) => state.placements.filter((p) => p.user_id === userId)
 
 export function place(userId: string, communityId: string, slotId: string, itemTag: string) {
+  const slotExists = slots.some((slot) =>
+    slot.community_id === communityId && slot.slot_id === slotId,
+  )
+  if (!slotExists) return { ok: false as const, reason: 'invalid slot' }
+  if (state.placements.some((placement) =>
+    placement.user_id === userId
+    && placement.community_id === communityId
+    && placement.slot_id === slotId,
+  )) {
+    return { ok: false as const, reason: 'slot occupied' }
+  }
   const inv = state.inventory.get(userId)
   if (!inv || (inv.get(itemTag) ?? 0) < 1) return { ok: false as const, reason: 'not in inventory' }
   inv.set(itemTag, (inv.get(itemTag) ?? 0) - 1)
+  state.seq += 1
   const placement = {
-    id: `pl-${state.placements.length + 1}`,
+    id: `pl-${state.seq}`,
     user_id: userId, community_id: communityId, slot_id: slotId, item_tag: itemTag,
     created_at: new Date().toISOString(),
   }

@@ -50,9 +50,13 @@ export default function AppShell() {
   const [panelVersion, setPanelVersion] = useState(0)
   const [focusTick, setFocusTick] = useState(0)
   /*
-   * The City Hall rehearsal. It lives here rather than in the scene because
-   * more than the scene depends on it: while it runs, the block being drilled
-   * is posting about the storm rather than about its patios.
+   * The City Hall rehearsal, as the operator panel last left it. It lives here
+   * rather than in the scene because more than the scene depends on it: while
+   * it runs, the block being drilled is posting about the storm rather than
+   * about its patios.
+   *
+   * The app only reads it. Starting and stopping is the operator's, on their
+   * own route, so it arrives on the version poll like any other city change.
    */
   const [drillCommunityId, setDrillCommunityId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('city')
@@ -129,6 +133,9 @@ export default function AppShell() {
       try {
         const version = await getCityVersion()
         if (cancelled) return
+        // Before the early return below: a drill starting is a change worth
+        // seeing even on a poll where no plan id moved, which is most of them.
+        setDrillCommunityId(version.drill ?? null)
         const changed = changedPlanIds(version, planIdsOf(plansRef.current))
         if (changed.length === 0) return
         const fresh = (await Promise.all(changed.map(getPlan))).filter(
@@ -302,7 +309,6 @@ export default function AppShell() {
             planningIds={planningIds}
             focusTick={focusTick}
             drillCommunityId={drillCommunityId}
-            onDrillChange={setDrillCommunityId}
             onBlockSelect={setSelectedId}
             onBlockPick={(id, point) => {
               if (tab !== 'post' || !pickingLocation) return

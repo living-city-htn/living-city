@@ -654,26 +654,6 @@ function E7EventLabel({ effects }: { effects: readonly string[] }) {
   </Html>
 }
 
-/**
- * A plain element beside the canvas, not a drei <Html fullscreen> inside it.
- * <Html> pins its wrapper to where the world origin projects on screen and only
- * assumes that origin is the centre of the frame. Selecting a block moves the
- * camera off the origin, so the control slid across the map and out of the
- * frame every time somebody tapped a district. The city layer is the containing
- * block, so it stays in its corner however the camera moves.
- */
-function CivicDrillControl({ active, onStart, onStop }: { active: boolean; onStart: () => void; onStop: () => void }) {
-  return <aside className={styles.control} aria-label="City Hall simulation controls">
-    <p className={styles.eyebrow}>City Hall operations</p>
-    <h2>{active ? 'Tornado drill' : 'Normal simulation'}</h2>
-    <p>{active ? 'Local alert, wind path, and debris are visible for this rehearsal.' : 'The city is operating normally. Start the drill when presenting.'}</p>
-    <button type="button" className={active ? `${styles.button} ${styles.stop}` : styles.button} aria-pressed={active} onClick={active ? onStop : onStart}>
-      {active ? 'End drill' : 'Run tornado drill'}
-    </button>
-    <small>Simulation only. No public plan is changed.</small>
-  </aside>
-}
-
 /** A local exercise effect, deliberately separate from public plan effects. */
 function TornadoDrill({ position }: { position: [number, number] }) {
   const reducedMotion = useReducedMotion()
@@ -961,7 +941,7 @@ function useShellColours() {
 export default function CityScene({
   city, plans, placements, mode, selectedId, planningIds, focusTick,
   onBlockHover, onBlockSelect, onBlockPick, onSlotTap,
-  drillCommunityId = null, onDrillChange,
+  drillCommunityId = null,
 }: CitySceneProps) {
   // R3F cannot render on the server, so wait for the client.
   const [ready, setReady] = useState(false)
@@ -969,8 +949,9 @@ export default function CityScene({
   const shell = useShellColours()
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const focusActive = useRef(true)
-  // The rehearsal is the app's state now, not the scene's: the block being
-  // drilled has to be able to say something different while it runs.
+  // The rehearsal is read here, never started here. The operator runs it from
+  // their own panel: a control floating over the city put an operator button in
+  // front of the judges and covered the block it was talking about.
   const drillActive = drillCommunityId === CIVIC_HALL_COMMUNITY_ID
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
@@ -1081,14 +1062,13 @@ export default function CityScene({
   if (!ready) return null
 
   return (
-    <>
-    {/*
+    /*
      * `flat` turns off ACES filmic tone mapping. With it on, the near-white
      * ground under this much light clipped to a warm tan — which is why the
      * scene looked nothing like the white interface around it. Flat renders
      * the colours as authored, which is what a cartoon miniature wants
      * anyway (PRD 8.11: flat or toon shaded, no photographic treatment).
-     */}
+     */
     <Canvas
       flat
       shadows
@@ -1180,11 +1160,5 @@ export default function CityScene({
         maxPolarAngle={Math.PI / 2.35}
       />
     </Canvas>
-    <CivicDrillControl
-      active={drillActive}
-      onStart={() => { onDrillChange?.(CIVIC_HALL_COMMUNITY_ID); onBlockSelect?.(CIVIC_HALL_COMMUNITY_ID) }}
-      onStop={() => onDrillChange?.(null)}
-    />
-    </>
   )
 }

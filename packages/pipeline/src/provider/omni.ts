@@ -41,6 +41,65 @@ const errorMessage = (body: unknown, status: number): string => {
 }
 
 /**
+ * Qwen's OpenAI-compatible endpoint treats local audio as a Base64 data URL,
+ * not a bare Base64 string. It also requires streaming for every OMNI call.
+ * Source: https://docs.qwencloud.com/developer-guides/speech/multimodal-speech
+ */
+const asAudioDataUrl = (base64: string): string => `data:;base64,${base64}`
+
+type StreamChunk = {
+  choices?: Array<{ delta?: { content?: string | null } }>
+}
+
+/** Collect the text deltas from Qwen's OpenAI-compatible SSE response. */
+const streamText = async (response: Response): Promise<string> => {
+  if (!response.body) return ''
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let raw = ''
+
+  const consume = (line: string) => {
+    if (!line.startsWith('data:')) return
+    const data = line.slice('data:'.length).trim()
+    if (!data || data === '[DONE]') return
+    try {
+      const chunk = JSON.parse(data) as StreamChunk
+      const content = chunk.choices?.[0]?.delta?.content
+      if (typeof content === 'string') raw += content
+    } catch {
+      // Ignore non-data SSE events. A missing final JSON response is reported
+      // below as the existing parse failure, which keeps the fallback intact.
+    }
+  }
+
+  const drain = (final = false) => {
+    let newline = buffer.indexOf('\n')
+    while (newline >= 0) {
+      consume(buffer.slice(0, newline).replace(/\r$/, ''))
+      buffer = buffer.slice(newline + 1)
+      newline = buffer.indexOf('\n')
+    }
+    if (final && buffer) {
+      consume(buffer.replace(/\r$/, ''))
+      buffer = ''
+    }
+  }
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    drain()
+  }
+  buffer += decoder.decode()
+  drain(true)
+
+  return raw
+}
+
+/**
  * Distinguishes "we are out of credits" from "the service is down", because
  * T3's ladder gives them different log lines and the operator needs to know
  * which one is happening on stage.
@@ -83,6 +142,7 @@ export const omniProvider = (): ModelProvider => ({
             temperature: 0,
             max_tokens: req.maxOutputTokens,
             modalities: ['text'],
+            stream: true,
             response_format: { type: 'json_object' },
             messages: [
               { role: 'system', content: req.system },
@@ -92,7 +152,7 @@ export const omniProvider = (): ModelProvider => ({
                   {
                     type: 'input_audio',
                     input_audio: {
-                      data: req.audio.data,
+                      data: asAudioDataUrl(req.audio.data),
                       format: audioFormat(req.audio.mimeType),
                     },
                   },
@@ -106,14 +166,13 @@ export const omniProvider = (): ModelProvider => ({
           }),
         })
 
-        const body = await response.json().catch(() => null)
         if (!response.ok) {
+          const body = await response.json().catch(() => null)
           const kind = classifyStatus(response.status)
           throw new ModelError(errorMessage(body, response.status), kind === 'credits' ? 'refusal' : 'transport', attempt)
         }
 
-        const choice = (body as { choices?: Array<{ message?: { content?: string | null } }> } | null)?.choices?.[0]
-        const raw = choice?.message?.content ?? ''
+        const raw = await streamText(response)
         if (!raw.trim()) throw new ModelError('OMNI returned nothing', 'parse', attempt)
 
         let json: unknown

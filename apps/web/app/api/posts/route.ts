@@ -1,10 +1,11 @@
 import {
   balance, createPost, hidePost, listCommunities, listPosts, read, write,
 } from '@living-city/fixtures/store'
-import { badRequest, currentUser, json, readJson, withPostMeta, USE_FIXTURES } from '@/lib/stub'
+import { badRequest, currentUser, json, readJson, withPostMeta } from '@/lib/stub'
 import { nearestCommunity } from '@/lib/post-location'
 import { parsePostInput } from '@/lib/post-input'
 import { analyzeNewPost, pipelineEnabled } from '@/lib/pipeline'
+import { decodeImageDataUrl, storeImage } from '@/lib/post-image-blob'
 import { ingestAnalyzedPost } from '@/lib/signal'
 import { VOICE_POSTS, discardAudio, storeAudio, type StoredAudio } from '@/lib/voice-blob'
 import { analyzeVoice, type VoiceResult } from '@living-city/pipeline'
@@ -34,14 +35,15 @@ export async function GET(req: Request) {
   return json({ posts: await read(() => withPostMeta(listPosts({ community }))) })
 }
 
-// Product's fixture photo transport; Pipeline replaces it with Blob upload.
 export async function POST(req: Request) {
   const requestStarted = Date.now()
   const parsed = parsePostInput(await readJson<unknown>(req), listCommunities().map(c => c.community_id))
   if (!parsed.ok) return badRequest(parsed.error)
   const body = parsed.value
-  if (!USE_FIXTURES && body.image_url?.startsWith('data:')) {
-    return json({ error: 'Photo upload is not ready yet. You can post your caption without the photo.', code: 'PHOTO_UNAVAILABLE' }, 503)
+  // The request parser checks the encoding and size. Check bytes here too,
+  // before points are credited or anything is stored under a public image URL.
+  if (body.image_url?.startsWith('data:') && !decodeImageDataUrl(body.image_url)) {
+    return badRequest('Choose a valid JPEG, PNG, or WebP photo.')
   }
   let communityId = body.community_id
   if (!communityId) {
@@ -71,6 +73,21 @@ export async function POST(req: Request) {
     })
     return { post, balance: balance(user.id), points_earned: balance(user.id) - before }
   })
+
+  // Camera and laptop photos start as data URLs. Persist them when a Blob token
+  // is available; otherwise retain the validated inline URL, which the OpenAI
+  // provider already forwards as an image part to Call A.
+  if (body.image_url?.startsWith('data:')) {
+    const image = await storeImage(created.post.id, body.image_url)
+    if (!image) return badRequest('Choose a valid JPEG, PNG, or WebP photo.')
+    if (image.url !== body.image_url) {
+      await write(() => {
+        const post = listPosts({ includeHidden: true }).find((row) => row.id === created.post.id)
+        if (post) post.image_url = image.url
+      })
+      created.post.image_url = image.url
+    }
+  }
 
   // Voice work is fenced behind a flag AND the presence of a clip, so a photo
   // or text post does not execute one extra await. That is the latency

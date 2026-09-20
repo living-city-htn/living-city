@@ -164,7 +164,6 @@ export default function BuildingComposer({
 
   return (
     <div className="building-composer">
-      <h3>Build a place you know</h3>
       <p className="muted">
         Add a photo and say what it is. Only you will see it.
       </p>

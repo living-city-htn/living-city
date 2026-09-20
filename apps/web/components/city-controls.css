@@ -59,7 +59,6 @@
 }
 /* --- Building composer. Private layer; see BuildingComposer.tsx. --------- */
 .building-composer { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair, #dce5ed); display: grid; gap: 10px; }
-.building-composer h3 { margin: 0; }
 .building-field { display: grid; gap: 4px; font-size: 0.9rem; }
 .building-field > span { font-weight: 600; }
 .building-field textarea { width: 100%; min-height: 62px; padding: 8px; border: 1px solid var(--hair, #dce5ed); border-radius: 10px; background: var(--paper, #f5f8fc); color: inherit; font: inherit; resize: vertical; }

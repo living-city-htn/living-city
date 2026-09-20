@@ -16,7 +16,6 @@ import TabBar, { type Tab } from './TabBar'
 import AppHeader from './AppHeader'
 import BlockPanel from './BlockPanel'
 import FeedPage from './FeedPage'
-import CommunityPicker from './CommunityPicker'
 import CityMessage from './CityMessage'
 import ParticleField from './ParticleField'
 import './shell-feedback.css'
@@ -282,17 +281,6 @@ export default function AppShell() {
         aria-label={mode === 'mine' ? 'Your personal city' : 'Community city'}
         data-inset={sheetHeight > 0 && (tab === 'mine' || (tab === 'city' && selected !== null))}
       >
-        {city && tab !== 'city' && <CommunityPicker communities={city.communities} selectedId={selectedId} picking={tab === 'post' && pickingLocation}
-          onSelect={id => {
-            setSelectedId(id)
-            if (id && tab === 'post' && pickingLocation) {
-              const community = city.communities.find(c => c.community_id === id)
-              if (community) {
-                setPostLocation({ community_id: id, label: community.name })
-                setPickingLocation(false)
-              }
-            }
-          }} />}
         {!city && <div className="scene-state">
           <p role={cityError ? 'alert' : 'status'}>{cityError ? 'Could not load your city. Check your connection and try again.' : 'Opening your city…'}</p>
           {cityError && <button className="form-button" onClick={() => setCityAttempt(v => v + 1)}>Try again</button>}

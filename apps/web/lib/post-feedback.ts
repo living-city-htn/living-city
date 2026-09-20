@@ -5,6 +5,8 @@ export type PostFeedback = {
   communityName: string
   points: number | null
   state: 'hidden' | 'analyzing' | 'planning' | 'updated' | 'unavailable'
+  /** Server-confirmed OMNI result. Never show a success claim on degradation. */
+  voice: { cues: string[] } | null
 }
 
 export type ConfirmationPresentation = {
@@ -13,11 +15,22 @@ export type ConfirmationPresentation = {
 }
 
 export function postFeedback(result: PostResult, communityName: string): PostFeedback {
+  const voice = !result.post.hidden && result.voice?.state === 'none' && result.voice.heard
+    ? {
+      // Cues are model output. Keep this receipt compact and ensure malformed
+      // API data cannot turn into a claim in the judge-facing UI.
+      cues: Array.isArray(result.voice.cues)
+        ? result.voice.cues.filter((cue): cue is string => typeof cue === 'string' && cue.trim().length > 0).slice(0, 3)
+        : [],
+    }
+    : null
+
   return {
     communityId: result.post.community_id,
     communityName,
     points: typeof result.points_earned === 'number' ? result.points_earned : null,
     state: result.post.hidden ? 'hidden' : result.post.status === 'pending' ? 'analyzing' : 'planning',
+    voice,
   }
 }
 

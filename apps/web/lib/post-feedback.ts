@@ -7,6 +7,11 @@ export type PostFeedback = {
   state: 'hidden' | 'analyzing' | 'planning' | 'updated' | 'unavailable'
 }
 
+export type ConfirmationPresentation = {
+  eyebrow: string
+  title: string
+}
+
 export function postFeedback(result: PostResult, communityName: string): PostFeedback {
   return {
     communityId: result.post.community_id,
@@ -24,5 +29,16 @@ export function feedbackMessage(feedback: PostFeedback): string {
     case 'planning': return `${saved} Waiting for the next city update.`
     case 'updated': return `${saved} This community has a new city plan.`
     case 'unavailable': return `${saved} A city update has not arrived yet. Your post is saved.`
+  }
+}
+
+/** Short, scannable copy for the receipt shown above the city. */
+export function confirmationPresentation(feedback: PostFeedback): ConfirmationPresentation {
+  switch (feedback.state) {
+    case 'hidden': return { eyebrow: 'Post received', title: 'This post is not public' }
+    case 'analyzing': return { eyebrow: 'Post analysis', title: 'Analyzing your post' }
+    case 'planning': return { eyebrow: 'City update', title: `Preparing ${feedback.communityName}’s next look` }
+    case 'updated': return { eyebrow: 'City updated', title: `${feedback.communityName} has a new city plan` }
+    case 'unavailable': return { eyebrow: 'Post saved', title: `${feedback.communityName} is waiting for its next city update` }
   }
 }

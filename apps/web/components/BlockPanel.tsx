@@ -40,6 +40,7 @@ export default function BlockPanel({
   onHeight: (px: number) => void
 }) {
   const ref = useRef<HTMLElement>(null)
+  const reasonsId = `community-reasons-${communityId.replace(/[^a-z0-9_-]/gi, '-')}`
 
   const [state, setState] = useState<BlockState | null>(null)
   const [posts, setPosts] = useState<PostRow[]>([])
@@ -97,6 +98,7 @@ export default function BlockPanel({
     <section ref={ref} className="city-inspector" data-expanded={expanded} aria-label={`${name} details`}>
       <header className="sheet-head">
         <div>
+          <p className="inspector-eyebrow">Community pulse</p>
           <h2>{name}</h2>
           {/*
             Always present, even before the fetch lands. The card reports its
@@ -147,7 +149,7 @@ export default function BlockPanel({
               </ul>
             )}
 
-            <button className="why" onClick={() => setWhy((v) => !v)} aria-expanded={why}>
+            <button className="why" onClick={() => setWhy((v) => !v)} aria-expanded={why} aria-controls={reasonsId}>
               Why does it look like this?
               <span className="chev" data-open={why} aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="14" height="14">
@@ -155,15 +157,13 @@ export default function BlockPanel({
                 </svg>
               </span>
             </button>
-            {why && (
-              <ul className="reasons">
-                {state.reasons.length > 0 ? (
-                  state.reasons.map((r) => <li key={r}>{r}</li>)
-                ) : (
-                  <li className="muted">No reasons recorded for this plan.</li>
-                )}
-              </ul>
-            )}
+            <ul className="reasons" id={reasonsId} hidden={!why}>
+              {state.reasons.length > 0 ? (
+                state.reasons.map((r) => <li key={r}>{r}</li>)
+              ) : (
+                <li className="muted">No reasons recorded for this plan.</li>
+              )}
+            </ul>
 
             <h3 className="section-label">Recent posts</h3>
             <PostList posts={posts} onLiked={onLiked} empty="No posts from this block yet." />

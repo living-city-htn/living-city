@@ -1,0 +1,34 @@
+{
+  "_comment": [
+    "Canned OMNI answers, so the whole voice path runs offline with no key.",
+    "Selected by the `scenario` field of the voice payload, falling back to",
+    "`clean`. Add a scenario here rather than reaching for a real key at a",
+    "venue: the rehearsal that matters is the one that works on bad wifi.",
+    "Each entry is exactly what packages/pipeline/src/voice validates, so a",
+    "change to the contract breaks these loudly rather than silently."
+  ],
+  "clean": {
+    "transcript": "There is a band playing on the patio and every table is full",
+    "audio_cues": ["live music", "crowd chatter", "glassware"],
+    "speech_mood": "cheerful",
+    "confidence": 91
+  },
+  "noisy": {
+    "transcript": "The patio is packed, there's a band on",
+    "audio_cues": ["live music", "traffic", "wind on microphone"],
+    "speech_mood": "raised",
+    "confidence": 58
+  },
+  "silence": {
+    "transcript": "",
+    "audio_cues": [],
+    "speech_mood": "",
+    "confidence": 4
+  },
+  "incident": {
+    "transcript": "There is water coming up over the curb here, it's getting deep",
+    "audio_cues": ["running water", "traffic"],
+    "speech_mood": "concerned",
+    "confidence": 84
+  }
+}

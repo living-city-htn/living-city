@@ -15,10 +15,15 @@
  * surviving a tab switch and a failed request, the caption-without-photo
  * fallback, and never resending a request whose outcome is unknown.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CityPayload } from './city'
 import { preparePhoto } from '@/lib/post-photo'
 import { nearestCommunity } from '@/lib/post-location'
+import {
+  VOICE_POSTS, checkRecording, createRecorder, formatDuration, recorderMessage,
+  secondsRemaining, toDataUrl, voiceNotice, type Recording, type RecorderHandle,
+  type RecorderState,
+} from '@/lib/post-audio'
 
 export type PostLocation = { community_id?: string; lon?: number; lat?: number; label: string }
 export type PostResult = {
@@ -48,8 +53,63 @@ export default function PostComposer({
   const [error, setError] = useState('')
   const [photoUnavailable, setPhotoUnavailable] = useState(false)
   const [uncertain, setUncertain] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [recState, setRecState] = useState<RecorderState>('idle')
+  const [recording, setRecording] = useState<Recording | null>(null)
+  const [elapsed, setElapsed] = useState(0)
   const submitting = useRef(false)
   const locationRequest = useRef(0)
+  const recorder = useRef<RecorderHandle | null>(null)
+
+  // Revokes when the clip is replaced and when the composer unmounts, so a
+  // judge who records four times does not leak four blobs.
+  useEffect(() => {
+    if (!recording) return
+    return () => URL.revokeObjectURL(recording.url)
+  }, [recording])
+
+  // A recorder still running when the screen closes would hold the microphone.
+  useEffect(() => () => recorder.current?.cancel(), [])
+
+  const startRecording = async () => {
+    if (recorder.current) return
+    setError('')
+    setElapsed(0)
+    setRecState('requesting')
+    const handle = await createRecorder({
+      onTick: setElapsed,
+      onError: (state) => { recorder.current = null; setRecState(state) },
+      onStop: (result) => {
+        recorder.current = null
+        const check = checkRecording(result)
+        if (check.ok) {
+          setRecording(result)
+          setRecState('recorded')
+          return
+        }
+        // Rung 5 of the ladder, reached before any network call: the clip is
+        // dropped and the post carries on as photo and caption.
+        URL.revokeObjectURL(result.url)
+        setRecording(null)
+        setRecState('idle')
+        setError(check.reason === 'too_short'
+          ? 'That recording was too short. Try holding it a little longer.'
+          : 'That recording could not be used. You can still post without it.')
+      },
+    })
+    // On the failure paths onError has already set the state, so only a live
+    // handle moves the UI into `recording`.
+    if (handle) {
+      recorder.current = handle
+      setRecState('recording')
+    }
+  }
+
+  const discardRecording = () => {
+    setRecording(null)
+    setElapsed(0)
+    setRecState('idle')
+  }
 
   const choosePhoto = async (file?: File) => {
     if (!file) return
@@ -105,12 +165,19 @@ export default function PostComposer({
     setBusy(true)
     setError('')
     setUncertain(false)
+    setNotice('')
     try {
+      // Only a post that carries a voice note pays for one. A clip that cannot
+      // be read is dropped here and the caption posts without it.
+      let audio: string | null = null
+      if (VOICE_POSTS && recording) {
+        audio = await toDataUrl(recording.blob).catch(() => null)
+      }
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.trim(), image_url: withoutPhoto ? null : photo,
+          text: text.trim(), image_url: withoutPhoto ? null : photo, audio_url: audio,
           community_id: location.community_id, lon: location.lon, lat: location.lat,
         }),
       })
@@ -121,9 +188,13 @@ export default function PostComposer({
         return
       }
       if (!data.post?.id || !data.post?.community_id) throw new Error('Unexpected response')
+      // The post succeeded. If the voice call did not, say which rung it hit
+      // and nothing more: the post is up either way.
+      setNotice(data.voice?.notice ?? voiceNotice(data.voice?.state ?? 'none') ?? '')
       setText('')
       setPhoto(null)
       setPhotoUnavailable(false)
+      discardRecording()
       setStep('choose')
       onPosted(data as PostResult)
     } catch {
@@ -195,6 +266,7 @@ export default function PostComposer({
               Write without a photo
             </button>
 
+            {notice && <p className="muted" role="status">{notice}</p>}
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
         ) : (
@@ -231,6 +303,44 @@ export default function PostComposer({
                   >
                     Remove photo
                   </button>
+                </div>
+              )}
+
+              {VOICE_POSTS && (
+                <div className="composer-voice" data-state={recState}>
+                  {recState === 'recorded' && recording ? (
+                    <>
+                      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                      <audio src={recording.url} controls preload="metadata" aria-label="Your voice note" />
+                      <div className="photo-actions">
+                        <button
+                          type="button" className="form-button"
+                          onClick={() => { discardRecording(); void startRecording() }}
+                        >
+                          Record again
+                        </button>
+                        <button type="button" className="form-button" onClick={discardRecording}>
+                          Remove voice note
+                        </button>
+                      </div>
+                    </>
+                  ) : recState === 'recording' ? (
+                    <button type="button" className="form-button voice-stop" onClick={() => recorder.current?.stop()}>
+                      Stop · {formatDuration(elapsed)}
+                      <span className="voice-left" aria-hidden="true"> ({secondsRemaining(elapsed)}s left)</span>
+                    </button>
+                  ) : recState === 'denied' || recState === 'unavailable' ? null : (
+                    <button
+                      type="button" className="form-button"
+                      disabled={recState === 'requesting'}
+                      onClick={() => void startRecording()}
+                    >
+                      {recState === 'requesting' ? 'Asking to use the microphone…' : 'Add a voice note'}
+                    </button>
+                  )}
+                  {recorderMessage(recState) && (
+                    <p className="muted" role="status">{recorderMessage(recState)}</p>
+                  )}
                 </div>
               )}
 

@@ -3,10 +3,8 @@
 /**
  * The cartoon city (PRD 8.11, docs/02 section 4.5).
  *
- * Geometry is procedural: extruded slabs from the hand-drawn polygons, boxes
- * for buildings, cones for trees. No glTF pack, deliberately — the asset pack
- * and its manifest are 3D's Stage 0 items and this must not pre-empt what they
- * choose. Swapping a box for a loaded mesh later touches only this file.
+ * Curated shared GLB assets sit on deterministic polygon slabs. Procedural
+ * geometry remains available while assets load or if a request fails.
  *
  * Placement comes from packages/modeling, which is pure and tested: the same
  * plan and community id always build the same block (docs/02 section 9).
@@ -17,8 +15,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
+import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import * as THREE from 'three'
-import { placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
+import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
 import type { CommunityGeo, CommunityPlan } from '@living-city/fixtures'
 
@@ -43,11 +43,6 @@ const PALETTES: Record<string, Palette> = {
   soft_grey: { ground: '#e4e4e6', wall: ['#e0e0e4', '#cfcfd4', '#efeff2'], roof: '#8b8b92', foliage: '#8fa085', accent: '#a8a8b0' },
 }
 const paletteOf = (name?: string) => PALETTES[name ?? ''] ?? PALETTES.soft_grey!
-
-/** Category tints the wall choice so a block's mix reads at a glance. */
-const CATEGORY_TINT: Record<string, number> = {
-  residential: 0, retail: 1, cafe_bar: 2, office: 1, cultural_civic: 2, campus_industrial: 0,
-}
 
 function ringOf(c: CommunityGeo): Array<[number, number]> {
   const ring = c.polygon_block.coordinates[0] ?? []
@@ -176,6 +171,7 @@ function Crowd({ count, spread, seed, colour }: {
   seed: string
   colour: string
 }) {
+  const reducedMotion = useReducedMotion()
   const mesh = useRef<THREE.InstancedMesh>(null)
   const people = useMemo(() => {
     const r = seeded(`crowd:${seed}`)
@@ -190,13 +186,14 @@ function Crowd({ count, spread, seed, colour }: {
   useFrame(({ clock }) => {
     const m = mesh.current
     if (!m) return
-    const t = clock.elapsedTime
+    const t = reducedMotion ? 0 : clock.elapsedTime
     for (let i = 0; i < people.length; i++) {
       const p = people[i]!
       // A small hop rather than a walk cycle: at this scale the motion is the
       // whole signal, and a bobbing dot reads as a person in a crowd.
       dummy.position.set(p.x, 0.3 + Math.abs(Math.sin(t * p.speed + p.phase)) * 0.05, p.z)
       dummy.rotation.set(0, p.phase, 0)
+      dummy.scale.setScalar(1)
       dummy.updateMatrix()
       m.setMatrixAt(i, dummy.matrix)
     }
@@ -245,11 +242,12 @@ function Effect({ tag, spread, seed }: { tag: string; spread: number; seed: stri
     }))
   }, [tag, spread, seed])
 
+  const reducedMotion = useReducedMotion()
   const mesh = useRef<THREE.InstancedMesh>(null)
   useFrame(({ clock }) => {
     const m = mesh.current
     if (!m) return
-    const t = clock.elapsedTime
+    const t = reducedMotion ? 0 : clock.elapsedTime
     const SPAN = 1.1
     for (let i = 0; i < parts.length; i++) {
       const p = parts[i]!
@@ -278,8 +276,10 @@ function Effect({ tag, spread, seed }: { tag: string; spread: number; seed: stri
  * same component draws both: what a judge buys in moment 5 is what a plan
  * puts on the block in moment 4.
  */
-function Decoration({ tag, palette }: { tag: string; palette: Palette }) {
+function ProceduralDecoration({ tag, palette }: { tag: string; palette: Palette }) {
   switch (tag) {
+    case 'bike_racks':
+      return <group>{[-0.1, 0, 0.1].map((x) => <mesh key={x} position={[x, 0.08, 0]}><torusGeometry args={[0.07, 0.012, 4, 8, Math.PI]} /><meshLambertMaterial color="#8d979b" /></mesh>)}</group>
     case 'string_lights':
     case 'lanterns':
       return (
@@ -351,9 +351,48 @@ function Decoration({ tag, palette }: { tag: string; palette: Palette }) {
   }
 }
 
+function Decoration({ tag, palette }: { tag: string; palette: Palette }) {
+  const assetId = decorationAsset[tag]
+  const fallback = <ProceduralDecoration tag={tag} palette={palette} />
+  return assetId ? <SceneAsset assetId={assetId} width={tag === 'stage' ? 0.52 : 0.38} fallback={fallback} /> : fallback
+}
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+  return reduced
+}
+
+/** A shoreline remains inside its reserved cell; the cell's building is removed. */
+function Pond({ cell, scale }: { cell: Cell; scale: number }) {
+  const shape = useMemo(() => {
+    const result = new THREE.Shape()
+    for (let i = 0; i < 24; i++) {
+      const angle = i * Math.PI / 12
+      const radius = cell.size / scale * (0.38 + Math.sin(angle * 3 + cell.variant) * 0.035)
+      const x = Math.cos(angle) * radius
+      const y = Math.sin(angle) * radius * 0.78
+      if (i === 0) result.moveTo(x, y)
+      else result.lineTo(x, y)
+    }
+    result.closePath()
+    return result
+  }, [cell, scale])
+  return <group position={[cell.x / scale, 0.272, -cell.y / scale]}>
+    <mesh rotation={[-Math.PI / 2, 0, 0]} scale={[1.1, 1.1, 1]}><shapeGeometry args={[shape]} /><meshLambertMaterial color="#d7d8c5" /></mesh>
+    <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}><shapeGeometry args={[shape]} /><meshLambertMaterial color="#97bcc6" /></mesh>
+  </group>
+}
+
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 function Block({
-  community, plan, origin, cells, scale, state, planning, slots, placements, onHover, onSelect, onPick, onSlotTap,
+  community, plan, origin, cells, scale, state, planning, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
 }: {
   scale: number
   community: CommunityGeo
@@ -362,6 +401,7 @@ function Block({
   cells: Cell[]
   state: 'idle' | 'hovered' | 'selected'
   planning: boolean
+  terrainSlots: Array<{ x: number; y: number }>
   slots: Array<{ slot_id: string; x: number; y: number }>
   placements: Map<string, string>
   onHover: (id: string | null) => void
@@ -369,6 +409,7 @@ function Block({
   onPick: (id: string, point: [number, number]) => void
   onSlotTap?: (communityId: string, slotId: string) => void
 }) {
+  const reducedMotion = useReducedMotion()
   const group = useRef<THREE.Group>(null)
   const SCALE = scale
   const palette = paletteOf(plan?.palette)
@@ -378,7 +419,7 @@ function Block({
     const g = group.current
     if (!g) return
     // Damped so selection feels physical rather than snapping.
-    g.position.y += (lift - g.position.y) * Math.min(1, delta * 9)
+    g.position.y += (lift - g.position.y) * (reducedMotion ? 1 : Math.min(1, delta * 9))
   })
 
   // One projection of the ring, shared by the slab, the slots and the scatter.
@@ -427,17 +468,30 @@ function Block({
    * the one anonymous box every festive block used to get. Worked out up
    * front rather than counted during the render.
    */
-  const decorationFor = useMemo(() => {
-    const wanted = plan?.decorations ?? []
-    const byCell = new Map<number, { tag: string }>()
-    if (!wanted.length) return byCell
-    let n = 0
+  const pondIndex = useMemo(() => waterCell(cells, local, community.land_use_hints.water_adjacent,
+    terrainSlots.map((slot) => [slot.x * halfW * 0.62 * SCALE, slot.y * halfH * 0.62 * SCALE])),
+  [cells, local, community.land_use_hints.water_adjacent, terrainSlots, halfW, halfH, SCALE])
+  const assetGroups = useMemo(() => {
+    const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
-      if (cell.kind === 'building' || cell.kind === 'vegetation') return
-      byCell.set(i, wanted[n++ % wanted.length]!)
+      if (i === pondIndex || cell.kind === 'plaza') return
+      const id = cell.kind === 'building' ? buildingAsset(cell, community.land_use_hints.campus) : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
+      const width = cell.size / SCALE * (cell.kind === 'building' ? 0.72 : 0.42)
+      const group = groups.get(id) ?? { instances: [], indices: [] }
+      group.instances.push({ position: [cell.x / SCALE, 0.26, -cell.y / SCALE], scale: [width, cell.kind === 'building' ? width * Math.max(0.8, Math.min(1.3, ((cell.storeys ?? 1) * 0.16) / ((getCityAsset(id)?.height ?? 1) * width))) : width, width], rotation: Math.floor(cell.variant * 4) * Math.PI / 2 })
+      group.indices.push(i)
+      groups.set(id, group)
     })
-    return byCell
-  }, [cells, plan])
+    return groups
+  }, [cells, pondIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
+  const proceduralCell = (cell: Cell, i: number) => {
+    const width = cell.size / SCALE * 0.72
+    const height = cell.kind === 'building' ? (cell.storeys ?? 1) * 0.16 : width * 1.3
+    return <mesh key={i} position={[cell.x / SCALE, 0.26 + height / 2, -cell.y / SCALE]} castShadow receiveShadow>
+      {cell.kind === 'building' ? <boxGeometry args={[width, height, width]} /> : <coneGeometry args={[width / 2, height, 7]} />}
+      <meshLambertMaterial color={cell.kind === 'building' ? palette.wall[0] : palette.foliage} />
+    </mesh>
+  }
 
   return (
     <group ref={group} position={[origin[0], 0, origin[1]]}>
@@ -479,51 +533,25 @@ function Block({
         <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
       ))}
 
+      {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
+        fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
+      {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
       {cells.map((cell, i) => {
+        if (cell.kind !== 'plaza') return null
         const x = cell.x / SCALE
         const z = -cell.y / SCALE
         const w = (cell.size / SCALE) * 0.82
-        if (cell.kind === 'building') {
-          const h = (cell.storeys ?? 1) * 0.16
-          const wall = palette.wall[CATEGORY_TINT[cell.category ?? ''] ?? 0] ?? palette.wall[0]!
-          return (
-            <group key={i} position={[x, 0.26, z]}>
-              <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-                <boxGeometry args={[w, h, w]} />
-                <meshLambertMaterial color={wall} />
-              </mesh>
-              <mesh position={[0, h + 0.045, 0]} castShadow>
-                <boxGeometry args={[w * 1.08, 0.09, w * 1.08]} />
-                <meshLambertMaterial color={palette.roof} />
-              </mesh>
-              {festive && (
-                <mesh position={[0, h + 0.16, 0]}>
-                  <sphereGeometry args={[0.07, 8, 8]} />
-                  <meshBasicMaterial color={palette.accent} />
-                </mesh>
-              )}
-            </group>
-          )
-        }
-        if (cell.kind === 'vegetation') {
-          const th = 0.28 + cell.variant * 0.3
-          return (
-            <group key={i} position={[x, 0.26, z]}>
-              <mesh position={[0, th / 2, 0]} castShadow>
-                <coneGeometry args={[w * 0.36, th, 7]} />
-                <meshLambertMaterial color={palette.foliage} />
-              </mesh>
-            </group>
-          )
-        }
-        const decoration = decorationFor.get(i)
+        const decorations = plazaDecorations((plan?.decorations ?? []).map((entry) => entry.tag))
         return (
           <group key={i} position={[x, 0.27, z]}>
             <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
               <circleGeometry args={[w * 0.55, 16]} />
               <meshLambertMaterial color={palette.accent} />
             </mesh>
-            {decoration && <Decoration tag={decoration.tag} palette={palette} />}
+            {decorations.map((decoration, index) => <group key={`${decoration.tag}-${index}`} position={[decoration.x * w, 0, decoration.z * w]} scale={Math.min(1, w * 0.78)}>
+              <Decoration tag={decoration.tag} palette={palette} />
+              {decoration.tag === 'outdoor_seating' && <group position={[0.23, 0, 0]}><SceneAsset assetId="chair-01" width={0.14} /></group>}
+            </group>)}
           </group>
         )
       })}
@@ -630,7 +658,7 @@ export default function CityScene({
             composition: plan?.building_composition ?? { residential: 100 },
             heightProfile: plan?.height_profile ?? 'low',
             vegetationLevel: plan?.vegetation.level ?? 2,
-            crowdClusters: plan?.activity.crowd_clusters ?? 0,
+            crowdClusters: Math.max(plan?.activity.crowd_clusters ?? 0, plan?.decorations.length ? 1 : 0),
           }),
         }
       }),
@@ -696,6 +724,7 @@ export default function CityScene({
           scale={scale}
           state={selectedId === community.community_id ? 'selected' : 'idle'}
           planning={planningIds.includes(community.community_id)}
+          terrainSlots={city.slots.filter((s) => s.community_id === community.community_id)}
           slots={mode === 'mine' ? city.slots.filter((s) => s.community_id === community.community_id) : []}
           placements={held}
           onHover={(id) => onBlockHover?.(id)}

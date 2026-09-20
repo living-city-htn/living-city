@@ -12,24 +12,27 @@
   },
   "dependencies": {
     "@living-city/contracts": "workspace:*",
+    "@vercel/blob": "^0.27.0",
     "@living-city/fixtures": "workspace:*",
+    "@living-city/modeling": "workspace:*",
     "@living-city/pipeline": "workspace:*",
+    "@living-city/signal": "workspace:*",
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
     "next": "^15.5.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "three": "^0.171.0",
-    "@react-three/fiber": "^9.0.0",
-    "@react-three/drei": "^10.0.0",
-    "@living-city/modeling": "workspace:*"
+    "three": "^0.171.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.58.2",
     "@types/node": "^22.0.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.171.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0",
-    "@types/three": "^0.171.0"
+    "vitest": "^2.1.0"
   }
 }

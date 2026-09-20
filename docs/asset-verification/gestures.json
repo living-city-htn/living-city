@@ -1,0 +1,10 @@
+{
+  "pinch": "passed: two-touch gesture changed the rendered view",
+  "errors": [],
+  "desktopFrameSample": {
+    "frames": 151,
+    "elapsed": 2500.7999999996273,
+    "fps": 60.002400096003846
+  },
+  "limitation": "Headless desktop animation-frame sample only; not a physical-phone GPU benchmark."
+}

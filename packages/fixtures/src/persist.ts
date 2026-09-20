@@ -40,6 +40,8 @@ export type Serialized = {
   updatedAt: string
   seq: number
   qrPaused: boolean
+  /** Optional: rows written before the City Hall rehearsal lack it. */
+  drillCommunityId?: string | null
   /**
    * Stamps of the most recent writes, oldest first. A retry looks for its own
    * stamp here to tell a lost response from a rejected version check. Optional:

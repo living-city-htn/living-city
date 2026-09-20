@@ -13,10 +13,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { DEMO_COMMUNITY_ID, type CommunityGeo } from '@living-city/fixtures'
 import { getCity, getFeed, type PostRow } from '@/lib/api'
 import {
-  getQrPaused, getVersion, hidePost, planAll, planOne, presetFestival, resetDemo,
-  setQrPaused, tick, type CityVersion,
+  getDrill, getQrPaused, getVersion, hidePost, planAll, planOne, presetFestival,
+  resetDemo, setDrill, setQrPaused, tick, type CityVersion,
 } from '@/lib/operator'
 import SignalPanel from '@/components/SignalPanel'
+import { CIVIC_HALL_COMMUNITY_ID } from '@/scene/civic-hall'
 
 const TICK_MS = 10_000
 
@@ -30,6 +31,8 @@ export default function OperatorPage() {
   const [busy, setBusy] = useState('')
   const [confirmReset, setConfirmReset] = useState(false)
   const [qrPaused, setQrPausedState] = useState<boolean | null>(null)
+  /** undefined while unknown, then the drilling block's id or null. */
+  const [drill, setDrillState] = useState<string | null | undefined>(undefined)
   const tickInFlight = useRef(false)
 
   const note = useCallback((line: string) => {
@@ -47,6 +50,7 @@ export default function OperatorPage() {
     getCity().then((c) => setCommunities(c.communities)).catch(() => {})
     getVersion().then(setVersion).catch(() => {})
     getQrPaused().then(setQrPausedState).catch(() => {})
+    getDrill().then(setDrillState).catch(() => {})
     loadPosts()
   }, [loadPosts])
 
@@ -169,6 +173,33 @@ export default function OperatorPage() {
           })}
         >
           {qrPaused ? 'Resume QR page' : 'Pause QR page'}
+        </button>
+      </section>
+
+      <section className="op-card op-ticker">
+        <div>
+          <h2>City Hall drill</h2>
+          <p>
+            {drill === undefined
+              ? 'Checking whether a rehearsal is running…'
+              : drill
+                ? 'Running — the alert, wind path and debris are on, and City Hall is posting about the storm.'
+                : 'Not running — the city is operating normally.'}
+          </p>
+          <p className="op-hint">
+            Simulation only: no public plan changes, and ending it puts the block
+            back with no cleanup. Phones pick the change up within five seconds.
+          </p>
+        </div>
+        <button
+          className="op-btn"
+          data-tone={drill ? 'warn' : 'go'}
+          disabled={busy !== '' || drill === undefined}
+          onClick={() => void act(drill ? 'end City Hall drill' : 'start City Hall drill', async () => {
+            setDrillState(await setDrill(drill ? null : CIVIC_HALL_COMMUNITY_ID))
+          })}
+        >
+          {drill ? 'End drill' : 'Run tornado drill'}
         </button>
       </section>
 

@@ -10,14 +10,29 @@ import type { CommunityPlan } from '@living-city/fixtures'
 
 export const POLL_MS = 5_000
 
-export type CityVersion = { plans: Record<string, string>; updated_at: string }
+export type CityVersion = {
+  plans: Record<string, string>
+  updated_at: string
+  /**
+   * The block running the City Hall rehearsal, or null. An operator control
+   * that rides this poll rather than one of its own, because every judge's
+   * phone is already asking this endpoint what changed.
+   */
+  drill?: string | null
+}
 
 const record = (v: unknown): v is Record<string, unknown> =>
   v !== null && typeof v === 'object' && !Array.isArray(v)
 
+/**
+ * `drill` is checked but not required: a response without it is a valid
+ * version, so an older deploy answering this poll degrades to "nobody is
+ * drilling" instead of blanking the city.
+ */
 export const isCityVersion = (v: unknown): v is CityVersion =>
   record(v) && record(v.plans) && typeof v.updated_at === 'string' &&
-  Object.values(v.plans).every((p) => typeof p === 'string')
+  Object.values(v.plans).every((p) => typeof p === 'string') &&
+  (v.drill === undefined || v.drill === null || typeof v.drill === 'string')
 
 export async function getCityVersion(signal?: AbortSignal): Promise<CityVersion> {
   const response = await fetch('/api/city/version', { signal, cache: 'no-store' })

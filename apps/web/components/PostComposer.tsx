@@ -15,8 +15,9 @@
  * surviving a tab switch and a failed request, the caption-without-photo
  * fallback, and never resending a request whose outcome is unknown.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CityPayload } from './city'
+import { cameraErrorMessage, canUseLiveCamera } from '@/lib/post-camera'
 import { preparePhoto } from '@/lib/post-photo'
 import { nearestCommunity } from '@/lib/post-location'
 import {
@@ -44,7 +45,7 @@ export default function PostComposer({
   onDismiss: () => void
   active: boolean
 }) {
-  const [step, setStep] = useState<'choose' | 'compose'>('choose')
+  const [step, setStep] = useState<'choose' | 'camera' | 'compose'>('choose')
   const [text, setText] = useState('')
   const [photo, setPhoto] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -59,6 +60,36 @@ export default function PostComposer({
   const [elapsed, setElapsed] = useState(0)
   const submitting = useRef(false)
   const locationRequest = useRef(0)
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const cameraVideo = useRef<HTMLVideoElement>(null)
+  const cameraStream = useRef<MediaStream | null>(null)
+  const [cameraReady, setCameraReady] = useState(false)
+
+  const stopCamera = useCallback(() => {
+    cameraStream.current?.getTracks().forEach((track) => track.stop())
+    cameraStream.current = null
+    if (cameraVideo.current) cameraVideo.current.srcObject = null
+    setCameraReady(false)
+  }, [])
+
+  useEffect(() => () => stopCamera(), [stopCamera])
+
+  useEffect(() => {
+    if (!active) {
+      stopCamera()
+      if (step === 'camera') setStep('choose')
+    }
+  }, [active, step, stopCamera])
+
+  useEffect(() => {
+    const video = cameraVideo.current
+    const stream = cameraStream.current
+    if (step !== 'camera' || !video || !stream) return
+    video.srcObject = stream
+    void video.play().catch(() => setError('The camera preview could not start. Choose a photo from your library instead.'))
+    return () => { video.srcObject = null }
+  }, [step])
+
   const recorder = useRef<RecorderHandle | null>(null)
 
   // Revokes when the clip is replaced and when the composer unmounts, so a
@@ -121,6 +152,58 @@ export default function PostComposer({
       setStep('compose')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not open this photo.')
+    } finally {
+      setPreparing(false)
+    }
+  }
+
+  const openCamera = async () => {
+    setError('')
+    if (!canUseLiveCamera(window.isSecureContext, navigator.mediaDevices)) {
+      cameraInput.current?.click()
+      return
+    }
+    setPreparing(true)
+    try {
+      stopCamera()
+      cameraStream.current = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+      })
+      setStep('camera')
+    } catch (failure) {
+      setError(cameraErrorMessage(failure))
+    } finally {
+      setPreparing(false)
+    }
+  }
+
+  const captureCameraPhoto = async () => {
+    const video = cameraVideo.current
+    if (!video || video.videoWidth < 1 || video.videoHeight < 1) {
+      setError('The camera is still starting. Try again in a moment.')
+      return
+    }
+    setPreparing(true)
+    setError('')
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('Photo processing is unavailable. Choose a photo from your library instead.')
+      context.drawImage(video, 0, 0, canvas.width, canvas.height)
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9))
+      if (!blob) throw new Error('The camera photo could not be prepared. Try again or choose a photo from your library.')
+      stopCamera()
+      setPhoto(await preparePhoto(new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' })))
+      setStep('compose')
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'The camera photo could not be prepared. Try again.')
     } finally {
       setPreparing(false)
     }
@@ -213,6 +296,10 @@ export default function PostComposer({
   const canPost = Boolean(location) && (text.trim().length > 0 || Boolean(photo)) && !locating
   // Shown when this is the current tab and the map is not being used to pick.
   const composing = active && !picking
+  const dismiss = () => {
+    stopCamera()
+    onDismiss()
+  }
 
   /*
    * The composer stays mounted rather than returning nothing when it is not
@@ -237,7 +324,7 @@ export default function PostComposer({
         data-shown={composing}
         inert={!composing}
       >
-        <div className="composer-topbar"><span /><button type="button" className="form-button" onClick={onDismiss}>Close</button></div>
+        <div className="composer-topbar"><span /><button type="button" className="form-button" onClick={dismiss}>Close</button></div>
 
         {step === 'choose' ? (
           <div className="composer-body capture">
@@ -246,18 +333,18 @@ export default function PostComposer({
               <p>The places, people, and little things that make your neighbourhood yours.</p>
             </div>
 
-            <label className="capture-primary">
-              {preparing ? 'Preparing photo…' : 'Take a photo'}
-              <input
-                disabled={preparing || busy} aria-label="Take a photo" type="file" accept="image/*" capture="environment"
-                onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
-              />
-            </label>
+            <button type="button" className="capture-primary" disabled={preparing || busy} onClick={() => void openCamera()}>
+              {preparing ? 'Starting camera…' : 'Take a photo'}
+            </button>
+            <input
+              ref={cameraInput} hidden disabled={preparing || busy} aria-label="Take a photo with your device camera" type="file" accept="image/*" capture="environment"
+              onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
+            />
 
             <label className="capture-secondary">
               Choose from library
               <input
-                disabled={preparing || busy} aria-label="Choose from library" type="file" accept="image/*"
+                disabled={preparing || busy} aria-label="Choose a photo from your library" type="file" accept="image/*"
                 onChange={(e) => { void choosePhoto(e.target.files?.[0]); e.target.value = '' }}
               />
             </label>
@@ -267,6 +354,27 @@ export default function PostComposer({
             </button>
 
             {notice && <p className="muted" role="status">{notice}</p>}
+            {error && <p className="form-error" role="alert">{error}</p>}
+          </div>
+        ) : step === 'camera' ? (
+          <div className="composer-body capture camera-capture">
+            <div className="capture-lead">
+              <h2>Frame your photo</h2>
+              <p>Your camera stays on this device until you capture a photo.</p>
+            </div>
+            <div className="camera-preview" aria-busy={!cameraReady}>
+              <video
+                ref={cameraVideo} autoPlay muted playsInline aria-label="Live camera preview"
+                onLoadedMetadata={() => setCameraReady(true)}
+              />
+              {!cameraReady && <span>Starting camera…</span>}
+            </div>
+            <button type="button" className="capture-primary" disabled={!cameraReady || preparing} onClick={() => void captureCameraPhoto()}>
+              {preparing ? 'Preparing photo…' : 'Capture photo'}
+            </button>
+            <button type="button" className="capture-text" disabled={preparing} onClick={() => { stopCamera(); setStep('choose') }}>
+              Cancel camera
+            </button>
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
         ) : (

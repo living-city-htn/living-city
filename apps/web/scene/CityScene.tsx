@@ -12,11 +12,16 @@
  * Props and events are exactly docs/roles/3d.md. `blockPick` emits [lon, lat],
  * not scene space, because the post flow uses it as a location (PRD 8.12).
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
+import { poseForSelection, type CameraPose } from './camera-focus'
+import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
+import { e7EventLabel, isE7FestivalLive } from './e7-event'
+import { blockVisualState } from './visual-state'
+import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
@@ -105,6 +110,54 @@ function FrameCity({ radius }: { radius: number }) {
     }
     cam.updateProjectionMatrix()
   }, [camera, size.width, size.height, radius])
+  return null
+}
+
+/**
+ * The reference view has two useful camera scales: the complete city and the
+ * selected community. Keep the same isometric angle at both scales so a tap
+ * feels like looking closer at the same miniature, not jumping to another map.
+ */
+function SelectionFocus({
+  selectedId, selectedOrigin, controls, active,
+}: {
+  selectedId: string | null
+  selectedOrigin: [number, number] | null
+  controls: RefObject<ComponentRef<typeof OrbitControls> | null>
+  active: MutableRefObject<boolean>
+}) {
+  const camera = useThree((s) => s.camera)
+  const home = useRef<CameraPose | null>(null)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    active.current = true
+  }, [selectedId, active])
+
+  useFrame((_, delta) => {
+    const control = controls.current
+    if (!control) return
+    if (!home.current) {
+      home.current = {
+        position: camera.position.toArray() as CameraPose['position'],
+        target: control.target.toArray() as CameraPose['target'],
+      }
+    }
+    if (!active.current) return
+
+    const pose = poseForSelection(home.current, selectedOrigin)
+    const position = new THREE.Vector3(...pose.position)
+    const target = new THREE.Vector3(...pose.target)
+    const amount = reducedMotion ? 1 : Math.min(1, delta * 8)
+    camera.position.lerp(position, amount)
+    control.target.lerp(target, amount)
+    control.update()
+
+    if (camera.position.distanceToSquared(position) < 0.0001 && control.target.distanceToSquared(target) < 0.0001) {
+      active.current = false
+    }
+  })
+
   return null
 }
 
@@ -199,8 +252,57 @@ const EFFECT_LOOK: Record<string, { colour: string; rise: number; spin: number; 
   steam: { colour: '#dfe4e8', rise: 0.3, spin: 0.3, size: 0.07 },
   fog: { colour: '#d8dde2', rise: 0.05, spin: 0.2, size: 0.1 },
   birds: { colour: '#5b6472', rise: 0.08, spin: 1.1, size: 0.05 },
-  fireworks: { colour: '#ffd166', rise: 0.7, spin: 2.8, size: 0.06 },
   heart_particles: { colour: '#ff7f9e', rise: 0.34, spin: 1.5, size: 0.055 },
+}
+
+/** A burst keeps the fireworks recognisable from across the room. */
+function Fireworks({ spread, seed }: { spread: number; seed: string }) {
+  const reducedMotion = useReducedMotion()
+  const sparks = useRef<THREE.InstancedMesh>(null)
+  const particles = useMemo(() => {
+    const random = seeded(`fireworks:${seed}`)
+    return Array.from({ length: 54 }, (_, index) => {
+      const burst = Math.floor(index / 18)
+      const angle = random() * Math.PI * 2
+      const up = random() * 1.35 - 0.45
+      const horizontal = Math.sqrt(1 - Math.min(0.95, up * up))
+      return {
+        center: [
+          (burst - 1) * spread * 0.24 + (random() - 0.5) * spread * 0.08,
+          1.35 + random() * 0.35,
+          (random() - 0.5) * spread * 0.34,
+        ] as [number, number, number],
+        direction: [Math.cos(angle) * horizontal, up, Math.sin(angle) * horizontal] as [number, number, number],
+        phase: burst / 3,
+        size: 0.028 + random() * 0.02,
+      }
+    })
+  }, [seed, spread])
+
+  useFrame(({ clock }) => {
+    const time = reducedMotion ? 0.58 : clock.elapsedTime * 0.32
+    particles.forEach((particle, index) => {
+      const progress = (time + particle.phase) % 1
+      const bloom = Math.min(1, progress / 0.16)
+      const fade = progress > 0.72 ? 1 - (progress - 0.72) / 0.28 : 1
+      const distance = spread * 0.4 * bloom
+      dummy.position.set(
+        particle.center[0] + particle.direction[0] * distance,
+        particle.center[1] + particle.direction[1] * distance,
+        particle.center[2] + particle.direction[2] * distance,
+      )
+      dummy.rotation.set(progress * 5, index, 0)
+      dummy.scale.setScalar(particle.size * Math.max(0.08, fade))
+      dummy.updateMatrix()
+      sparks.current?.setMatrixAt(index, dummy.matrix)
+    })
+    if (sparks.current) sparks.current.instanceMatrix.needsUpdate = true
+  })
+
+  return <instancedMesh ref={sparks} args={[undefined, undefined, particles.length]} raycast={() => {}}>
+    <sphereGeometry args={[1, 6, 6]} />
+    <meshBasicMaterial color="#ffd166" transparent opacity={0.96} />
+  </instancedMesh>
 }
 
 /** Floating particles over a block, one instanced mesh per effect. */
@@ -365,9 +467,111 @@ function Pond({ cell, scale }: { cell: Cell; scale: number }) {
   </group>
 }
 
+/** A pending post is a quiet blue proposal, never a second kind of city block. */
+function PlanningOutline({ slab }: { slab: THREE.BufferGeometry }) {
+  const reducedMotion = useReducedMotion()
+  const line = useRef<THREE.LineSegments>(null)
+  const geometry = useMemo(() => new THREE.EdgesGeometry(slab), [slab])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+  useFrame(({ clock }) => {
+    const pulse = reducedMotion ? 1 : 1 + (Math.sin(clock.elapsedTime * 3) + 1) * 0.012
+    line.current?.scale.setScalar(pulse)
+  })
+
+  return <lineSegments ref={line} geometry={geometry} position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => {}}>
+    <lineBasicMaterial color="#3d87ff" transparent opacity={0.9} />
+  </lineSegments>
+}
+
+function CivicHallLabel({ drill, position }: { drill: boolean; position: [number, number] }) {
+  return <Html transform position={[position[0], 1.45, position[1]]} distanceFactor={0.8}>
+    <div className={drill ? `${styles.label} ${styles.alert}` : styles.label} role="status">
+      <strong>City Hall</strong>
+      <span>{drill ? 'Drill in progress' : 'Normal operations'}</span>
+    </div>
+  </Html>
+}
+
+function E7EventLabel({ effects }: { effects: readonly string[] }) {
+  return <Html transform position={[0, 1.7, 0]} distanceFactor={0.8}>
+    <div className={`${styles.label} ${styles.event}`} role="status">
+      <strong>E7 atrium</strong>
+      <span>{e7EventLabel(effects)}</span>
+    </div>
+  </Html>
+}
+
+function CivicDrillControl({ active, onStart, onStop }: { active: boolean; onStart: () => void; onStop: () => void }) {
+  return <Html fullscreen>
+    {/*
+      Html lives above the R3F canvas. Without stopping its events here, a
+      button press also reaches the ground plane, clears the selected block,
+      and makes the drill appear to immediately cancel.
+    */}
+    <aside
+      className={styles.control}
+      aria-label="City Hall simulation controls"
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <p className={styles.eyebrow}>City Hall operations</p>
+      <h2>{active ? 'Tornado drill' : 'Normal simulation'}</h2>
+      <p>{active ? 'Local alert, wind path, and debris are visible for this rehearsal.' : 'The city is operating normally. Start the drill when presenting.'}</p>
+      <button type="button" className={active ? `${styles.button} ${styles.stop}` : styles.button} aria-pressed={active} onClick={active ? onStop : onStart}>
+        {active ? 'End drill' : 'Run tornado drill'}
+      </button>
+      <small>Simulation only. No public plan is changed.</small>
+    </aside>
+  </Html>
+}
+
+/** A local exercise effect, deliberately separate from public plan effects. */
+function TornadoDrill({ position }: { position: [number, number] }) {
+  const reducedMotion = useReducedMotion()
+  const funnel = useRef<THREE.Group>(null)
+  const debris = useRef<THREE.InstancedMesh>(null)
+  const pieces = useMemo(() => {
+    const random = seeded('city-hall-tornado-drill')
+    return Array.from({ length: 18 }, () => ({ angle: random() * Math.PI * 2, radius: 0.3 + random() * 0.62, height: 0.18 + random() * 1.05 }))
+  }, [])
+
+  useFrame(({ clock }) => {
+    const time = reducedMotion ? 0 : clock.elapsedTime
+    funnel.current?.rotation.set(0, time * 0.8, 0)
+    pieces.forEach((piece, index) => {
+      const angle = piece.angle + time * (1.4 + piece.height)
+      dummy.position.set(Math.cos(angle) * piece.radius, piece.height, Math.sin(angle) * piece.radius)
+      dummy.rotation.set(time, angle, 0)
+      dummy.scale.setScalar(0.018 + piece.height * 0.015)
+      dummy.updateMatrix()
+      debris.current?.setMatrixAt(index, dummy.matrix)
+    })
+    if (debris.current) debris.current.instanceMatrix.needsUpdate = true
+  })
+
+  return <group position={[position[0], 0.27, position[1]]}>
+    <pointLight color="#e85e45" intensity={reducedMotion ? 1.4 : 2.4} distance={3.8} />
+    <group ref={funnel}>
+      <mesh position={[0, 1.18, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.7, 1.6, 12, 1, true]} />
+        <meshLambertMaterial color="#65707a" transparent opacity={0.44} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.48, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.26, 0.7, 10, 1, true]} />
+        <meshLambertMaterial color="#4d5964" transparent opacity={0.62} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+    </group>
+    <instancedMesh ref={debris} args={[undefined, undefined, pieces.length]}>
+      <dodecahedronGeometry args={[1, 0]} />
+      <meshLambertMaterial color="#8b7667" />
+    </instancedMesh>
+  </group>
+}
+
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 function Block({
-  community, plan, origin, cells, scale, state, planning, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
+  community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
 }: {
   scale: number
   community: CommunityGeo
@@ -376,6 +580,7 @@ function Block({
   cells: Cell[]
   state: 'idle' | 'hovered' | 'selected'
   planning: boolean
+  drillActive: boolean
   terrainSlots: Array<{ x: number; y: number }>
   slots: Array<{ slot_id: string; x: number; y: number }>
   placements: Map<string, string>
@@ -423,8 +628,7 @@ function Block({
     () => new THREE.ExtrudeGeometry(shape, { depth: 0.26, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 1 }),
     [shape],
   )
-
-  const festive = plan?.mood === 'festive'
+  const visual = blockVisualState(plan?.mood, planning)
 
   /*
    * How many people to draw. Density carries most of it and clusters add a
@@ -446,11 +650,18 @@ function Block({
   const pondIndex = useMemo(() => waterCell(cells, local, community.land_use_hints.water_adjacent,
     terrainSlots.map((slot) => [slot.x * halfW * 0.62 * SCALE, slot.y * halfH * 0.62 * SCALE])),
   [cells, local, community.land_use_hints.water_adjacent, terrainSlots, halfW, halfH, SCALE])
+  const civicHallIndex = civicHallCellIndex(community.community_id, cells)
+  const civicHallCell = civicHallIndex >= 0 ? cells[civicHallIndex] : undefined
+  const civicHallPosition = civicHallCell ? [civicHallCell.x / SCALE, -civicHallCell.y / SCALE] as [number, number] : null
+  const tornadoDrill = isCivicHallDrill(community.community_id, drillActive)
+  const e7Festival = isE7FestivalLive(community.community_id, plan?.mood)
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
       if (i === pondIndex || cell.kind === 'plaza') return
-      const id = cell.kind === 'building' ? buildingAsset(cell, community.land_use_hints.campus) : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
+      const id = cell.kind === 'building'
+        ? i === civicHallIndex ? 'civic-01' : buildingAsset(cell, community.land_use_hints.campus)
+        : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
       const width = cell.size / SCALE * (cell.kind === 'building' ? 0.72 : 0.42)
       const group = groups.get(id) ?? { instances: [], indices: [] }
       group.instances.push({ position: [cell.x / SCALE, 0.26, -cell.y / SCALE], scale: [width, cell.kind === 'building' ? width * Math.max(0.8, Math.min(1.3, ((cell.storeys ?? 1) * 0.16) / ((getCityAsset(id)?.height ?? 1) * width))) : width, width], rotation: Math.floor(cell.variant * 4) * Math.PI / 2 })
@@ -458,7 +669,7 @@ function Block({
       groups.set(id, group)
     })
     return groups
-  }, [cells, pondIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
+  }, [cells, pondIndex, civicHallIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
   const proceduralCell = (cell: Cell, i: number) => {
     const width = cell.size / SCALE * 0.72
     const height = cell.kind === 'building' ? (cell.storeys ?? 1) * 0.16 : width * 1.3
@@ -489,11 +700,12 @@ function Block({
           ])
         }}
       >
-        <meshLambertMaterial color={planning ? '#cfe0ff' : palette.ground} />
+        <meshLambertMaterial color={visual.ground ?? palette.ground} />
       </mesh>
+      {visual.showPlanningOutline && <PlanningOutline slab={slab} />}
 
       {/* A festive block lights itself, and only itself. */}
-      {festive && <pointLight position={[0, 1.1, 0]} intensity={2.2} distance={4.5} color="#ffb765" />}
+      {visual.showFestivalGlow && <pointLight position={[0, 1.1, 0]} intensity={3.4} distance={6} color="#ffb765" />}
 
       {/* The people the plan asked for, and the particles over their heads. */}
       {crowdCount > 0 && (
@@ -504,12 +716,16 @@ function Block({
           colour={palette.roof}
         />
       )}
-      {(plan?.effects ?? []).slice(0, 3).map((tag) => (
-        <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
-      ))}
+      {(plan?.effects ?? []).slice(0, 3).map((tag) => tag === 'fireworks'
+        ? <Fireworks key={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
+        : <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />,
+      )}
 
       {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
         fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
+      {civicHallPosition && <CivicHallLabel drill={tornadoDrill} position={civicHallPosition} />}
+      {tornadoDrill && civicHallPosition && <TornadoDrill position={civicHallPosition} />}
+      {e7Festival && <E7EventLabel effects={plan?.effects ?? []} />}
       {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
       {cells.map((cell, i) => {
         if (cell.kind !== 'plaza') return null
@@ -583,6 +799,9 @@ export default function CityScene({
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
   const shell = useShellColours()
+  const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
+  const focusActive = useRef(true)
+  const [drillActive, setDrillActive] = useState(false)
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(
@@ -639,6 +858,10 @@ export default function CityScene({
       }),
     [city.communities, planFor, centre, scale],
   )
+  const selectedOrigin = useMemo(
+    () => blocks.find(({ community }) => community.community_id === selectedId)?.origin ?? null,
+    [blocks, selectedId],
+  )
 
   if (!ready) return null
 
@@ -673,6 +896,17 @@ export default function CityScene({
       />
 
       <FrameCity radius={CITY_UNITS * 0.5} />
+      <SelectionFocus
+        selectedId={selectedId}
+        selectedOrigin={selectedOrigin}
+        controls={controls}
+        active={focusActive}
+      />
+      <CivicDrillControl
+        active={drillActive}
+        onStart={() => { setDrillActive(true); onBlockSelect?.(CIVIC_HALL_COMMUNITY_ID) }}
+        onStop={() => setDrillActive(false)}
+      />
 
       {blocks.map(({ community, plan, origin, cells }) => (
         <Block
@@ -684,6 +918,7 @@ export default function CityScene({
           scale={scale}
           state={selectedId === community.community_id ? 'selected' : 'idle'}
           planning={planningIds.includes(community.community_id)}
+          drillActive={drillActive}
           terrainSlots={city.slots.filter((s) => s.community_id === community.community_id)}
           slots={mode === 'mine' ? city.slots.filter((s) => s.community_id === community.community_id) : []}
           placements={held}
@@ -707,10 +942,12 @@ export default function CityScene({
       </mesh>
 
       <OrbitControls
+        ref={controls}
         makeDefault
         enablePan
         enableDamping
         dampingFactor={0.08}
+        onStart={() => { focusActive.current = false }}
         minDistance={9}
         maxDistance={90}
         minPolarAngle={Math.PI / 9}

@@ -111,6 +111,14 @@ check(seed.users.some((u) => u.role === 'government'), 'seed needs one governmen
 const incidents = seed.posts.filter((p) => p.is_incident_report)
 check(incidents.length === 3, `seed needs 3 incident posts, found ${incidents.length}`)
 check(incidents.some((p) => p.image_url), 'at least one incident post needs a photo (moment 6)')
+// Post ids are the Feed's React keys and the store mints the next one from the
+// highest of them (packages/fixtures/src/store.ts), so a duplicate or a
+// malformed id here becomes a duplicate card on stage.
+const postIds = seed.posts.map((p) => p.id)
+const dupPosts = [...new Set(postIds.filter((id, i) => postIds.indexOf(id) !== i))]
+check(dupPosts.length === 0, `seed: duplicate post id(s) ${dupPosts.join(', ')}`)
+postIds.forEach((id) => check(/^p-\d{3,}$/.test(id), `seed: post id "${id}" is not p-NNN`))
+
 for (const p of seed.posts) {
   check(ids.has(p.community_id), `post ${p.id}: unknown community ${p.community_id}`)
   check(typeof p.lon === 'number' && typeof p.lat === 'number', `post ${p.id}: missing coordinates`)

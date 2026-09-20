@@ -31,6 +31,12 @@ export type Serialized = {
   updatedAt: string
   seq: number
   qrPaused: boolean
+  /**
+   * Stamps of the most recent writes, oldest first. A retry looks for its own
+   * stamp here to tell a lost response from a rejected version check. Optional:
+   * rows written before `write` started stamping them do not carry it.
+   */
+  recentWrites?: string[]
 }
 
 const connectionString = () =>

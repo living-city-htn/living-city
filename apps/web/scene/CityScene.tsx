@@ -147,6 +147,16 @@ function FrameCity({ radius, city, mode }: {
       if (width < 2 || height < 2) return
       if (width === box.current.width && height === box.current.height) return
       box.current = { width, height }
+
+      /*
+       * Resized here rather than through the renderer's own bookkeeping, which
+       * goes via a React update and arrives too late to be in this frame. The
+       * style is left alone: the stylesheet keeps the canvas at the size of its
+       * box, and an inline pixel size would only fight it.
+       */
+      gl.setSize(width, height, false)
+      cam.aspect = width / height
+      // Kept in step for anything reading the size from the renderer's state.
       setSize(width, height)
 
       const vFov = (cam.fov * Math.PI) / 180

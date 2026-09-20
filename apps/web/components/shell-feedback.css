@@ -9,6 +9,18 @@
  * The camera carries the movement instead; see FrameCity.
  */
 .city-layer { top: 116px; }
+/*
+ * The canvas follows its box instead of being told a size in pixels.
+ *
+ * The renderer sets that size from a React update, which lands two or three
+ * painted frames after the box changed. Measured: a box going from 655 to 391
+ * pixels left a 655-pixel canvas inside it for three frames — overflowing,
+ * clipped and out of place. That is the flicker, and it happened on every
+ * resize. Percentages are resolved during layout, so there is no interval
+ * where the two disagree. The important part is `!important`: the renderer
+ * writes its pixel size inline, and this has to win.
+ */
+.city-layer canvas { width: 100% !important; height: 100% !important; }
 .scene-state { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; }
 .shell[data-screen='mine'] .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h) + 24px); right: 0; }
 @media (max-width: 899px) {

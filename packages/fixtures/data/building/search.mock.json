@@ -1,0 +1,40 @@
+{
+  "default": [
+    {
+      "title": "Uptown Waterloo - King Street North",
+      "url": "https://example.invalid/uptown-waterloo",
+      "content": "A two-storey brick retail strip along King Street North, built in the early 1900s. Ground-floor shopfronts with large display windows, offices and apartments above, and canvas awnings over most of the frontages. Warm red brick with painted cornices."
+    },
+    {
+      "title": "Uptown Waterloo streetscape",
+      "url": "https://example.invalid/uptown-streetscape",
+      "content": "Street trees, benches and patio seating line the sidewalk. Evening lighting is warm, from storefront windows and strings of bulbs over the patios."
+    }
+  ],
+  "cafe": [
+    {
+      "title": "Independent cafe, Uptown Waterloo",
+      "url": "https://example.invalid/cafe-uptown",
+      "content": "Single-storey corner cafe in a brick building. Large front windows, a hand-painted sign, two outdoor tables under a dark green awning, and planters either side of the door."
+    },
+    {
+      "title": "Cafe interior and frontage",
+      "url": "https://example.invalid/cafe-frontage",
+      "content": "Wood counter, exposed brick, warm pendant lighting. The frontage reads cosy rather than upscale, and the patio is busy from mid-morning."
+    }
+  ],
+  "clock tower": [
+    {
+      "title": "Kitchener City Hall clock tower",
+      "url": "https://example.invalid/kitchener-city-hall",
+      "content": "A tall civic tower in pale stone and glass, standing well above the surrounding buildings, with a clock face near the top and a public square at its base."
+    }
+  ],
+  "market": [
+    {
+      "title": "Kitchener Market hall",
+      "url": "https://example.invalid/kitchener-market",
+      "content": "A large two-storey market hall in brick and glass with a broad entrance canopy. Stalls spill onto the sidewalk on market days; banners hang from the facade."
+    }
+  ]
+}

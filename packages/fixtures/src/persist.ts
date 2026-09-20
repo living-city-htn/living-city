@@ -24,6 +24,8 @@ export type Serialized = {
   balances: Array<[string, number]>
   inventory: Array<[string, Array<[string, number]>]>
   placements: unknown[]
+  /** Optional: rows written before the private-building layer lack it. */
+  buildings?: unknown[]
   plans: Array<[string, unknown]>
   incidents: unknown[]
   updatedAt: string

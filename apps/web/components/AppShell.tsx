@@ -332,6 +332,7 @@ export default function AppShell() {
         active={tab === 'mine'}
         onBrowseShop={() => setTab('shop')}
         selectedName={selected?.name}
+        communityId={selectedId}
         slots={city?.slots.filter(slot => slot.community_id === selectedId) ?? []}
         onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
         snapshot={myCity}

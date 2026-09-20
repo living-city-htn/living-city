@@ -39,7 +39,7 @@ export type PlacementInput = {
 }
 
 /** Small, fast, seeded. Same seed, same city, every time. */
-function rng(seed: string): () => number {
+export function rng(seed: string): () => number {
   let h = 2166136261
   for (let i = 0; i < seed.length; i++) {
     h ^= seed.charCodeAt(i)

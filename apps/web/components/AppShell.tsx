@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
 import { CityScene, type CityPayload, type Placement } from './city'
+import type { SceneBuilding } from './city/types'
 import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
 import ShopPanel from './ShopPanel'
 import MyCityPanel from './MyCityPanel'
@@ -61,6 +62,7 @@ export default function AppShell() {
   const [cityAttempt, setCityAttempt] = useState(0)
   const [plans, setPlans] = useState<CommunityPlan[]>([])
   const [placements, setPlacements] = useState<Placement[]>([])
+  const [buildings, setBuildings] = useState<SceneBuilding[]>([])
   const [balance, setBalance] = useState<number | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [myCity, setMyCity] = useState<MyCitySnapshot | null>(null)
@@ -175,6 +177,12 @@ export default function AppShell() {
       setPlacements(snapshot.placements)
       setBalance(snapshot.balance)
       setNeedsRefresh(false)
+      // Own buildings ride along with own placements. A failure here only
+      // means no buildings are drawn; it must not fail the whole city.
+      void fetch('/api/me/buildings')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((body: { buildings?: SceneBuilding[] } | null) => { if (body?.buildings) setBuildings(body.buildings) })
+        .catch(() => {})
     } catch {
       setNeedsRefresh(true)
       setPlaceError('Could not load your city. Check your connection and try again.')
@@ -297,6 +305,7 @@ export default function AppShell() {
             city={city}
             plans={plans}
             placements={placements}
+            buildings={buildings}
             mode={mode}
             selectedId={selectedId}
             planningIds={planningIds}
@@ -371,6 +380,7 @@ export default function AppShell() {
         message={placeMessage}
         needsRefresh={needsRefresh}
         onRefresh={() => void refreshMyCity()}
+        onBuildingsChanged={() => void refreshMyCity()}
         onHeight={setSheetHeight}
       />
       {notice && <section className="post-confirmation" data-state={notice.state} aria-labelledby="post-confirmation-title">

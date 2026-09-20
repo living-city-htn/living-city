@@ -13,10 +13,10 @@
  * and may be switched off for the demo. When the route answers 503 the form
  * disappears and `MyCityPanel` is exactly what it was before.
  *
- * The 3D building does not exist yet: a deterministic pipeline turns the spec
- * into geometry and that pipeline is a separate piece of work. Until it lands
- * this draws the spec as a card, which is honest about what has been built and
- * is enough to see that the model understood the place.
+ * The building itself is drawn by the scene: `buildingModel` in
+ * packages/modeling turns the spec into geometry deterministically, and
+ * `scene/SpecBuilding` stands it on a free slot in My City. The card below is
+ * the spec in words, so a judge can see what the model understood.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 

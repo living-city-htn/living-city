@@ -37,10 +37,12 @@ const CITY_UNITS = 26
 const M_PER_DEG_LAT = 111_320
 
 /**
- * How long the city takes to settle into a new frame, matching --slow in the
- * stylesheet so the scene and the layout around it move over the same beat.
+ * The city is put away and brought back out when it has to be re-framed, one
+ * after the other rather than at the same time, so nothing is ever mid-way
+ * between two framings on screen.
  */
-const ZOOM_MS = 320
+const SHRINK_MS = 150
+const GROW_MS = 230
 
 /**
  * One shared empty list. Handing a block a fresh `[]` each render changes the
@@ -79,44 +81,68 @@ function ringOf(c: CommunityGeo): Array<[number, number]> {
  * narrower than the vertical one. PRD 8.11: the whole city fits at default
  * zoom.
  */
-function FrameCity({ radius }: { radius: number }) {
+function FrameCity({ radius, city, mode }: {
+  radius: number
+  city: React.RefObject<THREE.Group | null>
+  mode: 'public' | 'mine'
+}) {
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
+  const scene = useThree((s) => s.scene)
   const setSize = useThree((s) => s.setSize)
   const framedAt = useRef<number | null>(null)
-  // Where the magnification is travelling, and since when.
-  const zoomFrom = useRef(1)
-  const zoomTo = useRef(1)
-  const startedAt = useRef(0)
-  // How far the picture is being held from where the resize put it, in pixels.
-  const holdFrom = useRef(0)
-  const lastCentre = useRef<number | null>(null)
   const box = useRef({ width: 0, height: 0 })
+  const lastCentre = useRef<number | null>(null)
 
   /*
+   * The swap: the city shrinks away, the frame changes while there is nothing
+   * to see, and it grows back where it now belongs.
+   *
+   * It is re-framed whenever its box changes shape — moving between the city
+   * and My City is the one that moves it noticeably — and there is no honest
+   * way to travel between two framings, because the whole picture changes
+   * size and position at once. Interpolating it produced motion that argued
+   * with itself. Putting the city away for a moment costs nothing and leaves
+   * nothing to disagree about.
+   */
+  const phase = useRef<'idle' | 'out' | 'in'>('idle')
+  const startedAt = useRef(0)
+  const pendingZoom = useRef(1)
+  const hold = useRef(0)
+  const swapNext = useRef(false)
+
+  /*
+   * Only a change of screen earns the swap. A district card opening resizes
+   * the canvas too, and putting the city away every time somebody taps a block
+   * would be absurd — you tapped it to look at it. That one re-frames outright,
+   * which is barely anything: the card takes a slice off the bottom, and the
+   * city keeps its place.
+   *
+   * Set in a layout effect so it is already true when the resize observer runs,
+   * which happens after this commit and before the frame is painted.
+   */
+  useLayoutEffect(() => {
+    if (framedAt.current !== null) swapNext.current = true
+  }, [mode])
+
+  /*
+   * It also draws before returning. Resizing a canvas does not redraw it: the
+   * browser paints the frame it already had, stretched into the new box, and
+   * the corrected picture only arrives on the next animation frame. That is
+   * one frame of the city at the wrong size in the wrong place, which is the
+   * flicker — the map appearing to jump and come back before anything has
+   * begun to move. Drawing here lands it before the paint that would show it.
+   *
    * This measures the canvas itself rather than waiting to be told its size.
-   *
    * The renderer's own measurement arrives a couple of hundred milliseconds
-   * late. That does not matter while nothing moves, but a screen change moves
-   * the canvas's box immediately: for those two hundred milliseconds the
-   * picture was still drawn at its old height in its new place, sitting well
-   * below where it belonged, and then it snapped up when the measurement
-   * finally landed. Too quick to read as movement, plenty quick enough to see.
-   *
-   * A resize observer runs after layout and before the frame is painted, so
-   * measuring, resizing and compensating here all land in the same frame the
-   * box changed in, and there is no interval where the two disagree.
+   * late, and a screen change moves the canvas's box immediately, so for those
+   * two hundred milliseconds the picture was drawn at its old height in its
+   * new place. A resize observer runs after layout and before the frame is
+   * painted, so everything here lands in the frame the box changed in.
    */
   useLayoutEffect(() => {
     const host = gl.domElement.parentElement
     if (!host) return
-
-    const fit = (width: number, height: number) => {
-      const cam = camera as THREE.PerspectiveCamera
-      const vFov = (cam.fov * Math.PI) / 180
-      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (width / height))
-      return Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
-    }
 
     const measure = () => {
       const cam = camera as THREE.PerspectiveCamera
@@ -127,95 +153,112 @@ function FrameCity({ radius }: { radius: number }) {
       if (width === box.current.width && height === box.current.height) return
       box.current = { width, height }
 
+      /*
+       * Resized here rather than through the renderer's own bookkeeping, which
+       * goes via a React update and arrives too late to be in this frame. The
+       * style is left alone: the stylesheet keeps the canvas at the size of its
+       * box, and an inline pixel size would only fight it.
+       */
+      gl.setSize(width, height, false)
+      cam.aspect = width / height
+      // Kept in step for anything reading the size from the renderer's state.
       setSize(width, height)
-      const distance = fit(width, height)
+
+      const vFov = (cam.fov * Math.PI) / 180
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (width / height))
+      const distance = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
+      const centre = rect.top + height / 2
 
       if (framedAt.current === null) {
         framedAt.current = distance
         cam.position.set(0, distance * 0.66, distance * 0.78)
         cam.zoom = 1
-        zoomFrom.current = 1
-        zoomTo.current = 1
-        lastCentre.current = rect.top + height / 2
+        pendingZoom.current = 1
+        lastCentre.current = centre
         cam.updateProjectionMatrix()
+        gl.render(scene, cam)
+        return
+      }
+
+      const shift = (lastCentre.current ?? centre) - centre
+      lastCentre.current = centre
+      const want = framedAt.current / distance
+      if (Math.abs(want - pendingZoom.current) < 1e-4 && Math.abs(shift) < 0.5) return
+      pendingZoom.current = want
+
+      const swapping = swapNext.current || phase.current === 'out'
+      swapNext.current = false
+
+      if (!swapping) {
+        // Re-frame outright and keep the city on screen.
+        hold.current = 0
+        cam.clearViewOffset()
+        cam.zoom = want
+        cam.updateProjectionMatrix()
+        gl.render(scene, cam)
         return
       }
 
       /*
-       * The box just changed, which moves the picture twice over: it is drawn
-       * centred, so a shorter canvas re-centres it, and it needs different
-       * magnification to still fit. Both land together, so note where the
-       * picture was and hold it there; easing the hold back to nothing, and
-       * the magnification with it, turns one jump into one movement.
+       * Keep the old picture exactly where the eye left it while it shrinks.
+       * The canvas has already changed shape underneath it, which on its own
+       * would re-centre and re-scale the city in the same frame; the shift
+       * below cancels that, and it is dropped once there is nothing on screen
+       * to notice it being dropped. A second resize during the shrink — the
+       * sheet reporting its height a beat later — simply adds to it.
        */
-      const centre = rect.top + height / 2
-      const shift = (lastCentre.current ?? centre) - centre
-      lastCentre.current = centre
-
-      const want = framedAt.current / distance
-      if (Math.abs(want - zoomTo.current) < 1e-4 && Math.abs(shift) < 0.5) return
-
-      // Whatever of the last hold has not been given back yet. A second resize
-      // lands often — a sheet reports its height a beat after the screen
-      // changes — and dropping the remainder would hand back the rest of that
-      // movement in one frame, which is the flick this exists to avoid.
-      const elapsed = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
-      const remaining = holdFrom.current * Math.pow(1 - elapsed, 3)
-
-      zoomFrom.current = cam.zoom
-      zoomTo.current = want
-      holdFrom.current = remaining + shift
-      startedAt.current = performance.now()
-
-      // Applied now, not left to the next frame, so nothing is ever painted at
-      // the jumped position.
-      if (Math.abs(holdFrom.current) >= 0.5) {
-        cam.setViewOffset(width, height, 0, -holdFrom.current, width, height)
+      hold.current += shift
+      if (Math.abs(hold.current) >= 0.5) {
+        cam.setViewOffset(width, height, 0, -hold.current, width, height)
       } else {
-        holdFrom.current = 0
+        hold.current = 0
         cam.clearViewOffset()
       }
       cam.updateProjectionMatrix()
+      gl.render(scene, cam)
+
+      // Already on the way out: let it carry on rather than starting again.
+      if (phase.current !== 'out') {
+        phase.current = 'out'
+        startedAt.current = performance.now()
+      }
     }
 
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(host)
     return () => observer.disconnect()
-  }, [camera, gl, setSize, radius])
+  }, [camera, gl, scene, setSize, radius])
 
-  /*
-   * Ease into the new framing rather than cutting to it, on the clock rather
-   * than on the frame.
-   *
-   * Moving a fraction of the remaining distance each frame looks like an ease
-   * until a frame runs long, and the frame this has to survive is the one where
-   * the canvas reallocates its drawing buffer with the whole city in it. One
-   * long frame was enough for the step to reach the target in a single go, so
-   * the magnification arrived instantly at exactly the moment it most needed
-   * not to. Elapsed time cannot be skipped that way.
-   */
   useFrame(() => {
+    if (phase.current === 'idle') return
+    const group = city.current
+    if (!group) return
     const cam = camera as THREE.PerspectiveCamera
-    if (cam.zoom === zoomTo.current && holdFrom.current === 0) return
+    const elapsed = performance.now() - startedAt.current
 
-    const t = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
-    // Matches --ease, the curve the rest of the interface moves on.
-    const eased = 1 - Math.pow(1 - t, 3)
-
-    cam.zoom = t >= 1
-      ? zoomTo.current
-      : zoomFrom.current + (zoomTo.current - zoomFrom.current) * eased
-
-    // Releasing the hold is what carries the picture to where it now belongs.
-    const hold = holdFrom.current * (1 - eased)
-    if (t >= 1 || Math.abs(hold) < 0.5) {
-      holdFrom.current = 0
+    if (phase.current === 'out') {
+      const t = Math.min(1, elapsed / SHRINK_MS)
+      // Never exactly zero: a zero scale is a matrix nothing can be derived from.
+      group.scale.setScalar(Math.max(0.0001, 1 - t * t))
+      if (t < 1) return
+      // Nothing is visible, so the frame can change outright.
+      cam.zoom = pendingZoom.current
+      hold.current = 0
       cam.clearViewOffset()
-    } else {
-      cam.setViewOffset(box.current.width, box.current.height, 0, -hold, box.current.width, box.current.height)
+      cam.updateProjectionMatrix()
+      phase.current = 'in'
+      startedAt.current = performance.now()
+      return
     }
-    cam.updateProjectionMatrix()
+
+    const t = Math.min(1, elapsed / GROW_MS)
+    // Matches --ease, the curve the rest of the interface moves on.
+    group.scale.setScalar(Math.max(0.0001, 1 - Math.pow(1 - t, 3)))
+    if (t >= 1) {
+      group.scale.setScalar(1)
+      phase.current = 'idle'
+    }
   })
 
   return null
@@ -946,12 +989,29 @@ export default function CityScene({
    * blocked main thread, which is the stutter you see rather than any
    * animation being wrong.
    */
+  // The group that is put away and brought back when the city is re-framed.
+  const cityRef = useRef<THREE.Group>(null)
+
   // Stable, so a block is not re-rendered merely by a new closure.
   const hover = useCallback((id: string | null) => onBlockHover?.(id), [onBlockHover])
   const select = useCallback((id: string) => onBlockSelect?.(id), [onBlockSelect])
   const pick = useCallback(
     (id: string, point: [number, number]) => onBlockPick?.(id, point),
     [onBlockPick],
+  )
+
+  /*
+   * Which blocks show their slots: the one being looked at, and any that
+   * already hold something. This is the rule the flat scene has always used.
+   *
+   * Showing all eighty-one at once was both a departure from that and the
+   * reason My City took a fifth of a second of blocked main thread to open —
+   * every marker mounting at once, which is long enough to swallow the
+   * animation around it.
+   */
+  const holding = useMemo(
+    () => new Set(placements.map((p) => p.community_id)),
+    [placements],
   )
 
   const slotsFor = useMemo(() => {
@@ -1056,7 +1116,7 @@ export default function CityScene({
         shadow-mapSize={[1024, 1024]}
       />
 
-      <FrameCity radius={CITY_UNITS * 0.5} />
+      <FrameCity radius={CITY_UNITS * 0.5} city={cityRef} mode={mode} />
       <SelectionFocus
         selectedId={selectedId}
         selectedOrigin={selectedOrigin}
@@ -1069,6 +1129,8 @@ export default function CityScene({
         onStop={() => setDrillActive(false)}
       />
 
+      {/* The blocks alone shrink away and back; the ground and the light stay. */}
+      <group ref={cityRef}>
       {blocks.map(({ community, plan, origin, cells }) => (
         <Block
           key={community.community_id}
@@ -1081,7 +1143,12 @@ export default function CityScene({
           planning={planningIds.includes(community.community_id)}
           drillActive={drillActive}
           terrainSlots={slotsFor.get(community.community_id) ?? NO_SLOTS}
-          slots={mode === 'mine' ? slotsFor.get(community.community_id) ?? NO_SLOTS : NO_SLOTS}
+          slots={
+            mode === 'mine'
+              && (community.community_id === selectedId || holding.has(community.community_id))
+              ? slotsFor.get(community.community_id) ?? NO_SLOTS
+              : NO_SLOTS
+          }
           placements={held}
           onHover={hover}
           onSelect={select}
@@ -1089,6 +1156,7 @@ export default function CityScene({
           onSlotTap={onSlotTap}
         />
       ))}
+      </group>
 
       {/* Tap empty space to deselect (PRD 8.12). */}
       <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} onClick={() => onBlockSelect?.(null)} receiveShadow>

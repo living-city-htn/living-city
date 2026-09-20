@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { planningInput, postAnalysis } from '@living-city/contracts'
 import { FALLBACK_TAXONOMY, loadTaxonomy } from '../src/taxonomy'
@@ -10,8 +9,9 @@ import { FALLBACK_TAXONOMY, loadTaxonomy } from '../src/taxonomy'
  * on a lie. This is the check that keeps them honest as the prompts change.
  */
 
+/** Relative to this file: pnpm runs the script with the package as the cwd. */
 const read = (name: string) =>
-  JSON.parse(readFileSync(resolve(`packages/fixtures/data/${name}`), 'utf8'))
+  JSON.parse(readFileSync(new URL(`../../fixtures/data/${name}`, import.meta.url), 'utf8'))
 
 describe('post-analysis.mock.json', () => {
   const mock = read('post-analysis.mock.json') as { analyses: unknown[] }

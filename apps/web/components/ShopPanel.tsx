@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ShopItem } from '@living-city/fixtures'
 import { loadShop, purchaseItem, type ShopSnapshot } from '@/lib/shop'
 import ItemDrawing from './ItemDrawing'
+import Points from './Points'
 
 export default function ShopPanel({ active, onBalanceChanged, onDecorate }: {
   onDecorate?: (tag: string) => void
@@ -93,10 +94,14 @@ export default function ShopPanel({ active, onBalanceChanged, onDecorate }: {
                 return <li className="shop-item" key={item.item_tag}>
                   <div className="shop-item-top"><ItemDrawing tag={item.item_tag} /><span className="shop-owned">{owned} owned</span></div>
                   <h3>{item.label}</h3>
-                  <p className="shop-price">{item.price} pts</p>
+                  <p className="shop-price" aria-label={`${item.price} points`}><Points value={item.price} /></p>
                   <button className="shop-buy" disabled={buying !== null || needsRefresh || shortfall > 0}
-                    aria-label={`Buy ${item.label} for ${item.price} points`} onClick={() => void purchase(item)}>
-                    {buying === item.item_tag ? 'Buying…' : shortfall > 0 ? `Need ${shortfall} more pts` : 'Buy'}
+                    aria-label={shortfall > 0
+                      ? `${item.label} costs ${item.price} points; you need ${shortfall} more`
+                      : `Buy ${item.label} for ${item.price} points`} onClick={() => void purchase(item)}>
+                    {buying === item.item_tag ? 'Buying…'
+                      : shortfall > 0 ? <>Need <Points value={shortfall} /> more</>
+                      : 'Buy'}
                   </button>
                 </li>
               })}

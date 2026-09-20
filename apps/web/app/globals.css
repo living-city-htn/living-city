@@ -109,7 +109,12 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .app-header h1 { font-size: 22px; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; }
 .app-header p { margin: 6px 0 0; font-size: 13px; color: var(--label); }
 .app-header-balance { flex-shrink: 0; color: var(--label); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.points-label { font-size: inherit; }
+/* Points wear a spark rather than the abbreviation "pts". components/Points.tsx */
+.points { display: inline-flex; align-items: center; gap: .28em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.points .spark { flex-shrink: 0; color: var(--accent); }
+.points-value { font-variant-numeric: tabular-nums; }
+/* On a filled button the spark rides the button's own colour, not the accent. */
+.shop-buy .points .spark { color: currentColor; }
 .tabbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; display: grid; grid-template-columns: repeat(5, minmax(0, 120px)); justify-content: center; height: var(--tabbar-h); padding: 6px 6px env(safe-area-inset-bottom); gap: 3px; background: var(--surface); border-top: 1px solid var(--hair); }
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; min-height: 48px; margin: 2px 0 6px; padding: 6px 2px; border: 0; border-radius: 8px; background: transparent; color: var(--label); font-weight: 400; font-size: 11px; cursor: pointer; }
 .tab[data-active='true'] { color: var(--accent); }

@@ -13,11 +13,9 @@
  *
  *   - It resets when the serverless instance recycles. The operator's reset
  *     button and the preset plan route are the recovery path.
- *   - Plans written here are NOT in Product's fixture store, so
- *     `GET /api/city/version` (Civic's) will not see them yet. Closing that
- *     needs either the migrations or a `setPlan` export on the store, which is
- *     Product's package and therefore a PR they review. Until then the scene
- *     reads plans from `GET /api/communities/:id/plan`.
+ *   - Plans written here are NOT in Product's fixture store. The city-version
+ *     route merges their IDs for polling, and the scene reads their bodies from
+ *     `GET /api/communities/:id/plan`.
  */
 import { communityGeo, type CommunityGeo, type CommunityPlan, type PostAnalysis } from '@living-city/contracts'
 import {

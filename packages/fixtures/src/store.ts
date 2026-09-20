@@ -47,6 +47,8 @@ type State = {
   incidents: Incident[]
   updatedAt: string
   seq: number
+  /** Stamps of recent saves, so a retry can tell whether its write committed. */
+  recentWrites: string[]
   /** Whether the QR page is inviting new posts (operator control). */
   qrPaused: boolean
 }
@@ -78,6 +80,34 @@ const seedIncidents = (posts: SeedPost[]): Incident[] =>
       updated_at: p.created_at,
     }))
 
+/**
+ * Post ids are `p-NNN`, and `seq` is the highest number minted so far.
+ *
+ * It is the highest id in the seed rather than the number of posts, because the
+ * seed's ids have gaps in them: narrowing the city to Waterloo dropped the
+ * Kitchener posts and left their numbers behind. Counting instead of measuring
+ * restarts the sequence underneath ids that already exist, and the first post
+ * of the demo duplicates a seed post.
+ */
+const POST_ID = /^p-(\d+)$/
+const highestPostSeq = (posts: SeedPost[]): number =>
+  posts.reduce((max, p) => {
+    const n = POST_ID.exec(p.id)
+    return n ? Math.max(max, Number(n[1])) : max
+  }, 0)
+
+/**
+ * The next free id. It steps over anything the state already holds, so a row
+ * written by an older build - the shape this bug leaves behind - heals on the
+ * next post instead of colliding a second time.
+ */
+function nextPostId(): string {
+  const taken = new Set(state.posts.map((p) => p.id))
+  let id: string
+  do { id = `p-${String((state.seq += 1)).padStart(3, '0')}` } while (taken.has(id))
+  return id
+}
+
 export function reset(): void {
   state = {
     posts: seedPosts.map((p) => ({ ...p })),
@@ -89,7 +119,8 @@ export function reset(): void {
     plans: new Map(fallbackPlans.map((p) => [p.community_id, p])),
     incidents: seedIncidents(seedPosts),
     updatedAt: new Date().toISOString(),
-    seq: seedPosts.length,
+    seq: highestPostSeq(seedPosts),
+    recentWrites: [],
     qrPaused: false,
   }
 }
@@ -105,7 +136,7 @@ const serialize = (s: State): Serialized => ({
   placements: s.placements,
   plans: [...s.plans],
   incidents: s.incidents,
-  updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused,
+  updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused, recentWrites: s.recentWrites,
 })
 
 const deserialize = (d: Serialized): State => ({
@@ -117,7 +148,7 @@ const deserialize = (d: Serialized): State => ({
   placements: d.placements as State['placements'],
   plans: new Map(d.plans as Array<[string, CommunityPlan]>),
   incidents: d.incidents as Incident[],
-  updatedAt: d.updatedAt, seq: d.seq, qrPaused: d.qrPaused,
+  updatedAt: d.updatedAt, seq: d.seq, qrPaused: d.qrPaused, recentWrites: d.recentWrites ?? [],
 })
 
 let version = 0
@@ -142,17 +173,56 @@ export async function read<T>(fn: () => T): Promise<T> {
 }
 
 /**
+ * How many times a mutation is re-applied before `write` gives up.
+ *
+ * Every writer competes for one row version and exactly one wins per round, so
+ * the Nth simultaneous writer needs N attempts. The budget used to be four,
+ * which meant five judges posting in the same instant always produced a 500 -
+ * and docs/04 section 7 expects tens of people in moment 8.
+ */
+const WRITE_ATTEMPTS = 16
+
+/** Jittered, so writers that lost a round do not all retry in lockstep. */
+const backoff = (attempt: number): Promise<void> =>
+  new Promise((done) => setTimeout(done, Math.random() * 8 * Math.min(attempt, 8)))
+
+/**
+ * How many stamps the row remembers. A retry only has to outlast the writers
+ * that slipped in while its own response was lost, so this is generous.
+ */
+const WRITE_LOG = 64
+
+/** Marks a row as the product of one particular attempt. */
+const newWriteId = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
+/**
  * Mutate the shared state. The mutation re-runs against a fresh read if someone
  * else wrote first, which is what two judges posting at once looks like.
+ *
+ * The re-run has to be safe, because a save can commit and still report failure:
+ * a lost response on Neon's pooled connection is indistinguishable from a
+ * rejected version check. Applying the mutation a second time then charges a
+ * balance twice or writes two posts for one tap. So each attempt stamps the row
+ * with its own id, and a retry that finds its predecessor's stamp already in
+ * the row knows that write landed and returns rather than repeating it. The
+ * stamps are a list because another writer can commit in between, and the stamp
+ * has to survive their write to still be there when the retry looks.
  */
 export async function write<T>(fn: () => T): Promise<T> {
   if (!durable()) return fn()
-  for (let attempt = 0; attempt < 4; attempt++) {
+  let attempted: { id: string; result: T } | null = null
+  for (let attempt = 0; attempt < WRITE_ATTEMPTS; attempt++) {
+    if (attempt > 0) await backoff(attempt)
     await hydrate()
+    if (attempted && state.recentWrites.includes(attempted.id)) return attempted.result
     const result = fn()
+    const id = newWriteId()
+    state.recentWrites = [...state.recentWrites, id].slice(-WRITE_LOG)
     if (await save(serialize(state), version)) return result
+    attempted = { id, result }
   }
-  throw new Error('Could not save: the city is being written to to too quickly.')
+  throw new Error('Could not save: the city is being written to too quickly.')
 }
 
 /** The operator's reset wins outright rather than retrying. */
@@ -180,9 +250,8 @@ export function createPost(input: {
   user_id: string; text: string; image_url?: string | null
   lon: number; lat: number; community_id: string; is_incident_report?: boolean
 }): SeedPost {
-  state.seq += 1
   const post: SeedPost = {
-    id: `p-${String(state.seq).padStart(3, '0')}`,
+    id: nextPostId(),
     user_id: input.user_id,
     text: input.text,
     image_url: input.image_url ?? null,

@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [{ source: '/(.*)', headers: [{ key: 'Permissions-Policy', value: 'geolocation=(self)' }] }]
+  },
   transpilePackages: [
     '@living-city/contracts',
     '@living-city/fixtures',

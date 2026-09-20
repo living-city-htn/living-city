@@ -14,7 +14,6 @@ import { useEffect, useRef } from 'react'
 import type { ShopItem, DecorationSlot } from '@living-city/fixtures'
 import type { MyCitySnapshot } from '@/lib/placement'
 import ItemDrawing from './ItemDrawing'
-import BuildingComposer from './BuildingComposer'
 import './city-controls.css'
 
 export default function MyCityPanel({
@@ -32,18 +31,13 @@ export default function MyCityPanel({
   onBrowseShop,
   selectedName,
   slots = [],
-  communityId = null,
   onSlotTap,
-  onBuildingsChanged,
 }: {
   onBrowseShop?: () => void
   selectedName?: string
   slots?: DecorationSlot[]
   /** Which community a new building belongs to. Null until one is picked. */
-  communityId?: string | null
   onSlotTap?: (communityId: string, slotId: string) => void
-  /** A described building was added or removed, so the scene should redraw. */
-  onBuildingsChanged?: () => void
   active: boolean
   snapshot: MyCitySnapshot | null
   catalog: ShopItem[]
@@ -165,8 +159,6 @@ export default function MyCityPanel({
           </div>}
           {busy && <p role="status">Saving your decoration…</p>}
         </div>}
-
-        <BuildingComposer active={active} communityId={communityId} onChanged={onBuildingsChanged} />
       </div>
     </section>
   )

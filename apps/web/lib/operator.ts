@@ -97,6 +97,33 @@ export async function getQrPaused(): Promise<boolean> {
   return body.paused
 }
 
+/**
+ * The City Hall rehearsal, which the operator now starts and stops from the
+ * panel rather than from a card floating over the city. The app picks the
+ * change up on its version poll within five seconds.
+ *
+ * `null` means nobody is drilling, which is also what a cold process starts at,
+ * so a reset or a redeploy ends a rehearsal rather than stranding one.
+ */
+const readDrill = (body: unknown): string | null => {
+  if (!record(body)) throw new Error('Unreadable drill state')
+  const id = body.community_id
+  if (id !== null && typeof id !== 'string') throw new Error('Unreadable drill state')
+  return id
+}
+
+export async function getDrill(): Promise<string | null> {
+  return readDrill(await call('/api/operator/drill'))
+}
+
+export async function setDrill(communityId: string | null): Promise<string | null> {
+  return readDrill(await call('/api/operator/drill', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ community_id: communityId }),
+  }))
+}
+
 export async function setQrPaused(paused: boolean): Promise<boolean> {
   const body = await call('/api/operator/qr', {
     method: 'POST',

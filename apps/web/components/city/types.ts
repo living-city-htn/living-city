@@ -103,6 +103,12 @@ export type CitySceneProps = {
    * scene's block itself: the scene owns which one it drills, and importing
    * that from the shell would tie it to a scene it is built to work without.
    * Optional, so the flat fallback compiles against this untouched.
+   *
+   * Read-only, and there is no `onDrillChange` beside it. Starting and stopping
+   * belongs to the operator panel, on its own route: the control used to float
+   * over the city, which put an operator button in front of the judges and
+   * covered the block it was talking about. The value reaches the shell on the
+   * version poll.
    */
   drillCommunityId?: string | null
   /**
@@ -112,5 +118,4 @@ export type CitySceneProps = {
    * rather than scene state, for the same reason as the drill above.
    */
   focusTick?: number
-  onDrillChange?: (communityId: string | null) => void
 }

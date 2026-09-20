@@ -81,6 +81,15 @@ export type FixtureState = {
   recentWrites: string[]
   /** Whether the QR page is inviting new posts (operator control). */
   qrPaused: boolean
+  /**
+   * The block currently running the City Hall rehearsal, or null.
+   *
+   * Server state rather than the scene's, because the operator panel is its own
+   * route and cannot share React state with the app. It is also read by more
+   * than the scene: while a drill runs, the block being drilled posts about the
+   * storm rather than about its patios.
+   */
+  drillCommunityId: string | null
 }
 
 let state: FixtureState
@@ -196,6 +205,7 @@ export function reset(): void {
     seq: highestPostSeq(seedPosts),
     recentWrites: [],
     qrPaused: false,
+    drillCommunityId: null,
   }
 }
 reset()
@@ -215,6 +225,7 @@ const serialize = (s: FixtureState): Serialized => ({
   plans: [...s.plans],
   incidents: s.incidents,
   updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused, recentWrites: s.recentWrites,
+  drillCommunityId: s.drillCommunityId,
 })
 
 const largestIdSuffix = (rows: unknown[], prefix: string): number => rows.reduce<number>((maximum, row) => {
@@ -266,6 +277,9 @@ export const deserializeState = (d: Serialized): FixtureState => {
     // Rows written before retry stamps existed are still safe to load.
     recentWrites: d.recentWrites ?? [],
     qrPaused: d.qrPaused,
+    // A rehearsal is not worth persisting across a redeploy, and rows written
+    // before it existed do not carry it. Absent means nobody is drilling.
+    drillCommunityId: d.drillCommunityId ?? null,
   }
 }
 
@@ -599,6 +613,22 @@ export function replan(communityId: string): CommunityPlan | null {
  * unpaused, so the operator has to re-pause after a reset — the panel shows the
  * current state so that is visible rather than assumed.
  */
+/**
+ * The City Hall rehearsal. An operator control, like `qrPaused`, and for the
+ * same reason: the panel and the app are different routes, so the only place
+ * both can see it is here.
+ *
+ * Nothing about it is a public plan. It changes what one block is saying and
+ * what the scene draws over it, and ending it puts both back with no cleanup,
+ * because nothing was written to a plan in the first place.
+ */
+export const drillCommunity = () => state.drillCommunityId
+export function setDrillCommunity(communityId: string | null): string | null {
+  state.drillCommunityId = communityId
+  touch()
+  return state.drillCommunityId
+}
+
 export const qrPaused = () => state.qrPaused
 export function setQrPaused(paused: boolean): boolean {
   state.qrPaused = paused

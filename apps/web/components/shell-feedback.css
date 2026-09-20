@@ -1,12 +1,4 @@
 /*
- * This changes in one step on purpose. The renderer does not re-measure its
- * canvas while an ancestor is mid-transition, so animating this box slid the
- * frame down while the picture inside it kept its old height, and the picture
- * snapped back up the moment the canvas caught up — two motions disagreeing.
- * The camera carries the movement instead; see FrameCity.
- */
-.city-layer { top: 116px; }
-/*
  * The canvas follows its box instead of being told a size in pixels.
  *
  * The renderer sets that size from a React update, which lands two or three
@@ -22,21 +14,10 @@
 .shell[data-screen='mine'] .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h) + 24px); right: 0; }
 @media (max-width: 899px) {
   .shell[data-screen='city'] .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h) + 24px); }
-  .city-layer { top: 94px; }
 }
 
 @media (min-width: 900px) { .tabbar { overflow-y: auto; } .tabbar .tab { flex-shrink: 0; } }
 
-.shell[data-screen='city'] .city-layer { top: 0; }
-/*
- * A hidden scene keeps whatever size it had. The offset above exists to clear
- * the header on the screens that show the scene under one; on a screen that
- * hides it there is nothing to clear, and changing it only resizes the canvas
- * and reallocates its buffers in the middle of the fade. This used to be free
- * because display:none collapsed the box to nothing and the renderer ignored
- * it; visibility keeps the box, so the rule has to say so itself.
- */
-.viewport[data-shown='false'] .city-layer { top: 0; }
 .viewport { overflow: hidden; background: white; }
 .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .particle { position: absolute; bottom: -10px; border-radius: 50%; background: #b5bac0; opacity: 0; animation: ambient-drift 48s linear infinite; }

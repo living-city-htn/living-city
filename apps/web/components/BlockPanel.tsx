@@ -25,6 +25,7 @@ export default function BlockPanel({
   onClose,
   onLiked,
   onHeight,
+  scenario,
 }: {
   communityId: string
   name: string
@@ -38,6 +39,13 @@ export default function BlockPanel({
   onLiked: (balance: number) => void
   /** Reports the sheet's height so the map can keep the block above it. */
   onHeight: (px: number) => void
+  /**
+   * Which rehearsal the city is in, if any. During the City Hall drill this
+   * block is posting about the storm rather than about its patios, so the
+   * panel asks for that set instead. It is a read: nothing is stored, and
+   * ending the drill brings the ordinary posts straight back.
+   */
+  scenario?: 'drill'
 }) {
   const ref = useRef<HTMLElement>(null)
   const reasonsId = `community-reasons-${communityId.replace(/[^a-z0-9_-]/gi, '-')}`
@@ -82,7 +90,7 @@ export default function BlockPanel({
     setError('')
     setPosts([])
     setWhy(false)
-    Promise.all([getBlockState(communityId), getBlockPosts(communityId)])
+    Promise.all([getBlockState(communityId), getBlockPosts(communityId, scenario)])
       .then(([s, p]) => {
         if (!live) return
         setState(s)
@@ -92,7 +100,7 @@ export default function BlockPanel({
     return () => {
       live = false
     }
-  }, [communityId, planId, attempt])
+  }, [communityId, planId, attempt, scenario])
 
   return (
     <section ref={ref} className="city-inspector" data-expanded={expanded} aria-label={`${name} details`}>

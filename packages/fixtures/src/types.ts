@@ -59,6 +59,13 @@ export type SeedPost = {
   status: 'pending' | 'analyzed'
   hidden: boolean
   hidden_reason: 'auto' | 'operator' | null
+  /**
+   * Which rehearsal this post belongs to, if any. A post without one is the
+   * city on a normal day and is all anybody sees unless a scenario is asked
+   * for by name. Nothing is swapped in the stored data: the scenario decides
+   * which posts are read, so ending a rehearsal restores the ordinary ones.
+   */
+  scenario?: 'drill'
 }
 
 export type BuildingComposition = {

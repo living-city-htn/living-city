@@ -130,6 +130,18 @@ for (const id of ids) {
   warn(n >= 3, `${id} has ${n} seed posts; Stage 0 target is 3 per block`)
 }
 
+// ---- rehearsal posts -------------------------------------------------------
+// The tornado drill replaces what one block is saying rather than adding to
+// it, so these must all sit on one community and must not leak into the
+// counts the ordinary demo depends on.
+const drill = seed.posts.filter((p) => p.scenario === 'drill')
+check(drill.length >= 3, `the drill needs at least 3 posts, found ${drill.length}`)
+check(new Set(drill.map((p) => p.community_id)).size === 1,
+  'drill posts must all belong to one community, or the block they replace is ambiguous')
+drill.forEach((p) => check(ids.has(p.community_id), `drill post ${p.id}: unknown community`))
+check(drill.every((p) => !p.is_incident_report),
+  'drill posts must not be incident reports: moment 6 counts exactly 3 and they are not part of it')
+
 // ---- shop, docs/04 section 3 ----------------------------------------------
 check(shop.items.length === 6, `shop must have exactly 6 items, found ${shop.items.length}`)
 inEnum(new Set([...E.decorations, ...E.vegetation]), shop.items.map((i) => i.item_tag), 'shop')

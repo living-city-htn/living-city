@@ -2,16 +2,13 @@
 .community-picker label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
 .community-picker select { font-size: 14px; min-height: 44px; border-radius: 10px; }
 /*
- * The scene moves and changes shape between screens: My City sits it under a
- * header and above the inventory, the city screen gives it everything. Both
- * screens show it, so switching between them used to drop it ninety pixels and
- * shrink it in a single frame. It travels now instead.
- *
- * Safe to animate only because the renderer waits for the movement to finish
- * before it re-measures — see the resize setting on the canvas. Without that,
- * every frame of this would reallocate its drawing buffer.
+ * This changes in one step on purpose. The renderer does not re-measure its
+ * canvas while an ancestor is mid-transition, so animating this box slid the
+ * frame down while the picture inside it kept its old height, and the picture
+ * snapped back up the moment the canvas caught up — two motions disagreeing.
+ * The camera carries the movement instead; see FrameCity.
  */
-.city-layer { top: 116px; transition: top var(--slow) var(--ease), bottom var(--slow) var(--ease); }
+.city-layer { top: 116px; }
 .scene-state { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; }
 .shell[data-screen='mine'] .viewport[data-inset='true'] { bottom: calc(var(--tabbar-h) + var(--sheet-h) + 24px); right: 0; }
 @media (max-width: 899px) {

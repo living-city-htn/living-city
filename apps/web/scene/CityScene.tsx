@@ -70,11 +70,15 @@ function ringOf(c: CommunityGeo): Array<[number, number]> {
 function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
+  const gl = useThree((s) => s.gl)
   const framedAt = useRef<number | null>(null)
   // Where the magnification is travelling, and since when.
   const zoomFrom = useRef(1)
   const zoomTo = useRef(1)
   const startedAt = useRef(0)
+  // How far to hold the picture from where the resize just put it, in pixels.
+  const holdFrom = useRef(0)
+  const lastCentre = useRef<number | null>(null)
 
   /*
    * Only the first fit moves the camera. Every later one changes magnification
@@ -115,15 +119,32 @@ function FrameCity({ radius }: { radius: number }) {
       cam.updateProjectionMatrix()
       return
     }
-    // Aimed at, not jumped to: the frame it belongs in is still moving.
+    /*
+     * The canvas has just changed size, which moves the picture twice over: it
+     * is drawn centred in the canvas, so a shorter canvas re-centres it, and it
+     * has to be magnified differently to still fit. Both land in one frame.
+     *
+     * So take note of where the picture was, and hold it there: the shift below
+     * is eased back to nothing, and the magnification with it, which turns one
+     * jump into one movement. Doing this from the camera rather than from the
+     * layout is deliberate — the renderer does not re-measure while an ancestor
+     * is mid-transition, so animating the box moved the frame while the picture
+     * inside kept its old size, and they disagreed on which way to go.
+     */
+    const rect = gl.domElement.getBoundingClientRect()
+    const centre = rect.top + rect.height / 2
+    const shift = lastCentre.current === null ? 0 : lastCentre.current - centre
+    lastCentre.current = centre
+
     const want = framedAt.current / fit
-    if (Math.abs(want - zoomTo.current) < 1e-4) return
+    if (Math.abs(want - zoomTo.current) < 1e-4 && Math.abs(shift) < 0.5) return
     // From wherever it is now, so a change that lands mid-travel bends the
     // path instead of snapping back to the start of it.
     zoomFrom.current = cam.zoom
     zoomTo.current = want
+    holdFrom.current = shift
     startedAt.current = performance.now()
-  }, [camera, size.width, size.height, radius])
+  }, [camera, gl, size.width, size.height, radius])
 
   /*
    * Ease into the new framing rather than cutting to it, on the clock rather
@@ -138,13 +159,26 @@ function FrameCity({ radius }: { radius: number }) {
    */
   useFrame(() => {
     const cam = camera as THREE.PerspectiveCamera
-    if (cam.zoom === zoomTo.current) return
+    const settled = cam.zoom === zoomTo.current && holdFrom.current === 0
+    if (settled) return
+
     const t = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
     // Matches --ease, the curve the rest of the interface moves on.
     const eased = 1 - Math.pow(1 - t, 3)
+
     cam.zoom = t >= 1
       ? zoomTo.current
       : zoomFrom.current + (zoomTo.current - zoomFrom.current) * eased
+
+    // Shifting the rendered window is what carries the picture back to where
+    // the eye left it; releasing it is the movement.
+    const hold = holdFrom.current * (1 - eased)
+    if (t >= 1 || Math.abs(hold) < 0.5) {
+      holdFrom.current = 0
+      cam.clearViewOffset()
+    } else {
+      cam.setViewOffset(size.width, size.height, 0, -hold, size.width, size.height)
+    }
     cam.updateProjectionMatrix()
   })
 
@@ -699,15 +733,6 @@ export default function CityScene({
       dpr={[1, 1.8]}
       camera={{ position: [0, 17, 23], fov: 40 }}
       style={{ width: '100%', height: '100%' }}
-      /*
-       * The layer holding this canvas animates when a screen makes room for a
-       * panel. Measured with no delay, every frame of that animation
-       * reallocates the drawing buffer — several megabytes, a dozen times over
-       * a fifth of a second, which is exactly when a phone can least afford
-       * it. Waiting for the movement to stop means one reallocation instead.
-       * The picture stretches a little while it settles; a hitch is worse.
-       */
-      resize={{ scroll: false, debounce: { scroll: 50, resize: 90 } }}
     >
       <color attach="background" args={[shell.background]} />
       {/*

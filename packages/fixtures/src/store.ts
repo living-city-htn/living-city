@@ -133,11 +133,48 @@ function nextPostId(): string {
   return id
 }
 
+/**
+ * Likes the seed posts arrive with.
+ *
+ * A feed where every post has zero likes reads as a fixture rather than a
+ * neighbourhood, and the feed is the first thing a judge sees. These are
+ * historical: they go straight into the set rather than through `credit`, so
+ * the balances the seed authors stay the balances the seed authors.
+ *
+ * Deterministic, so two instances that both cold-start agree about the city and
+ * a rehearsal looks the same every time. Each post gets an appeal, and each
+ * resident likes it or not depending on how their own name falls against it.
+ */
+const hash = (s: string): number => {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+const seedLikes = (posts: SeedPost[], users: SeedUser[]): Set<string> => {
+  // The government account reads the feed, it does not hand out hearts.
+  const residents = users.filter((u) => u.role !== 'government')
+  const likes = new Set<string>()
+  for (const p of posts) {
+    if (p.hidden) continue
+    // 15 to 90: a quiet post still picks up one, a popular one gets most of them.
+    const appeal = 15 + (hash(p.id) % 76)
+    for (const u of residents) {
+      if (u.id === p.user_id) continue                 // nobody likes their own post
+      if (hash(`${u.id}:${p.id}`) % 100 < appeal) likes.add(`${u.id}:${p.id}`)
+    }
+  }
+  return likes
+}
+
 export function reset(): void {
   state = {
     posts: seedPosts.map((p) => ({ ...p })),
     users: seedUsers.map((u) => ({ ...u })),
-    likes: new Set(),
+    likes: seedLikes(seedPosts, seedUsers),
     balances: new Map(seedUsers.map((u) => [u.id, u.balance])),
     inventory: new Map(),
     placements: [],
@@ -320,17 +357,22 @@ export function credit(userId: string, delta: number): number {
   return next
 }
 
+/**
+ * Like and unlike are symmetric, because docs/01 section 8.8 is a ledger and a
+ * reversal is a debit rather than a missing row. Crediting the like without
+ * debiting the unlike turns the heart into a points printer: tap, untap, tap
+ * again, for as long as a judge cares to keep tapping.
+ */
 export function toggleLike(userId: string, postId: string): { liked: boolean; balance: number } {
   const key = `${userId}:${postId}`
-  if (state.likes.has(key)) {
-    state.likes.delete(key)
-    return { liked: false, balance: balance(userId) }
-  }
-  state.likes.add(key)
-  credit(userId, 1)                                   // like given: 1. docs/01 section 8.8.
   const post = state.posts.find((p) => p.id === postId)
-  if (post) credit(post.user_id, 2)                   // like received: 2.
-  return { liked: true, balance: balance(userId) }
+  // like given: 1, like received: 2. docs/01 section 8.8.
+  const sign = state.likes.has(key) ? -1 : 1
+  if (sign < 0) state.likes.delete(key)
+  else state.likes.add(key)
+  credit(userId, 1 * sign)
+  if (post) credit(post.user_id, 2 * sign)
+  return { liked: sign > 0, balance: balance(userId) }
 }
 export const likeCount = (postId: string) =>
   [...state.likes].filter((k) => k.endsWith(`:${postId}`)).length

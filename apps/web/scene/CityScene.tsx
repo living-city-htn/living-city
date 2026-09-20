@@ -70,6 +70,7 @@ function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const framedAt = useRef<number | null>(null)
+  const target = useRef(1)
 
   /*
    * Only the first fit moves the camera. Every later one changes magnification
@@ -105,11 +106,35 @@ function FrameCity({ radius }: { radius: number }) {
       framedAt.current = fit
       cam.position.set(0, fit * 0.66, fit * 0.78)
       cam.zoom = 1
-    } else {
-      cam.zoom = framedAt.current / fit
+      target.current = 1
+      cam.updateProjectionMatrix()
+      return
     }
-    cam.updateProjectionMatrix()
+    // Aimed at, not jumped to: the frame it belongs in is still moving.
+    target.current = framedAt.current / fit
   }, [camera, size.width, size.height, radius])
+
+  /*
+   * Ease into the new framing rather than cutting to it. The viewport changes
+   * shape when a screen makes room for a panel, and the panel itself slides,
+   * so a magnification that changed in one step landed before the layout had
+   * finished moving and read as the map flinching. Same damping the blocks use
+   * when they lift, so the whole scene settles the same way.
+   */
+  useFrame((_, delta) => {
+    const cam = camera as THREE.PerspectiveCamera
+    const want = target.current
+    if (Math.abs(cam.zoom - want) < 0.0005) {
+      if (cam.zoom !== want) {
+        cam.zoom = want
+        cam.updateProjectionMatrix()
+      }
+      return
+    }
+    cam.zoom += (want - cam.zoom) * Math.min(1, delta * 7)
+    cam.updateProjectionMatrix()
+  })
+
   return null
 }
 
@@ -622,7 +647,22 @@ export default function CityScene({
      * the colours as authored, which is what a cartoon miniature wants
      * anyway (PRD 8.11: flat or toon shaded, no photographic treatment).
      */
-    <Canvas flat shadows dpr={[1, 1.8]} camera={{ position: [0, 17, 23], fov: 40 }} style={{ width: '100%', height: '100%' }}>
+    <Canvas
+      flat
+      shadows
+      dpr={[1, 1.8]}
+      camera={{ position: [0, 17, 23], fov: 40 }}
+      style={{ width: '100%', height: '100%' }}
+      /*
+       * The layer holding this canvas animates when a screen makes room for a
+       * panel. Measured with no delay, every frame of that animation
+       * reallocates the drawing buffer — several megabytes, a dozen times over
+       * a fifth of a second, which is exactly when a phone can least afford
+       * it. Waiting for the movement to stop means one reallocation instead.
+       * The picture stretches a little while it settles; a hitch is worse.
+       */
+      resize={{ scroll: false, debounce: { scroll: 50, resize: 180 } }}
+    >
       <color attach="background" args={[shell.background]} />
       {/*
         No fog. The camera distance changes with the viewport shape, so a fixed

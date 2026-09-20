@@ -31,6 +31,12 @@ import type { CommunityGeo, CommunityPlan } from '@living-city/fixtures'
 const CITY_UNITS = 26
 const M_PER_DEG_LAT = 111_320
 
+/**
+ * How long the city takes to settle into a new frame, matching --slow in the
+ * stylesheet so the scene and the layout around it move over the same beat.
+ */
+const ZOOM_MS = 320
+
 type Palette = { ground: string; wall: string[]; roof: string; foliage: string; accent: string }
 
 /** Four real palettes; anything else aliases, which docs/04 section 3 allows. */
@@ -65,7 +71,10 @@ function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const framedAt = useRef<number | null>(null)
-  const target = useRef(1)
+  // Where the magnification is travelling, and since when.
+  const zoomFrom = useRef(1)
+  const zoomTo = useRef(1)
+  const startedAt = useRef(0)
 
   /*
    * Only the first fit moves the camera. Every later one changes magnification
@@ -101,32 +110,41 @@ function FrameCity({ radius }: { radius: number }) {
       framedAt.current = fit
       cam.position.set(0, fit * 0.66, fit * 0.78)
       cam.zoom = 1
-      target.current = 1
+      zoomFrom.current = 1
+      zoomTo.current = 1
       cam.updateProjectionMatrix()
       return
     }
     // Aimed at, not jumped to: the frame it belongs in is still moving.
-    target.current = framedAt.current / fit
+    const want = framedAt.current / fit
+    if (Math.abs(want - zoomTo.current) < 1e-4) return
+    // From wherever it is now, so a change that lands mid-travel bends the
+    // path instead of snapping back to the start of it.
+    zoomFrom.current = cam.zoom
+    zoomTo.current = want
+    startedAt.current = performance.now()
   }, [camera, size.width, size.height, radius])
 
   /*
-   * Ease into the new framing rather than cutting to it. The viewport changes
-   * shape when a screen makes room for a panel, and the panel itself slides,
-   * so a magnification that changed in one step landed before the layout had
-   * finished moving and read as the map flinching. Same damping the blocks use
-   * when they lift, so the whole scene settles the same way.
+   * Ease into the new framing rather than cutting to it, on the clock rather
+   * than on the frame.
+   *
+   * Moving a fraction of the remaining distance each frame looks like an ease
+   * until a frame runs long, and the frame this has to survive is the one where
+   * the canvas reallocates its drawing buffer — tens of milliseconds with the
+   * whole city in it. One long frame was enough for the step to reach the
+   * target in a single go, so the magnification arrived instantly at exactly
+   * the moment it most needed not to. Elapsed time cannot be skipped that way.
    */
-  useFrame((_, delta) => {
+  useFrame(() => {
     const cam = camera as THREE.PerspectiveCamera
-    const want = target.current
-    if (Math.abs(cam.zoom - want) < 0.0005) {
-      if (cam.zoom !== want) {
-        cam.zoom = want
-        cam.updateProjectionMatrix()
-      }
-      return
-    }
-    cam.zoom += (want - cam.zoom) * Math.min(1, delta * 7)
+    if (cam.zoom === zoomTo.current) return
+    const t = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
+    // Matches --ease, the curve the rest of the interface moves on.
+    const eased = 1 - Math.pow(1 - t, 3)
+    cam.zoom = t >= 1
+      ? zoomTo.current
+      : zoomFrom.current + (zoomTo.current - zoomFrom.current) * eased
     cam.updateProjectionMatrix()
   })
 
@@ -689,7 +707,7 @@ export default function CityScene({
        * it. Waiting for the movement to stop means one reallocation instead.
        * The picture stretches a little while it settles; a hitch is worse.
        */
-      resize={{ scroll: false, debounce: { scroll: 50, resize: 180 } }}
+      resize={{ scroll: false, debounce: { scroll: 50, resize: 90 } }}
     >
       <color attach="background" args={[shell.background]} />
       {/*

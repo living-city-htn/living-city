@@ -82,5 +82,12 @@ export type CitySceneProps = {
    * Optional, so the flat fallback compiles against this untouched.
    */
   drillCommunityId?: string | null
+  /**
+   * Bumped to bring the camera back to the selected block. Selecting the block
+   * that is already selected changes nothing the scene can see, so a "View on
+   * map" after the viewer has orbited away had no way to ask. Also app state
+   * rather than scene state, for the same reason as the drill above.
+   */
+  focusTick?: number
   onDrillChange?: (communityId: string | null) => void
 }

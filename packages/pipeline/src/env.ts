@@ -34,6 +34,29 @@ export const env = {
   geminiApiKey: () => process.env.GEMINI_API_KEY ?? '',
 
   /**
+   * Huawei OMNI, the voice perception step (T3). Never read by Call A or Call
+   * B: `getProvider()` cannot return this adapter, `voice/index.ts` builds it
+   * directly. Absent key means voice posts degrade to text-only analysis, which
+   * is a supported state and not an error.
+   */
+  omniApiKey: () => process.env.OMNI_API_KEY ?? '',
+  omniBaseUrl: () => str('OMNI_BASE_URL', 'https://api.huaweicloud.com/v1').replace(/\/$/, ''),
+  omniModel: () => str('OMNI_MODEL', 'omni-multimodal'),
+  /**
+   * Shorter than Call A's on purpose. A voice post waits for OMNI and then for
+   * Call A, so this timeout is added latency a judge stands through. Better to
+   * lose the transcript than the room.
+   */
+  omniTimeoutMs: () => num('OMNI_TIMEOUT_MS', 8000),
+  /** One retry, then give up. docs/08 section 5. */
+  omniMaxAttempts: () => num('OMNI_MAX_ATTEMPTS', 2),
+  /**
+   * Answer the voice call from canned fixtures instead of the network. Read
+   * only when no OMNI key is set, so it cannot shadow a real call by accident.
+   */
+  voiceFixtures: () => process.env.VOICE_FIXTURES === '1' && !process.env.OMNI_API_KEY,
+
+  /**
    * Call A is high volume and short: the small tier. Call B runs rarely and
    * needs the identity-versus-spike judgement: the full tier. docs/03 section
    * 9. Both are overridable without a code change because model ids move

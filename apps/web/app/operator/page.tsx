@@ -200,6 +200,14 @@ export default function OperatorPage() {
             <li key={p.id}>
               <div>
                 <strong>{p.author_name}</strong> <span className="op-hint">{p.community_id}</span>
+                {/* Advisory only. The badge labels the row and sorts nothing;
+                    it never hides a post and never changes a block. */}
+                {p.authenticity && (
+                  <span className="op-badge" data-label={p.authenticity.label}>
+                    {p.authenticity.label} {Math.round(p.authenticity.human * 100)}%
+                  </span>
+                )}
+                {p.unverified && <span className="op-badge" data-label="unverified">unverified</span>}
                 <p>{p.text}</p>
               </div>
               <button className="op-btn op-btn-sm" data-tone="warn" disabled={busy !== ''}

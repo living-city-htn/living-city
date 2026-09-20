@@ -18,6 +18,17 @@ export type ImagePart = {
   data: string
 }
 
+/**
+ * A recording sent to the model inline. The voice call only; Call A and Call B
+ * never receive audio. Added for T3 (OMNI), and the reason `images` is not
+ * simply reused is that a provider encodes the two differently.
+ */
+export type AudioPart = {
+  mimeType: string
+  /** base64, no data: prefix */
+  data: string
+}
+
 export type ModelRequest = {
   /**
    * The fixed prefix: role framing, rules, taxonomy. Byte-identical between
@@ -29,6 +40,8 @@ export type ModelRequest = {
   payload: unknown
   schema: JsonSchema
   images?: ImagePart[]
+  /** Voice call only. A provider that cannot hear must reject the request. */
+  audio?: AudioPart | null
   model: string
   maxOutputTokens: number
   /** Appended on the retry attempt only. docs/03 section 7. */

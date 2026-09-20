@@ -17,6 +17,9 @@ export type PostRow = {
   author_name: string
   likes: number
   liked: boolean
+  /** Advisory authenticity, null when the gate is off or had no opinion. */
+  authenticity?: { human: number; label: string; chars: number } | null
+  unverified?: boolean
 }
 
 /** What the panel shows. Pipeline's real `SemanticState` is richer. */

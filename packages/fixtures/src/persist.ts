@@ -21,6 +21,10 @@ export type Serialized = {
   posts: unknown[]
   users: unknown[]
   likes: string[]
+  /** Likes that have already awarded their one-time points credit. */
+  likeCredits?: string[]
+  /** Legacy posts whose past like-credit history cannot be reconstructed. */
+  likeCreditBlockedPostIds?: string[]
   balances: Array<[string, number]>
   inventory: Array<[string, Array<[string, number]>]>
   placements: unknown[]

@@ -239,6 +239,14 @@ rest of the stub, so a cold process or a reset starts unpaused. The operator
 panel therefore shows the live value rather than its own idea of it, and the
 operator can see that it flipped back.
 
-Identity is still Civic's: judges land as the stub's fixed user until the
-device-bound account middleware lands. Nothing on this page changes when it
-does.
+Identity is Civic's: judges land as a device-bound resident, and the operator
+can bind one configured device to the seeded government account.
+
+## Device identity and government access (Civic, Stage 1)
+
+`apps/web/middleware.ts` creates an `httpOnly`, same-site `living-city-device`
+cookie and forwards its value to API handlers. Civic resolves that opaque value
+to one stable resident account; it never accepts a role from the request body.
+To bind the seeded government account, set `GOVERNMENT_DEVICE_ID` to the
+operator browser's cookie value in the deployment environment. Leave it blank
+and every device remains a resident. The Government desk is at `/government`.

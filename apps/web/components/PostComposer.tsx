@@ -20,6 +20,7 @@ import type { CityPayload } from './city'
 import { cameraErrorMessage, canUseLiveCamera } from '@/lib/post-camera'
 import { preparePhoto } from '@/lib/post-photo'
 import { nearestCommunity } from '@/lib/post-location'
+import { locationErrorMessage, locationOptions } from '@/lib/device-location'
 import {
   VOICE_POSTS, checkRecording, createRecorder, formatDuration, recorderMessage,
   secondsRemaining, toDataUrl, voiceNotice, type Recording, type RecorderHandle,
@@ -225,28 +226,36 @@ export default function PostComposer({
     const request = ++locationRequest.current
     setLocating(true)
     setError('')
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        if (request !== locationRequest.current) return
-        setLocating(false)
-        const { longitude: lon, latitude: lat } = position.coords
-        const community = nearestCommunity(city.communities, lon, lat)
-        if (!community) {
-          setError('Could not match your location. Choose a community or tap the map.')
-          return
-        }
-        onLocation({
-          community_id: community.community_id, lon, lat,
-          label: `${community.name} · Nearest community to your location`,
-        })
-      },
-      () => {
-        if (request !== locationRequest.current) return
-        setLocating(false)
-        setError('Location could not be found. Choose a community or tap the map.')
-      },
-      { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true },
-    )
+    const resolve = (position: GeolocationPosition) => {
+      if (request !== locationRequest.current) return
+      setLocating(false)
+      const { longitude: lon, latitude: lat } = position.coords
+      const community = nearestCommunity(city.communities, lon, lat)
+      if (!community) {
+        setError('Could not match your location. Choose a community or tap the map.')
+        return
+      }
+      onLocation({
+        community_id: community.community_id, lon, lat,
+        label: `${community.name} · Nearest community to your location`,
+      })
+    }
+    const retry = (failure: GeolocationPositionError) => {
+      if (request !== locationRequest.current) return
+      // High accuracy frequently times out indoors on phones. A cached or
+      // network location is still sufficient to select the nearest block.
+      if (failure.code !== 1) {
+        navigator.geolocation.getCurrentPosition(resolve, (fallbackFailure) => {
+          if (request !== locationRequest.current) return
+          setLocating(false)
+          setError(locationErrorMessage(fallbackFailure))
+        }, locationOptions(true))
+        return
+      }
+      setLocating(false)
+      setError(locationErrorMessage(failure))
+    }
+    navigator.geolocation.getCurrentPosition(resolve, retry, locationOptions(false))
   }
 
   const submit = async (withoutPhoto = false) => {

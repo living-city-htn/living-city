@@ -427,7 +427,27 @@ export function hidePost(postId: string, reason: 'auto' | 'operator'): SeedPost 
   return post
 }
 
-export const balance = (userId: string) => state.balances.get(userId) ?? 0
+/**
+ * What an account has before it has done anything.
+ *
+ * Every phone that scans the QR gets its own `device:` id and its own empty
+ * ledger, so judges used to arrive at zero. Moment 5 is "spend the points: open
+ * the shop, buy a decoration, place it", the cheapest thing in the shop is 20,
+ * and one post earns 10 — so the first thing a judge was asked to do was
+ * something they could not afford.
+ *
+ * Sixty is the price of the most expensive thing one post should reach: it buys
+ * any of the six except the fountain and the sculpture, which stay as something
+ * to earn. docs/04 section 3, "priced so one demo post buys one".
+ */
+export const STARTING_BALANCE = 60
+
+/**
+ * `??`, not `||`. An account that has spent its way to zero has a ledger entry
+ * saying zero, and must not be handed sixty more every time it is read. Only an
+ * account with no entry at all is new.
+ */
+export const balance = (userId: string) => state.balances.get(userId) ?? STARTING_BALANCE
 export function credit(userId: string, delta: number): number {
   const next = balance(userId) + delta
   state.balances.set(userId, next)

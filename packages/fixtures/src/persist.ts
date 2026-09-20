@@ -21,6 +21,11 @@ export type Serialized = {
   posts: unknown[]
   users: unknown[]
   likes: string[]
+  /**
+   * Like keys that have already paid out. Optional: a row written before points
+   * became once-per-pair does not carry it, and its likes stand in for it.
+   */
+  rewardedLikes?: string[]
   balances: Array<[string, number]>
   inventory: Array<[string, Array<[string, number]>]>
   placements: unknown[]

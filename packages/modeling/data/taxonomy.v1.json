@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "enums": {
+    "activity_type": ["eating", "drinking", "shopping", "working", "studying", "exercising", "commuting", "relaxing", "socializing", "performing", "creating", "sightseeing", "attending_event", "unknown"],
+    "place_type": ["cafe", "restaurant", "bar", "park", "street", "plaza", "shop", "office", "school", "home", "transit", "venue", "waterfront", "market", "gym", "unknown"],
+    "content_flags": ["spam", "advertising", "not_about_place", "unsafe", "unclear", "image_only", "image_missing", "no_community", "instruction_like", "empty"],
+    "incident_type": ["none", "flooding", "fallen_tree", "road_blocked", "power_outage", "fire", "accident", "infrastructure_damage", "snow_ice", "sanitation", "safety_concern", "noise", "other"],
+    "tags": ["coffee", "brunch", "late_night", "live_music", "street_art", "mural", "farmers_market", "food_truck", "patio", "dog_walking", "running", "cycling", "skateboarding", "students", "tourists", "families", "crowded", "quiet", "cozy", "historic", "modern", "waterfront", "garden", "playground", "festival", "sports_game", "construction", "traffic", "rain", "snow", "sunset", "holiday_decor", "pop_up", "coworking", "gallery", "theatre", "library", "campus", "cleanup", "protest_or_rally", "night_out"],
+    "archetype": ["residential_quiet", "residential_lively", "commercial_core", "nightlife_district", "creative_quarter", "green_retreat", "campus_hub", "waterfront_leisure", "civic_center", "transit_hub", "maker_industrial", "market_street", "mixed_use_default"],
+    "mood": ["cozy", "vibrant", "serene", "busy", "gritty", "festive", "melancholic", "focused", "playful", "elegant"],
+    "palette": ["warm_pastel", "cool_pastel", "neon_night", "earthy_green", "soft_grey", "sunset_orange", "ocean_blue", "brick_red", "candy_pop", "default_city"],
+    "identity_tags": ["modern", "historic", "brick", "glass", "wood", "colorful", "minimal", "industrial", "cozy", "upscale", "student", "family", "tourist", "bohemian"],
+    "height_profile": ["low", "low_mid", "mid", "mid_high", "high"],
+    "building_categories": ["residential", "retail", "cafe_bar", "office", "cultural_civic", "campus_industrial"],
+    "vegetation_types": ["street_trees", "mature_trees", "park_lawn", "flower_beds", "hedges", "wild_meadow", "planters", "rooftop_green"],
+    "behaviors": ["walking", "sitting", "jogging", "dancing", "cycling", "dining", "shopping", "performing", "dog_walking", "skateboarding", "studying", "queueing"],
+    "decorations": ["string_lights", "banners", "mural", "sculpture", "fountain", "food_trucks", "market_stalls", "benches", "bike_racks", "neon_signs", "outdoor_seating", "playground", "sports_court", "stage", "kiosks", "flags", "lanterns", "graffiti", "construction_barriers", "bus_shelter"],
+    "lighting_accents": ["streetlamps_warm", "streetlamps_cool", "window_glow", "neon", "string_lights", "lanterns", "spotlights"],
+    "effects": ["fireflies", "confetti", "music_notes", "falling_leaves", "rain", "snow", "fog", "sparkles", "steam", "birds", "fireworks", "heart_particles"],
+    "hero_asset": ["clock_tower", "stadium", "ferris_wheel", "museum", "market_hall", "concert_hall", "giant_tree", "fountain_plaza", "lighthouse", "university_hall", "transit_station", "observation_deck"],
+    "dominant_zoning": ["residential", "commercial", "mixed", "industrial", "institutional", "green", "unknown"]
+  },
+  "zoning_defaults": {
+    "residential": { "archetype": "residential_quiet", "identity_tags": ["family", "brick"], "density": 2, "height_profile": "low", "building_composition": { "residential": 75, "retail": 10, "cafe_bar": 5, "office": 0, "cultural_civic": 10, "campus_industrial": 0 }, "vegetation": { "level": 3, "types": ["street_trees", "hedges"] }, "mood": "serene", "palette": "warm_pastel" },
+    "commercial": { "archetype": "commercial_core", "identity_tags": ["modern", "glass"], "density": 4, "height_profile": "mid", "building_composition": { "residential": 15, "retail": 40, "cafe_bar": 15, "office": 25, "cultural_civic": 5, "campus_industrial": 0 }, "vegetation": { "level": 1, "types": ["planters"] }, "mood": "busy", "palette": "soft_grey" },
+    "mixed": { "archetype": "mixed_use_default", "identity_tags": ["brick", "modern"], "density": 3, "height_profile": "low_mid", "building_composition": { "residential": 40, "retail": 25, "cafe_bar": 20, "office": 10, "cultural_civic": 5, "campus_industrial": 0 }, "vegetation": { "level": 2, "types": ["street_trees", "planters"] }, "mood": "focused", "palette": "default_city" },
+    "industrial": { "archetype": "maker_industrial", "identity_tags": ["industrial", "minimal"], "density": 2, "height_profile": "low", "building_composition": { "residential": 5, "retail": 10, "cafe_bar": 5, "office": 15, "cultural_civic": 0, "campus_industrial": 65 }, "vegetation": { "level": 1, "types": ["wild_meadow"] }, "mood": "gritty", "palette": "soft_grey" },
+    "institutional": { "archetype": "civic_center", "identity_tags": ["historic", "minimal"], "density": 3, "height_profile": "low_mid", "building_composition": { "residential": 10, "retail": 10, "cafe_bar": 10, "office": 20, "cultural_civic": 50, "campus_industrial": 0 }, "vegetation": { "level": 3, "types": ["park_lawn", "mature_trees"] }, "mood": "focused", "palette": "soft_grey" },
+    "green": { "archetype": "green_retreat", "identity_tags": ["family", "wood"], "density": 1, "height_profile": "low", "building_composition": { "residential": 40, "retail": 10, "cafe_bar": 20, "office": 0, "cultural_civic": 30, "campus_industrial": 0 }, "vegetation": { "level": 5, "types": ["mature_trees", "park_lawn", "wild_meadow"] }, "mood": "serene", "palette": "earthy_green" },
+    "unknown": { "archetype": "mixed_use_default", "identity_tags": ["minimal", "modern"], "density": 2, "height_profile": "low", "building_composition": { "residential": 50, "retail": 20, "cafe_bar": 15, "office": 5, "cultural_civic": 10, "campus_industrial": 0 }, "vegetation": { "level": 2, "types": ["street_trees"] }, "mood": "serene", "palette": "default_city" }
+  }
+}

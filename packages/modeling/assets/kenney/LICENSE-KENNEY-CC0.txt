@@ -1,0 +1,15 @@
+Selected source models in this directory are derivatives of the following
+Kenney asset packs, each released under Creative Commons Zero 1.0 Universal
+(CC0-1.0):
+
+- City Kit Commercial 2.1 (2025-07-21)
+- City Kit Suburban 2.0 (2025-04-23)
+- City Kit Roads 2.1 (2026-08-18)
+- Blocky Characters 2.0 (2025-06-10)
+
+Source: https://kenney.nl/assets/
+License: https://creativecommons.org/publicdomain/zero/1.0/
+
+The committed GLB copies are a selected subset converted with glTF Transform
+to add KHR_draco_mesh_compression. No attribution is required by CC0; this
+notice retains the source and transformation record.

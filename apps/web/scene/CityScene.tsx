@@ -16,7 +16,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRe
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
-import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
+import { buildingAsset, decorationAsset, heroAssetId, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
 import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
 import { e7EventLabel, isE7FestivalLive } from './e7-event'
@@ -655,10 +655,20 @@ function Block({
   const civicHallPosition = civicHallCell ? [civicHallCell.x / SCALE, -civicHallCell.y / SCALE] as [number, number] : null
   const tornadoDrill = isCivicHallDrill(community.community_id, drillActive)
   const e7Festival = isE7FestivalLive(community.community_id, plan?.mood)
+  const heroId = heroAssetId(plan?.hero_asset)
+  const landmarkIndex = useMemo(() => {
+    if (!heroId) return -1
+    // A plaza is central and open. If there is none, reserve a generic
+    // building lot rather than replacing the civic-hall marker.
+    const plazaIndex = cells.findIndex((cell) => cell.kind === 'plaza')
+    if (plazaIndex >= 0) return plazaIndex
+    return cells.findIndex((cell, index) => cell.kind === 'building' && index !== civicHallIndex)
+  }, [cells, civicHallIndex, heroId])
+  const landmark = landmarkIndex >= 0 ? cells[landmarkIndex] : undefined
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
-      if (i === pondIndex || cell.kind === 'plaza') return
+      if (i === pondIndex || i === landmarkIndex || cell.kind === 'plaza') return
       const id = cell.kind === 'building'
         ? i === civicHallIndex ? 'civic-01' : buildingAsset(cell, community.land_use_hints.campus)
         : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
@@ -669,7 +679,7 @@ function Block({
       groups.set(id, group)
     })
     return groups
-  }, [cells, pondIndex, civicHallIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
+  }, [cells, pondIndex, landmarkIndex, civicHallIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
   const proceduralCell = (cell: Cell, i: number) => {
     const width = cell.size / SCALE * 0.72
     const height = cell.kind === 'building' ? (cell.storeys ?? 1) * 0.16 : width * 1.3
@@ -727,6 +737,15 @@ function Block({
       {tornadoDrill && civicHallPosition && <TornadoDrill position={civicHallPosition} />}
       {e7Festival && <E7EventLabel effects={plan?.effects ?? []} />}
       {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
+      {heroId && landmark && (
+        <group position={[landmark.x / SCALE, 0.27, -landmark.y / SCALE]}>
+          <SceneAsset
+            assetId={heroId}
+            width={(landmark.size / SCALE) * (0.72 + (plan?.hero_asset?.prominence ?? 1) * 0.1)}
+            fallback={<ProceduralDecoration tag={plan?.hero_asset?.tag ?? ''} palette={palette} />}
+          />
+        </group>
+      )}
       {cells.map((cell, i) => {
         if (cell.kind !== 'plaza') return null
         const x = cell.x / SCALE

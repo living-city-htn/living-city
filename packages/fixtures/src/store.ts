@@ -253,14 +253,18 @@ export const deserializeState = (d: Serialized): FixtureState => {
     balances: new Map(d.balances),
     inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
     placements,
-    // Older rows predate this field; an absent one is an empty list, not a crash.
+    // Rows written before private buildings were introduced remain readable;
+    // an absent field is an empty list, not a crash.
     buildings: (d.buildings ?? []) as UserBuilding[],
     plans: new Map(d.plans as Array<[string, CommunityPlan]>),
     incidents: d.incidents as Incident[],
     updatedAt: d.updatedAt,
-    seq: Math.max(d.seq, largestIdSuffix(d.posts, 'p'), largestIdSuffix(d.placements, 'pl')),
-    qrPaused: d.qrPaused,
+    // Heal existing durable rows that were written before post ids were made
+    // collision-safe, while keeping placements on the shared sequence.
+    seq: Math.max(d.seq, highestPostSeq(posts), largestIdSuffix(d.placements, 'pl')),
+    // Rows written before retry stamps existed are still safe to load.
     recentWrites: d.recentWrites ?? [],
+    qrPaused: d.qrPaused,
   }
 }
 

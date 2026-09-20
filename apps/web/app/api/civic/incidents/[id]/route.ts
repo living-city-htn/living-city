@@ -28,9 +28,7 @@ export async function PATCH(req: Request, ctx: RouteCtx<{ id: string }>) {
   if (!incident) return notFound('no such incident')
 
   // A human has now decided this row, so the civic agent may not change it
-  // again. `staffTouched` already infers this from a verified status; the lock
-  // is the explicit record, and it survives a later status change.
-  // Inert when SIGNAL_LAYER is off - the store is module memory either way.
+  // again. The lock is explicit and remains harmless when SIGNAL_LAYER is off.
   lockField(id)
 
   return json({ incident })

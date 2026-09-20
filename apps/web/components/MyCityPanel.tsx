@@ -104,7 +104,19 @@ export default function MyCityPanel({
         {message && !error && <p className="shop-feedback" role="status">{message}</p>}
 
         {!snapshot ? (
-          !error && <p className="muted" role="status">Loading your city…</p>
+          /*
+            Holds the same box the loaded panel will fill. This sheet reports
+            its height to the map, so growing when the data lands moved the map
+            a second time, a beat after it had already settled from the tab
+            change — one stutter made of two eased steps.
+          */
+          !error && (
+            <>
+              <p className="sr-only" role="status">Loading your city…</p>
+              <span className="sk sk-line" aria-hidden="true" />
+              <span className="sk sk-button" aria-hidden="true" />
+            </>
+          )
         ) : owned.length === 0 ? (
           <div className="inventory-empty"><p className="muted">
             {placed > 0

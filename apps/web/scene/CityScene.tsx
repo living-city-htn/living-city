@@ -12,7 +12,7 @@
  * Props and events are exactly docs/roles/3d.md. `blockPick` emits [lon, lat],
  * not scene space, because the post flow uses it as a location (PRD 8.12).
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
@@ -35,6 +35,19 @@ import type { CommunityGeo, CommunityPlan } from '@living-city/fixtures'
  */
 const CITY_UNITS = 26
 const M_PER_DEG_LAT = 111_320
+
+/**
+ * How long the city takes to settle into a new frame, matching --slow in the
+ * stylesheet so the scene and the layout around it move over the same beat.
+ */
+const ZOOM_MS = 320
+
+/**
+ * One shared empty list. Handing a block a fresh `[]` each render changes the
+ * identity of a prop that nothing about the block actually changed, which is
+ * enough to throw away everything memoised behind it.
+ */
+const NO_SLOTS: ReadonlyArray<{ slot_id: string; x: number; y: number }> = []
 
 type Palette = { ground: string; wall: string[]; roof: string; foliage: string; accent: string }
 
@@ -68,48 +81,143 @@ function ringOf(c: CommunityGeo): Array<[number, number]> {
  */
 function FrameCity({ radius }: { radius: number }) {
   const camera = useThree((s) => s.camera)
-  const size = useThree((s) => s.size)
+  const gl = useThree((s) => s.gl)
+  const setSize = useThree((s) => s.setSize)
   const framedAt = useRef<number | null>(null)
+  // Where the magnification is travelling, and since when.
+  const zoomFrom = useRef(1)
+  const zoomTo = useRef(1)
+  const startedAt = useRef(0)
+  // How far the picture is being held from where the resize put it, in pixels.
+  const holdFrom = useRef(0)
+  const lastCentre = useRef<number | null>(null)
+  const box = useRef({ width: 0, height: 0 })
 
   /*
-   * Only the first fit moves the camera. Every later one changes magnification
-   * instead, because moving the camera on a resize throws away whatever the
-   * person was looking at — and the viewport resizes constantly: opening a
-   * block's card insets it, and on a phone the URL bar sliding away does too.
-   * Tapping a block used to reset your orbit, your pan and your pinch, which
-   * read on screen as the map lurching.
+   * This measures the canvas itself rather than waiting to be told its size.
    *
-   * `fit` is the distance at which the city exactly fills the frame, so
-   * `framedAt / fit` is the magnification that holds its apparent size through
-   * any change of shape. It is absolute rather than accumulated, so closing the
-   * card returns the zoom to exactly 1 with nothing left drifting.
+   * The renderer's own measurement arrives a couple of hundred milliseconds
+   * late. That does not matter while nothing moves, but a screen change moves
+   * the canvas's box immediately: for those two hundred milliseconds the
+   * picture was still drawn at its old height in its new place, sitting well
+   * below where it belonged, and then it snapped up when the measurement
+   * finally landed. Too quick to read as movement, plenty quick enough to see.
    *
-   * This works because nothing else writes `zoom`: OrbitControls dollies a
-   * perspective camera by moving it, and only touches `zoom` for an
-   * orthographic one. If this scene ever goes orthographic, that stops being
-   * true and this has to go back to driving distance. Picking is unaffected —
-   * unprojection runs through the projection matrix, which includes zoom.
-   *
-   * A layout effect, not an effect: React Three Fiber has already written the
-   * new aspect into the camera by this point, and the correction has to land in
-   * the same frame or the city visibly pops before it settles.
+   * A resize observer runs after layout and before the frame is painted, so
+   * measuring, resizing and compensating here all land in the same frame the
+   * box changed in, and there is no interval where the two disagree.
    */
   useLayoutEffect(() => {
+    const host = gl.domElement.parentElement
+    if (!host) return
+
+    const fit = (width: number, height: number) => {
+      const cam = camera as THREE.PerspectiveCamera
+      const vFov = (cam.fov * Math.PI) / 180
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (width / height))
+      return Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
+    }
+
+    const measure = () => {
+      const cam = camera as THREE.PerspectiveCamera
+      const rect = host.getBoundingClientRect()
+      const { width, height } = rect
+      // A collapsed box has no shape worth fitting to; wait for a real one.
+      if (width < 2 || height < 2) return
+      if (width === box.current.width && height === box.current.height) return
+      box.current = { width, height }
+
+      setSize(width, height)
+      const distance = fit(width, height)
+
+      if (framedAt.current === null) {
+        framedAt.current = distance
+        cam.position.set(0, distance * 0.66, distance * 0.78)
+        cam.zoom = 1
+        zoomFrom.current = 1
+        zoomTo.current = 1
+        lastCentre.current = rect.top + height / 2
+        cam.updateProjectionMatrix()
+        return
+      }
+
+      /*
+       * The box just changed, which moves the picture twice over: it is drawn
+       * centred, so a shorter canvas re-centres it, and it needs different
+       * magnification to still fit. Both land together, so note where the
+       * picture was and hold it there; easing the hold back to nothing, and
+       * the magnification with it, turns one jump into one movement.
+       */
+      const centre = rect.top + height / 2
+      const shift = (lastCentre.current ?? centre) - centre
+      lastCentre.current = centre
+
+      const want = framedAt.current / distance
+      if (Math.abs(want - zoomTo.current) < 1e-4 && Math.abs(shift) < 0.5) return
+
+      // Whatever of the last hold has not been given back yet. A second resize
+      // lands often — a sheet reports its height a beat after the screen
+      // changes — and dropping the remainder would hand back the rest of that
+      // movement in one frame, which is the flick this exists to avoid.
+      const elapsed = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
+      const remaining = holdFrom.current * Math.pow(1 - elapsed, 3)
+
+      zoomFrom.current = cam.zoom
+      zoomTo.current = want
+      holdFrom.current = remaining + shift
+      startedAt.current = performance.now()
+
+      // Applied now, not left to the next frame, so nothing is ever painted at
+      // the jumped position.
+      if (Math.abs(holdFrom.current) >= 0.5) {
+        cam.setViewOffset(width, height, 0, -holdFrom.current, width, height)
+      } else {
+        holdFrom.current = 0
+        cam.clearViewOffset()
+      }
+      cam.updateProjectionMatrix()
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(host)
+    return () => observer.disconnect()
+  }, [camera, gl, setSize, radius])
+
+  /*
+   * Ease into the new framing rather than cutting to it, on the clock rather
+   * than on the frame.
+   *
+   * Moving a fraction of the remaining distance each frame looks like an ease
+   * until a frame runs long, and the frame this has to survive is the one where
+   * the canvas reallocates its drawing buffer with the whole city in it. One
+   * long frame was enough for the step to reach the target in a single go, so
+   * the magnification arrived instantly at exactly the moment it most needed
+   * not to. Elapsed time cannot be skipped that way.
+   */
+  useFrame(() => {
     const cam = camera as THREE.PerspectiveCamera
-    // A collapsed viewport has no aspect worth fitting to; wait for a real one.
-    if (size.width < 2 || size.height < 2) return
-    const vFov = (cam.fov * Math.PI) / 180
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (size.width / size.height))
-    const fit = Math.max(radius / Math.tan(vFov / 2), radius / Math.tan(hFov / 2)) * 1.04
-    if (framedAt.current === null) {
-      framedAt.current = fit
-      cam.position.set(0, fit * 0.66, fit * 0.78)
-      cam.zoom = 1
+    if (cam.zoom === zoomTo.current && holdFrom.current === 0) return
+
+    const t = Math.min(1, (performance.now() - startedAt.current) / ZOOM_MS)
+    // Matches --ease, the curve the rest of the interface moves on.
+    const eased = 1 - Math.pow(1 - t, 3)
+
+    cam.zoom = t >= 1
+      ? zoomTo.current
+      : zoomFrom.current + (zoomTo.current - zoomFrom.current) * eased
+
+    // Releasing the hold is what carries the picture to where it now belongs.
+    const hold = holdFrom.current * (1 - eased)
+    if (t >= 1 || Math.abs(hold) < 0.5) {
+      holdFrom.current = 0
+      cam.clearViewOffset()
     } else {
-      cam.zoom = framedAt.current / fit
+      cam.setViewOffset(box.current.width, box.current.height, 0, -hold, box.current.width, box.current.height)
     }
     cam.updateProjectionMatrix()
-  }, [camera, size.width, size.height, radius])
+  })
+
   return null
 }
 
@@ -570,7 +678,7 @@ function TornadoDrill({ position }: { position: [number, number] }) {
 }
 
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
-function Block({
+const Block = memo(function Block({
   community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
 }: {
   scale: number
@@ -581,8 +689,8 @@ function Block({
   state: 'idle' | 'hovered' | 'selected'
   planning: boolean
   drillActive: boolean
-  terrainSlots: Array<{ x: number; y: number }>
-  slots: Array<{ slot_id: string; x: number; y: number }>
+  terrainSlots: ReadonlyArray<{ x: number; y: number }>
+  slots: ReadonlyArray<{ slot_id: string; x: number; y: number }>
   placements: Map<string, string>
   onHover: (id: string | null) => void
   onSelect: (id: string) => void
@@ -785,7 +893,7 @@ function Block({
       })}
     </group>
   )
-}
+})
 
 /**
  * The scene takes its surround from the app's own CSS variables rather than
@@ -827,6 +935,34 @@ export default function CityScene({
     () => new Map(placements.map((p) => [`${p.community_id}/${p.slot_id}`, p.item_tag])),
     [placements],
   )
+
+  /*
+   * Grouped once instead of filtered per block per render.
+   *
+   * Filtering in the render handed every block a new array each time, and a
+   * block's pond, and through it the whole set of models it draws, is memoised
+   * against that array. So every render — a hover, a poll, a tab — rebuilt the
+   * models for all twenty-seven blocks. Switching to My City cost 378ms of
+   * blocked main thread, which is the stutter you see rather than any
+   * animation being wrong.
+   */
+  // Stable, so a block is not re-rendered merely by a new closure.
+  const hover = useCallback((id: string | null) => onBlockHover?.(id), [onBlockHover])
+  const select = useCallback((id: string) => onBlockSelect?.(id), [onBlockSelect])
+  const pick = useCallback(
+    (id: string, point: [number, number]) => onBlockPick?.(id, point),
+    [onBlockPick],
+  )
+
+  const slotsFor = useMemo(() => {
+    const byCommunity = new Map<string, Array<{ slot_id: string; x: number; y: number }>>()
+    for (const slot of city.slots) {
+      const list = byCommunity.get(slot.community_id)
+      if (list) list.push(slot)
+      else byCommunity.set(slot.community_id, [slot])
+    }
+    return byCommunity
+  }, [city.slots])
 
   /**
    * The middle of the city's extent, not the average of its centroids. Averaging
@@ -892,7 +1028,13 @@ export default function CityScene({
      * the colours as authored, which is what a cartoon miniature wants
      * anyway (PRD 8.11: flat or toon shaded, no photographic treatment).
      */
-    <Canvas flat shadows dpr={[1, 1.8]} camera={{ position: [0, 17, 23], fov: 40 }} style={{ width: '100%', height: '100%' }}>
+    <Canvas
+      flat
+      shadows
+      dpr={[1, 1.8]}
+      camera={{ position: [0, 17, 23], fov: 40 }}
+      style={{ width: '100%', height: '100%' }}
+    >
       <color attach="background" args={[shell.background]} />
       {/*
         No fog. The camera distance changes with the viewport shape, so a fixed
@@ -938,12 +1080,12 @@ export default function CityScene({
           state={selectedId === community.community_id ? 'selected' : 'idle'}
           planning={planningIds.includes(community.community_id)}
           drillActive={drillActive}
-          terrainSlots={city.slots.filter((s) => s.community_id === community.community_id)}
-          slots={mode === 'mine' ? city.slots.filter((s) => s.community_id === community.community_id) : []}
+          terrainSlots={slotsFor.get(community.community_id) ?? NO_SLOTS}
+          slots={mode === 'mine' ? slotsFor.get(community.community_id) ?? NO_SLOTS : NO_SLOTS}
           placements={held}
-          onHover={(id) => onBlockHover?.(id)}
-          onSelect={(id) => onBlockSelect?.(id)}
-          onPick={(id, point) => onBlockPick?.(id, point)}
+          onHover={hover}
+          onSelect={select}
+          onPick={pick}
           onSlotTap={onSlotTap}
         />
       ))}

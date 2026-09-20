@@ -177,6 +177,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .sk { background: var(--fill); border-radius: 8px; animation: sk-pulse 1.3s var(--ease) infinite; }
 .sk-button { display: block; width: 100%; height: 44px; border-radius: 12px; margin-bottom: 8px; }
 .sk-chip { display: inline-block; width: 12ch; height: 1em; vertical-align: -.15em; border-radius: 6px; }
+.sk-line { display: block; width: 70%; height: 1.4em; margin-bottom: 12px; }
 @keyframes sk-pulse { 50% { opacity: .5; } }
 
 /* Used by .pick-bar and the block card. This was referenced by name long

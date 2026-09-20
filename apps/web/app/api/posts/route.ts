@@ -1,5 +1,5 @@
 import {
-  balance, createPost, hidePost, listCommunities, listPosts, read, write,
+  applyEventFromPost, balance, createPost, hidePost, listCommunities, listPosts, read, write,
 } from '@living-city/fixtures/store'
 import { badRequest, currentUser, json, readJson, withPostMeta } from '@/lib/stub'
 import { nearestCommunity } from '@/lib/post-location'
@@ -127,7 +127,15 @@ export async function POST(req: Request) {
   }
 
   if (!pipelineEnabled()) {
-    return json({ ...created, voice: voiceSummary(voice) }, 201)
+    // Nothing else in the stub ever moves a plan, so a post would land and the
+    // city would sit there. `city_event` names the block this post just changed
+    // — usually null — so the app knows which block to watch instead of
+    // assuming it is the one the post was filed under. Hack the North is at the
+    // venue no matter whose phone it came from.
+    const changed = await write(() => applyEventFromPost(created.post))
+    return json({
+      ...created, voice: voiceSummary(voice), city_event: changed?.community_id ?? null,
+    }, 201)
   }
 
   // Call A runs inline, before the response, because Vercel has no worker to

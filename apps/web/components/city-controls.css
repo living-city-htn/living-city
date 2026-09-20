@@ -57,20 +57,6 @@
   .placement-slot { min-height: 64px; gap: 1px; padding-block: 6px; }
   .placement-controls > p { margin: 6px 0 0; font-size: 13px; }
 }
-/* --- Building composer. Private layer; see BuildingComposer.tsx. --------- */
-.building-composer { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--hair, #dce5ed); display: grid; gap: 10px; }
-.building-field { display: grid; gap: 4px; font-size: 0.9rem; }
-.building-field > span { font-weight: 600; }
-.building-field textarea { width: 100%; min-height: 62px; padding: 8px; border: 1px solid var(--hair, #dce5ed); border-radius: 10px; background: var(--paper, #f5f8fc); color: inherit; font: inherit; resize: vertical; }
-.building-field input[type="file"] { font: inherit; }
-.building-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid var(--hair, #dce5ed); }
-.building-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
-.building-card { padding: 10px 12px; border: 1px solid var(--hair, #dce5ed); border-radius: 12px; background: var(--paper, #f5f8fc); display: grid; gap: 4px; }
-.building-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.building-card p { margin: 0; }
-.building-meta { font-size: 0.82rem; opacity: 0.75; text-transform: capitalize; }
-.building-tags { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
-.building-tags li { padding: 2px 8px; border-radius: 999px; background: var(--fill, #e8eef6); font-size: 0.76rem; text-transform: capitalize; }
 .link-button { border: 0; background: none; padding: 0; color: inherit; opacity: 0.7; text-decoration: underline; font: inherit; }
 
 @media (min-width: 900px) {
@@ -85,5 +71,4 @@
   .inventory-panel .shop-explainer, .inventory-panel .shop-feedback { grid-column: 1 / -1; }
   .inventory-panel .placement-controls { grid-column: 2; grid-row: 2; }
   .inventory-panel .inventory-empty { grid-column: 1; }
-  .inventory-panel .building-composer { grid-column: 1 / -1; }
 }

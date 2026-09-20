@@ -83,6 +83,7 @@ function FrameCity({ radius, city, mode }: {
 }) {
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
+  const scene = useThree((s) => s.scene)
   const setSize = useThree((s) => s.setSize)
   const framedAt = useRef<number | null>(null)
   const box = useRef({ width: 0, height: 0 })
@@ -120,6 +121,13 @@ function FrameCity({ radius, city, mode }: {
   }, [mode])
 
   /*
+   * It also draws before returning. Resizing a canvas does not redraw it: the
+   * browser paints the frame it already had, stretched into the new box, and
+   * the corrected picture only arrives on the next animation frame. That is
+   * one frame of the city at the wrong size in the wrong place, which is the
+   * flicker — the map appearing to jump and come back before anything has
+   * begun to move. Drawing here lands it before the paint that would show it.
+   *
    * This measures the canvas itself rather than waiting to be told its size.
    * The renderer's own measurement arrives a couple of hundred milliseconds
    * late, and a screen change moves the canvas's box immediately, so for those
@@ -153,6 +161,7 @@ function FrameCity({ radius, city, mode }: {
         pendingZoom.current = 1
         lastCentre.current = centre
         cam.updateProjectionMatrix()
+        gl.render(scene, cam)
         return
       }
 
@@ -171,6 +180,7 @@ function FrameCity({ radius, city, mode }: {
         cam.clearViewOffset()
         cam.zoom = want
         cam.updateProjectionMatrix()
+        gl.render(scene, cam)
         return
       }
 
@@ -190,6 +200,7 @@ function FrameCity({ radius, city, mode }: {
         cam.clearViewOffset()
       }
       cam.updateProjectionMatrix()
+      gl.render(scene, cam)
 
       // Already on the way out: let it carry on rather than starting again.
       if (phase.current !== 'out') {
@@ -202,7 +213,7 @@ function FrameCity({ radius, city, mode }: {
     const observer = new ResizeObserver(measure)
     observer.observe(host)
     return () => observer.disconnect()
-  }, [camera, gl, setSize, radius])
+  }, [camera, gl, scene, setSize, radius])
 
   useFrame(() => {
     if (phase.current === 'idle') return

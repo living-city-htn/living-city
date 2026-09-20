@@ -66,4 +66,21 @@ export type CitySceneProps = {
    */
   onBlockPick?: (id: string, point: [number, number]) => void
   onSlotTap?: (communityId: string, slotId: string) => void
+
+  /**
+   * Which block is being rehearsed on, or null. Not in the 3D playbook — it
+   * arrived with the City Hall drill, which kept the fact inside the scene.
+   *
+   * It is here because it is app state, and this file says where app state
+   * lives: "the scene never owns app state; it renders it" (docs/02 section
+   * 4.5). While it sat in the scene nothing outside could see it, so the block
+   * being drilled went on showing what it posts on an ordinary day.
+   *
+   * The id travels rather than a boolean so the shell never has to name the
+   * scene's block itself: the scene owns which one it drills, and importing
+   * that from the shell would tie it to a scene it is built to work without.
+   * Optional, so the flat fallback compiles against this untouched.
+   */
+  drillCommunityId?: string | null
+  onDrillChange?: (communityId: string | null) => void
 }

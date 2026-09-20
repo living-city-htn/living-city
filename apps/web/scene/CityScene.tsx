@@ -964,6 +964,7 @@ function useShellColours() {
 export default function CityScene({
   city, plans, placements, mode, selectedId, planningIds,
   onBlockHover, onBlockSelect, onBlockPick, onSlotTap,
+  drillCommunityId = null, onDrillChange,
 }: CitySceneProps) {
   // R3F cannot render on the server, so wait for the client.
   const [ready, setReady] = useState(false)
@@ -971,7 +972,9 @@ export default function CityScene({
   const shell = useShellColours()
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const focusActive = useRef(true)
-  const [drillActive, setDrillActive] = useState(false)
+  // The rehearsal is the app's state now, not the scene's: the block being
+  // drilled has to be able to say something different while it runs.
+  const drillActive = drillCommunityId === CIVIC_HALL_COMMUNITY_ID
 
   const planFor = useMemo(() => new Map(plans.map((p) => [p.community_id, p])), [plans])
   const held = useMemo(
@@ -1125,8 +1128,8 @@ export default function CityScene({
       />
       <CivicDrillControl
         active={drillActive}
-        onStart={() => { setDrillActive(true); onBlockSelect?.(CIVIC_HALL_COMMUNITY_ID) }}
-        onStop={() => setDrillActive(false)}
+        onStart={() => { onDrillChange?.(CIVIC_HALL_COMMUNITY_ID); onBlockSelect?.(CIVIC_HALL_COMMUNITY_ID) }}
+        onStop={() => onDrillChange?.(null)}
       />
 
       {/* The blocks alone shrink away and back; the ground and the light stay. */}

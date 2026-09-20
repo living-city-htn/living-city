@@ -60,8 +60,10 @@ export const getPlan = (id: string) =>
 export const getBlockState = (id: string) =>
   get<BlockState>(`/api/communities/${encodeURIComponent(id)}/state`)
 
-export const getBlockPosts = (id: string) =>
-  get<{ posts: PostRow[] }>(`/api/communities/${encodeURIComponent(id)}/posts`).then((d) => d.posts)
+export const getBlockPosts = (id: string, scenario?: 'drill') =>
+  get<{ posts: PostRow[] }>(
+    `/api/communities/${encodeURIComponent(id)}/posts${scenario ? `?scenario=${scenario}` : ''}`,
+  ).then((d) => d.posts)
 
 export async function toggleLike(postId: string): Promise<{ liked: boolean; balance: number; likes: number }> {
   const response = await fetch(`/api/posts/${encodeURIComponent(postId)}/like`, { method: 'POST' })

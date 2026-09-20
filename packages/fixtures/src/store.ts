@@ -356,12 +356,23 @@ export const listSlots = (communityId?: string) =>
   communityId ? slots.filter((s) => s.community_id === communityId) : slots
 export const listShop = () => shopItems
 
-export const listPosts = (opts: { community?: string; includeHidden?: boolean } = {}) =>
-  state.posts.filter(
-    (p) =>
-      (opts.includeHidden || (!p.hidden && p.status === 'analyzed')) &&
-      (!opts.community || p.community_id === opts.community),
-  )
+/**
+ * Posts as they are on a normal day, or as they are during a rehearsal.
+ *
+ * Asking for a scenario replaces what that community is saying rather than
+ * adding to it: during a tornado drill the block is not posting about patio
+ * season and a storm at the same time. Everywhere else carries on as usual,
+ * and because nothing is written, ending the rehearsal restores the ordinary
+ * posts by itself.
+ */
+export const listPosts = (
+  opts: { community?: string; includeHidden?: boolean; scenario?: 'drill' } = {},
+) =>
+  state.posts.filter((p) => {
+    if (!opts.includeHidden && (p.hidden || p.status !== 'analyzed')) return false
+    if (opts.community && p.community_id !== opts.community) return false
+    return opts.scenario ? p.scenario === opts.scenario : !p.scenario
+  })
 
 export function createPost(input: {
   user_id: string; text: string; image_url?: string | null

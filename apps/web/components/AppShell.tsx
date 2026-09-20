@@ -47,6 +47,12 @@ export default function AppShell() {
   const [pickingLocation, setPickingLocation] = useState(false)
   const [notice, setNotice] = useState<PostFeedback | null>(null)
   const [panelVersion, setPanelVersion] = useState(0)
+  /*
+   * The City Hall rehearsal. It lives here rather than in the scene because
+   * more than the scene depends on it: while it runs, the block being drilled
+   * is posting about the storm rather than about its patios.
+   */
+  const [drillCommunityId, setDrillCommunityId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('city')
   const [city, setCity] = useState<CityPayload | null>(null)
   const [cityError, setCityError] = useState(false)
@@ -286,6 +292,8 @@ export default function AppShell() {
             mode={mode}
             selectedId={selectedId}
             planningIds={planningIds}
+            drillCommunityId={drillCommunityId}
+            onDrillChange={setDrillCommunityId}
             onBlockSelect={setSelectedId}
             onBlockPick={(id, point) => {
               if (tab !== 'post' || !pickingLocation) return
@@ -312,6 +320,7 @@ export default function AppShell() {
           onClose={() => setSelectedId(null)}
           onLiked={setBalance}
           onHeight={setSheetHeight}
+          scenario={selected.community_id === drillCommunityId ? 'drill' : undefined}
         />
       )}
 

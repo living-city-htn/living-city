@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@living-city/contracts": "workspace:*",
+    "@vercel/blob": "^0.27.0",
     "@living-city/fixtures": "workspace:*",
     "@living-city/modeling": "workspace:*",
     "@living-city/pipeline": "workspace:*",
+    "@living-city/signal": "workspace:*",
     "@react-three/drei": "^10.0.0",
     "@react-three/fiber": "^9.0.0",
     "next": "^15.5.0",

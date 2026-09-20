@@ -23,6 +23,9 @@
 import { NextResponse } from 'next/server'
 import { seedUsers } from '@living-city/fixtures'
 import { getState, likeCount } from '@living-city/fixtures/store'
+import {
+  AUTHENTICITY_GATE, authenticityOf, isUnverified, type Authenticity,
+} from './authenticity'
 
 export const USE_FIXTURES = process.env.USE_FIXTURES !== '0'
 
@@ -67,14 +70,23 @@ export function withPostMeta<T extends { id: string; user_id: string }>(posts: T
   author_name: string
   likes: number
   liked: boolean
+  authenticity: Authenticity | null
+  unverified: boolean
 }> {
   const names = new Map(seedUsers.map((u) => [u.id, u.display_name]))
   const me = currentUser().id
   const likes = getState().likes
-  return posts.map((p) => ({
-    ...p,
-    author_name: names.get(p.user_id) ?? 'Resident',
-    likes: likeCount(p.id),
-    liked: likes.has(`${me}:${p.id}`),
-  }))
+  return posts.map((p) => {
+    // Advisory, and absent entirely when the gate is off. A null score means
+    // the gate had no opinion, never that the post is suspect.
+    const authenticity = AUTHENTICITY_GATE ? authenticityOf(p.id) : null
+    return {
+      ...p,
+      author_name: names.get(p.user_id) ?? 'Resident',
+      likes: likeCount(p.id),
+      liked: likes.has(`${me}:${p.id}`),
+      authenticity,
+      unverified: isUnverified(authenticity),
+    }
+  })
 }

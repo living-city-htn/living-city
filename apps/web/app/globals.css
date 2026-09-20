@@ -401,6 +401,20 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 }
 .composer-where { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 
+/* Voice note, the third input. Absent entirely unless NEXT_PUBLIC_VOICE_POSTS=1. */
+.composer-voice { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.composer-voice audio { width: 100%; }
+.composer-voice .voice-stop { color: var(--danger, #b3261e); font-variant-numeric: tabular-nums; }
+.composer-voice[data-state='recording'] .voice-stop::before {
+  content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 8px;
+  border-radius: 50%; background: currentColor; vertical-align: baseline;
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+@keyframes voice-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) {
+  .composer-voice[data-state='recording'] .voice-stop::before { animation: none; }
+}
+
 /* Collapsed while choosing a block, so the map underneath is reachable. */
 .pick-bar {
   position: fixed; left: 0; right: 0; bottom: var(--tabbar-h); z-index: 6;
@@ -429,6 +443,17 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   .app-header p { font-size: 12px; }
   .sheet-head, .sheet-body { padding-inline: 16px; }
 }
+
+/* Authenticity badge on the civic row. Advisory: it labels, it never filters. */
+.op-badge {
+  display: inline-block; margin-left: 8px; padding: 1px 7px;
+  border-radius: 999px; font-size: 11px; line-height: 1.6;
+  background: var(--fill); color: var(--label);
+  border: 1px solid var(--hair);
+}
+.op-badge[data-label='likely synthetic'],
+.op-badge[data-label='unverified'] { color: #8a5a00; border-color: rgba(138, 90, 0, 0.35); }
+.op-badge[data-label='likely human'] { color: #2c6b3f; border-color: rgba(44, 107, 63, 0.35); }
 
 /*
  * Reduced motion, last so it wins over everything above.

@@ -32,6 +32,8 @@
 
 .control {
   position: absolute;
+  /* Above drei's own labels, which count up from 16 million inside this layer. */
+  z-index: 20000000;
   top: 1rem;
   right: 1rem;
   display: grid;

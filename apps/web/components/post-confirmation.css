@@ -20,6 +20,15 @@
 .confirmation-actions .form-button { min-height: 44px; }
 .confirmation-actions .form-button:first-child { background: var(--accent); color: #fff; font-weight: 600; }
 .confirmation-actions .form-button:last-child { padding-inline: 8px; background: transparent; color: var(--label); }
+/*
+ * On a phone the block card and this receipt want the same strip above the tab
+ * bar, and the receipt is higher, so it sat on top of the card and its buttons.
+ * Lifted by the card's own reported height (--sheet-h) instead, so both can be
+ * read and pressed. It is 0 when no card is open.
+ */
+@media (max-width: 899px) {
+  .post-confirmation { bottom: calc(var(--tabbar-h) + var(--sheet-h, 0px) + 24px); left: 12px; width: calc(100% - 24px); max-height: calc(100% - var(--header-h) - var(--tabbar-h) - var(--sheet-h, 0px) - 40px); overflow-y: auto; }
+}
 @media (max-width: 359px) {
   .post-confirmation { left: 12px; width: calc(100% - 24px); padding: 16px; }
   .confirmation-actions .form-button { flex: 1 1 auto; }

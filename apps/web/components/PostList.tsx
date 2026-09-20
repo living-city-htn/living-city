@@ -13,6 +13,8 @@ import { toggleLike } from '@/lib/api'
 
 const when = (iso: string) => {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+  // An unparseable stamp should read as nothing, not as "NaNd".
+  if (Number.isNaN(mins)) return ''
   if (mins < 60) return `${Math.max(mins, 1)}m`
   if (mins < 60 * 24) return `${Math.round(mins / 60)}h`
   return `${Math.round(mins / 1440)}d`

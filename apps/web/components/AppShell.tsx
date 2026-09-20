@@ -48,6 +48,7 @@ export default function AppShell() {
   const [pickingLocation, setPickingLocation] = useState(false)
   const [notice, setNotice] = useState<PostFeedback | null>(null)
   const [panelVersion, setPanelVersion] = useState(0)
+  const [focusTick, setFocusTick] = useState(0)
   /*
    * The City Hall rehearsal. It lives here rather than in the scene because
    * more than the scene depends on it: while it runs, the block being drilled
@@ -299,6 +300,7 @@ export default function AppShell() {
             mode={mode}
             selectedId={selectedId}
             planningIds={planningIds}
+            focusTick={focusTick}
             drillCommunityId={drillCommunityId}
             onDrillChange={setDrillCommunityId}
             onBlockSelect={setSelectedId}
@@ -391,7 +393,7 @@ export default function AppShell() {
         </div>
         <div className="confirmation-actions">
           {notice.state !== 'hidden' && <button className="form-button" onClick={() => {
-            setSelectedId(notice.watchedId); setTab('city'); setNotice(null)
+            setSelectedId(notice.watchedId); setFocusTick(v => v + 1); setTab('city'); setNotice(null)
           }}>View on map</button>}
           <button className="form-button" onClick={() => { setTab('shop'); setNotice(null) }}>Visit shop</button>
           <button className="form-button" onClick={() => setNotice(null)}>Dismiss</button>

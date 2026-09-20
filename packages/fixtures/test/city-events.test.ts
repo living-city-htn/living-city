@@ -7,20 +7,20 @@ const VENUE = VENUE_COMMUNITY_ID
 const campus = fallbackPlans.find((p) => p.community_id === VENUE)!
 
 describe('which block a post lights up', () => {
-  it('sends anything about Hack the North to the venue, wherever it was posted', () => {
+  it('lights the block the poster said they were in, and never another one', () => {
     for (const text of ['Hack the North is packed', 'hackthenorth day two', 'HTN opening ceremony']) {
-      expect(eventCommunityFor({ text, community_id: 'kw:laurelwood' }, VENUE)).toBe(VENUE)
+      // Regression: these used to be rerouted to the venue block, so a post
+      // geotagged to the research park changed the northwest campus instead.
+      expect(eventCommunityFor({ text, community_id: 'kw:uw-research-and-technology-park' }))
+        .toBe('kw:uw-research-and-technology-park')
     }
-  })
-
-  it('keeps any other live event on its own block', () => {
-    expect(eventCommunityFor({ text: 'Street festival on King tonight', community_id: 'kw:central' }, VENUE))
+    expect(eventCommunityFor({ text: 'Street festival on King tonight', community_id: 'kw:central' }))
       .toBe('kw:central')
   })
 
   it('leaves ordinary posts alone, which is almost all of them', () => {
     for (const text of ['Good coffee at the corner place', 'Bus was late again', '']) {
-      expect(eventCommunityFor({ text, community_id: 'kw:central' }, VENUE)).toBeNull()
+      expect(eventCommunityFor({ text, community_id: 'kw:central' })).toBeNull()
     }
   })
 })

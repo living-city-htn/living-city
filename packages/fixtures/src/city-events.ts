@@ -7,7 +7,7 @@
  * module is what makes the block actually change without a provider key.
  *
  * It is deterministic code, not a model, and it stays inside the line docs/04
- * section 8 draws: a fixed vocabulary of event words decides which block is
+ * section 8 draws: a fixed vocabulary of event words decides whether a block is
  * celebrating, and the plan it writes changes only mood, lighting, effects,
  * activity and decorations. Archetype, density, height profile, buildings and
  * vegetation are copied from the plan the block already had, which is the
@@ -18,29 +18,26 @@
  */
 import type { CommunityPlan } from './types'
 
-/**
- * Hack the North happens at the venue, wherever the poster is standing. A post
- * naming it lights up the venue block rather than the block it was posted
- * from, because that is the thing the post is about.
- */
-const HACK_THE_NORTH = /\bhack\s*the\s*north\b|\bhackthenorth\b|\bhtn\b/i
-
-/** Anything else that plainly announces a live event, for its own block. */
+/** A caption that plainly announces something live and happening now. */
 const LIVE_EVENT =
-  /\b(festival|hackathon|concert|live music|block party|street party|parade|fireworks|night market)\b/i
+  /\b(hack\s*the\s*north|hackathon|htn|festival|concert|live music|block party|street party|parade|fireworks|night market)\b/i
 
 /**
  * Which block this post turns festive, or null for the overwhelming majority
- * of posts that are just posts. One block per post: a post is not evidence
- * about a city, it is evidence about a place.
+ * of posts that are just posts.
+ *
+ * Always the block the post was filed under. An earlier version sent anything
+ * naming Hack the North to the venue block instead, on the theory that the
+ * event is there no matter where you are standing. That theory costs more than
+ * it buys: the poster had already said where they were, and the city changed
+ * somewhere else. Moment 8 is a stranger posting and watching *their* block,
+ * and a geotag the app quietly overrules is not a geotag.
+ *
+ * A post is evidence about the place it came from. Where the event "really is"
+ * is a judgement, and judgements here belong to Call B, not to a word list.
  */
-export function eventCommunityFor(
-  post: { text: string; community_id: string },
-  venueCommunityId: string,
-): string | null {
-  if (HACK_THE_NORTH.test(post.text)) return venueCommunityId
-  if (LIVE_EVENT.test(post.text)) return post.community_id
-  return null
+export function eventCommunityFor(post: { text: string; community_id: string }): string | null {
+  return LIVE_EVENT.test(post.text) ? post.community_id : null
 }
 
 /** First tag wins, so the event's own decorations sit in front of the block's. */

@@ -4,10 +4,10 @@ export type PostFeedback = {
   communityId: string
   communityName: string
   /**
-   * The block to watch for the change, which is usually the block the post was
-   * saved to and occasionally is not: a post about Hack the North changes the
-   * venue from anywhere in the city. Kept apart from `communityId` so the copy
-   * still names where the post actually went.
+   * The block to watch for the change, as the server named it. Today that is
+   * always the block the post was saved to; it is kept apart from
+   * `communityId` so that if a planning cycle ever moves a different block,
+   * the copy still names where the post actually went.
    */
   watchedId: string
   /** The watched block's name, for the copy that talks about the change. */

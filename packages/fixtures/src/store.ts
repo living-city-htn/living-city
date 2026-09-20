@@ -18,7 +18,7 @@
 import { durable, load, overwrite, save, type Serialized } from './persist'
 import { eventCommunityFor, eventPlan } from './city-events'
 import {
-  DEMO_COMMUNITY_ID, VENUE_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
+  DEMO_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
   seedPosts, seedUsers, shopItems, slots,
   type CommunityPlan, type SeedPost, type SeedUser,
 } from './index'
@@ -566,7 +566,7 @@ export function applyPresetFestival(): CommunityPlan {
  * is a fixed word list and not a model.
  */
 export function applyEventFromPost(post: { text: string; community_id: string }): CommunityPlan | null {
-  const target = eventCommunityFor(post, VENUE_COMMUNITY_ID)
+  const target = eventCommunityFor(post)
   if (!target) return null
   const previous = state.plans.get(target)
   if (!previous) return null

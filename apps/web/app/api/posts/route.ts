@@ -128,10 +128,10 @@ export async function POST(req: Request) {
 
   if (!pipelineEnabled()) {
     // Nothing else in the stub ever moves a plan, so a post would land and the
-    // city would sit there. `city_event` names the block this post just changed
-    // — usually null — so the app knows which block to watch instead of
-    // assuming it is the one the post was filed under. Hack the North is at the
-    // venue no matter whose phone it came from.
+    // city would sit there. `city_event` names the block this post just
+    // changed, or null, which is most posts. The server says which block moved
+    // rather than letting the app infer it, so if that ever stops being the
+    // block the post was filed under, the app is already right.
     const changed = await write(() => applyEventFromPost(created.post))
     return json({
       ...created, voice: voiceSummary(voice), city_event: changed?.community_id ?? null,

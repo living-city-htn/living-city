@@ -33,9 +33,9 @@ export type PostResult = {
   points_earned?: number
   voice?: { state: string; heard: boolean; cues: string[] } | null
   /**
-   * The block this post just changed, when it is not the block the post was
-   * filed under — a post about Hack the North changes the venue wherever it
-   * was written. Absent once the pipeline is on: Call B decides then, and the
+   * The block this post just changed, or null, which is most posts. The server
+   * names it rather than leaving the app to assume it is the block the post was
+   * filed under. Absent once the pipeline is on: Call B decides then, and the
    * app finds out from the version poll like everything else.
    */
   city_event?: string | null

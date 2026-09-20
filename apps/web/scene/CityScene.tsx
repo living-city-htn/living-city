@@ -16,7 +16,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
-import { buildingAsset, decorationAsset, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
+import { buildingAsset, decorationAsset, heroAssetId, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
 import type { CitySceneProps } from '@/components/city/types'
@@ -446,10 +446,20 @@ function Block({
   const pondIndex = useMemo(() => waterCell(cells, local, community.land_use_hints.water_adjacent,
     terrainSlots.map((slot) => [slot.x * halfW * 0.62 * SCALE, slot.y * halfH * 0.62 * SCALE])),
   [cells, local, community.land_use_hints.water_adjacent, terrainSlots, halfW, halfH, SCALE])
+  const heroId = heroAssetId(plan?.hero_asset)
+  const landmarkIndex = useMemo(() => {
+    if (!heroId) return -1
+    // A plaza is deliberately the nearest cell to the block's centre. When a
+    // quiet plan has no plaza, promote its nearest building lot instead so the
+    // landmark is still visible without overlapping a generic model.
+    const plazaIndex = cells.findIndex((cell) => cell.kind === 'plaza')
+    return plazaIndex >= 0 ? plazaIndex : cells.findIndex((cell) => cell.kind === 'building')
+  }, [cells, heroId])
+  const landmark = landmarkIndex >= 0 ? cells[landmarkIndex] : undefined
   const assetGroups = useMemo(() => {
     const groups = new Map<string, { instances: AssetInstance[]; indices: number[] }>()
     cells.forEach((cell, i) => {
-      if (i === pondIndex || cell.kind === 'plaza') return
+      if (i === pondIndex || i === landmarkIndex || cell.kind === 'plaza') return
       const id = cell.kind === 'building' ? buildingAsset(cell, community.land_use_hints.campus) : vegetationAsset(plan?.vegetation.types ?? [], cell.variant)
       const width = cell.size / SCALE * (cell.kind === 'building' ? 0.72 : 0.42)
       const group = groups.get(id) ?? { instances: [], indices: [] }
@@ -458,7 +468,7 @@ function Block({
       groups.set(id, group)
     })
     return groups
-  }, [cells, pondIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
+  }, [cells, pondIndex, landmarkIndex, community.land_use_hints.campus, plan?.vegetation.types, SCALE])
   const proceduralCell = (cell: Cell, i: number) => {
     const width = cell.size / SCALE * 0.72
     const height = cell.kind === 'building' ? (cell.storeys ?? 1) * 0.16 : width * 1.3
@@ -511,6 +521,15 @@ function Block({
       {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
         fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
       {pondIndex >= 0 && <Pond cell={cells[pondIndex]!} scale={SCALE} />}
+      {heroId && landmark && (
+        <group position={[landmark.x / SCALE, 0.27, -landmark.y / SCALE]}>
+          <SceneAsset
+            assetId={heroId}
+            width={(landmark.size / SCALE) * (0.72 + (plan?.hero_asset?.prominence ?? 1) * 0.1)}
+            fallback={<ProceduralDecoration tag={plan?.hero_asset?.tag ?? ''} palette={palette} />}
+          />
+        </group>
+      )}
       {cells.map((cell, i) => {
         if (cell.kind !== 'plaza') return null
         const x = cell.x / SCALE

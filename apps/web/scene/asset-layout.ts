@@ -1,4 +1,13 @@
-import { inside, type Cell } from '@living-city/modeling'
+import { inside, resolveAssetTag, type Cell } from '@living-city/modeling'
+
+/**
+ * Call B may nominate one durable landmark from its closed taxonomy. The
+ * renderer resolves that tag through the curated library; model output never
+ * selects a URL, material, mesh, or any other piece of geometry.
+ */
+export function heroAssetId(hero: { tag: string; prominence: number } | null | undefined): string | null {
+  return hero ? resolveAssetTag(hero.tag)?.id ?? null : null
+}
 
 export function buildingAsset(cell: Cell, campus = false) {
   const v = Math.min(0.999999, Math.max(0, cell.variant))

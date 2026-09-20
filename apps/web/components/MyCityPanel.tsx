@@ -34,6 +34,7 @@ export default function MyCityPanel({
   slots = [],
   communityId = null,
   onSlotTap,
+  onBuildingsChanged,
 }: {
   onBrowseShop?: () => void
   selectedName?: string
@@ -41,6 +42,8 @@ export default function MyCityPanel({
   /** Which community a new building belongs to. Null until one is picked. */
   communityId?: string | null
   onSlotTap?: (communityId: string, slotId: string) => void
+  /** A described building was added or removed, so the scene should redraw. */
+  onBuildingsChanged?: () => void
   active: boolean
   snapshot: MyCitySnapshot | null
   catalog: ShopItem[]
@@ -163,7 +166,7 @@ export default function MyCityPanel({
           {busy && <p role="status">Saving your decoration…</p>}
         </div>}
 
-        <BuildingComposer active={active} communityId={communityId} />
+        <BuildingComposer active={active} communityId={communityId} onChanged={onBuildingsChanged} />
       </div>
     </section>
   )

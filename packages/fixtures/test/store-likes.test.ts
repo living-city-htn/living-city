@@ -16,51 +16,84 @@ import { seedPosts, seedUsers } from '../src/index'
 const residents = seedUsers.filter((u) => u.role !== 'government')
 const visible = seedPosts.filter((p) => !p.hidden)
 
-describe('taking a like back', () => {
+describe('what the heart pays', () => {
   beforeEach(() => { reset() })
 
   const other = seedPosts.find((p) => p.user_id !== residents[0]!.id)!
   const liker = residents[0]!.id
+  /** A post this liker has not already liked in the seed, so it can still pay. */
+  const fresh = () => seedPosts.find((p) => p.user_id !== liker && !getState().likes.has(`${liker}:${p.id}`))!
 
-  it('returns the point it paid the liker', () => {
+  it('pays the liker a point for interacting', () => {
+    const p = fresh()
     const before = balance(liker)
-    toggleLike(liker, other.id)
+    toggleLike(liker, p.id)
     expect(balance(liker)).toBe(before + 1)
-    toggleLike(liker, other.id)
-    expect(balance(liker)).toBe(before)
   })
 
-  it('returns the two points it paid the author', () => {
-    const before = balance(other.user_id)
-    toggleLike(liker, other.id)
-    expect(balance(other.user_id)).toBe(before + 2)
-    toggleLike(liker, other.id)
-    expect(balance(other.user_id)).toBe(before)
+  it('pays the author two', () => {
+    const p = fresh()
+    const before = balance(p.user_id)
+    toggleLike(liker, p.id)
+    expect(balance(p.user_id)).toBe(before + 2)
   })
 
-  it('does not drift over a hundred cycles', () => {
+  it('does not take the points back when the like is cancelled', () => {
+    const p = fresh()
     const l = balance(liker)
-    const a = balance(other.user_id)
+    const a = balance(p.user_id)
+    toggleLike(liker, p.id)
+    toggleLike(liker, p.id)
+    expect(balance(liker), 'changing your mind must not cost the liker').toBe(l + 1)
+    expect(balance(p.user_id), 'changing your mind must not cost the author').toBe(a + 2)
+  })
+
+  it('pays nothing for liking the same post a second time', () => {
+    const p = fresh()
+    toggleLike(liker, p.id)
+    const l = balance(liker)
+    const a = balance(p.user_id)
+    toggleLike(liker, p.id)                           // unlike
+    toggleLike(liker, p.id)                           // like again
+    expect(balance(liker)).toBe(l)
+    expect(balance(p.user_id)).toBe(a)
+  })
+
+  it('pays exactly once across a hundred cycles', () => {
+    const p = fresh()
+    const l = balance(liker)
+    const a = balance(p.user_id)
     for (let i = 0; i < 100; i++) {
-      toggleLike(liker, other.id)
-      toggleLike(liker, other.id)
+      toggleLike(liker, p.id)
+      toggleLike(liker, p.id)
     }
-    expect(balance(liker), 'the liker farmed points').toBe(l)
-    expect(balance(other.user_id), 'the author farmed points').toBe(a)
+    expect(balance(liker), 'the liker farmed points').toBe(l + 1)
+    expect(balance(p.user_id), 'the author farmed points').toBe(a + 2)
   })
 
-  it('leaves the like count where it started', () => {
-    const n = likeCount(other.id)
-    toggleLike(liker, other.id)
-    expect(likeCount(other.id)).toBe(n + 1)
-    toggleLike(liker, other.id)
-    expect(likeCount(other.id)).toBe(n)
+  it('is bounded by the posts in the city, not by how long you tap', () => {
+    const before = balance(liker)
+    const likeable = seedPosts.filter((p) => p.user_id !== liker)
+    for (let round = 0; round < 3; round++) {
+      for (const p of likeable) {
+        toggleLike(liker, p.id)
+        toggleLike(liker, p.id)
+      }
+    }
+    // Three passes over every post, and still at most one point per post.
+    const alreadyPaid = likeable.filter((p) => getState().likes.has(`${liker}:${p.id}`)).length
+    expect(balance(liker) - before).toBeLessThanOrEqual(likeable.length - alreadyPaid)
   })
 
-  it('still reports whether the post is now liked', () => {
-    expect(toggleLike(liker, other.id).liked).toBe(true)
-    expect(toggleLike(liker, other.id).liked).toBe(false)
+  it('still toggles the like count both ways', () => {
+    const p = fresh()
+    const n = likeCount(p.id)
+    expect(toggleLike(liker, p.id).liked).toBe(true)
+    expect(likeCount(p.id)).toBe(n + 1)
+    expect(toggleLike(liker, p.id).liked).toBe(false)
+    expect(likeCount(p.id)).toBe(n)
   })
+
 })
 
 describe('the likes the seed arrives with', () => {

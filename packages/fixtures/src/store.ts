@@ -63,6 +63,8 @@ type State = {
   posts: SeedPost[]
   users: SeedUser[]
   likes: Set<string>                                  // `${user_id}:${post_id}`
+  /** Like keys that have already paid out. Points are earned once per pair. */
+  rewardedLikes: Set<string>
   balances: Map<string, number>
   inventory: Map<string, Map<string, number>>         // user -> item_tag -> qty
   placements: Array<{ id: string; user_id: string; community_id: string; slot_id: string; item_tag: string; created_at: string }>
@@ -171,10 +173,14 @@ const seedLikes = (posts: SeedPost[], users: SeedUser[]): Set<string> => {
 }
 
 export function reset(): void {
+  const seeded = seedLikes(seedPosts, seedUsers)
   state = {
     posts: seedPosts.map((p) => ({ ...p })),
     users: seedUsers.map((u) => ({ ...u })),
-    likes: seedLikes(seedPosts, seedUsers),
+    likes: seeded,
+    // The seed's likes are history and paid out whenever they happened, so
+    // nobody can unlike one and like it again to be paid for it now.
+    rewardedLikes: new Set(seeded),
     balances: new Map(seedUsers.map((u) => [u.id, u.balance])),
     inventory: new Map(),
     placements: [],
@@ -193,7 +199,7 @@ reset()
 
 const serialize = (s: State): Serialized => ({
   posts: s.posts, users: s.users,
-  likes: [...s.likes],
+  likes: [...s.likes], rewardedLikes: [...s.rewardedLikes],
   balances: [...s.balances],
   inventory: [...s.inventory].map(([user, items]) => [user, [...items]] as [string, Array<[string, number]>]),
   placements: s.placements,
@@ -206,7 +212,7 @@ const serialize = (s: State): Serialized => ({
 const deserialize = (d: Serialized): State => ({
   posts: d.posts as SeedPost[],
   users: d.users as SeedUser[],
-  likes: new Set(d.likes),
+  likes: new Set(d.likes), rewardedLikes: new Set(d.rewardedLikes ?? d.likes),
   balances: new Map(d.balances),
   inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
   placements: d.placements as State['placements'],
@@ -358,21 +364,34 @@ export function credit(userId: string, delta: number): number {
 }
 
 /**
- * Like and unlike are symmetric, because docs/01 section 8.8 is a ledger and a
- * reversal is a debit rather than a missing row. Crediting the like without
- * debiting the unlike turns the heart into a points printer: tap, untap, tap
- * again, for as long as a judge cares to keep tapping.
+ * Liking pays, unliking does not take it back, and liking the same post again
+ * pays nothing.
+ *
+ * Points are for interacting, so the heart has to be worth tapping - but it
+ * used to credit the like and debit nothing on the way out, which made it a
+ * printer: tap, untap, tap again. Charging the unlike instead would stop the
+ * printing and punish anyone who changed their mind, and a point already
+ * earned should stay earned.
+ *
+ * So the payout is once per person per post, ever. That bounds what the heart
+ * can ever be worth to the number of posts in the city rather than to how long
+ * someone keeps tapping, which is the cap docs/01 section 8.8 asks for without
+ * needing a clock to enforce it.
  */
 export function toggleLike(userId: string, postId: string): { liked: boolean; balance: number } {
   const key = `${userId}:${postId}`
-  const post = state.posts.find((p) => p.id === postId)
-  // like given: 1, like received: 2. docs/01 section 8.8.
-  const sign = state.likes.has(key) ? -1 : 1
-  if (sign < 0) state.likes.delete(key)
-  else state.likes.add(key)
-  credit(userId, 1 * sign)
-  if (post) credit(post.user_id, 2 * sign)
-  return { liked: sign > 0, balance: balance(userId) }
+  if (state.likes.has(key)) {
+    state.likes.delete(key)
+    return { liked: false, balance: balance(userId) }
+  }
+  state.likes.add(key)
+  if (!state.rewardedLikes.has(key)) {
+    state.rewardedLikes.add(key)
+    credit(userId, 1)                                 // like given: 1. docs/01 section 8.8.
+    const post = state.posts.find((p) => p.id === postId)
+    if (post) credit(post.user_id, 2)                 // like received: 2.
+  }
+  return { liked: true, balance: balance(userId) }
 }
 export const likeCount = (postId: string) =>
   [...state.likes].filter((k) => k.endsWith(`:${postId}`)).length

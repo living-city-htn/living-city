@@ -1,0 +1,108 @@
+.label {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 5.5rem;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid #b8c8d3;
+  border-radius: 0.375rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: #24404f;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.5rem;
+  line-height: 1.2;
+  pointer-events: none;
+  text-align: left;
+}
+
+.label strong {
+  font-size: 0.5625rem;
+}
+
+.alert {
+  border-color: #d9684f;
+  background: rgba(255, 246, 241, 0.96);
+  color: #7a2f20;
+}
+
+.event {
+  border-color: #d29a26;
+  background: rgba(35, 48, 68, 0.94);
+  color: #fff4cf;
+}
+
+.control {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  gap: 0.5rem;
+  width: min(13.5rem, calc(100vw - 2rem));
+  padding: 0.75rem;
+  border: 1px solid #c8d4dc;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 0.25rem 0.75rem rgba(27, 44, 55, 0.12);
+  color: #233a47;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  pointer-events: auto;
+}
+
+.control h2,
+.control p {
+  margin: 0;
+}
+
+.control h2 {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.control p,
+.control small {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.eyebrow {
+  color: #57717f;
+  font-size: 0.6875rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.button {
+  min-height: 2.25rem;
+  border: 1px solid #266c84;
+  border-radius: 0.375rem;
+  background: #2f7f98;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: #215f74;
+}
+
+.stop {
+  border-color: #b94f3b;
+  background: #c75d47;
+}
+
+.stop:hover,
+.stop:focus-visible {
+  background: #a84332;
+}
+
+@media (max-width: 40rem) {
+  .control {
+    top: auto;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: min(14.5rem, calc(100vw - 1.5rem));
+  }
+}

@@ -28,6 +28,8 @@ packages/pipeline/out/
 # Secrets: everything local, except the committed template (docs/05 section 8).
 .env*
 !.env.example
+# Huawei access approval is local and may contain an API credential.
+HUAWEI.MD
 
 # Agent tooling dropped in by the Neon/Vercel integration. Machine-generated and
 # per-person, so it does not belong in a four-person shared repo.

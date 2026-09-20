@@ -1,10 +1,11 @@
 import { listPosts, read } from '@living-city/fixtures/store'
-import { json, withPostMeta, type RouteCtx } from '@/lib/stub'
+import { currentUser, json, withPostMeta, type RouteCtx } from '@/lib/stub'
 
 // GET /api/communities/:id/posts -> recent posts for the "why" panel
-export async function GET(_req: Request, ctx: RouteCtx<{ id: string }>) {
+export async function GET(req: Request, ctx: RouteCtx<{ id: string }>) {
   const { id } = await ctx.params
+  const user = currentUser(req)
   return json({
-    posts: await read(() => withPostMeta(listPosts({ community: decodeURIComponent(id) }).slice(0, 10))),
+    posts: await read(() => withPostMeta(listPosts({ community: decodeURIComponent(id) }).slice(0, 10), user.id)),
   })
 }

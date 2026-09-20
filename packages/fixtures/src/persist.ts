@@ -22,10 +22,14 @@ export type Serialized = {
   users: unknown[]
   likes: string[]
   /**
-   * Like keys that have already paid out. Optional: a row written before points
-   * became once-per-pair does not carry it, and its likes stand in for it.
+   * Legacy name for like-credit history. Keep reading and writing it while
+   * older rehearsal rows exist; `likeCredits` is the current name.
    */
   rewardedLikes?: string[]
+  /** Likes that have already awarded their one-time points credit. */
+  likeCredits?: string[]
+  /** Legacy posts whose past like-credit history cannot be reconstructed. */
+  likeCreditBlockedPostIds?: string[]
   balances: Array<[string, number]>
   inventory: Array<[string, Array<[string, number]>]>
   placements: unknown[]

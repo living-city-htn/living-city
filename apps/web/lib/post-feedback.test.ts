@@ -14,9 +14,30 @@ describe('post confirmation', () => {
     expect(receipt.points).toBe(20)
     expect(receipt.state).toBe('analyzing')
   })
+  it('carries only a successful OMNI voice result into the judge-facing receipt', () => {
+    const receipt = postFeedback({
+      ...result,
+      voice: { state: 'none', heard: true, cues: ['live music', 'crowd chatter'] },
+    }, 'Uptown')
+
+    expect(receipt.voice).toEqual({ cues: ['live music', 'crowd chatter'] })
+  })
+  it('does not claim that a degraded voice note was understood', () => {
+    const receipt = postFeedback({
+      ...result,
+      voice: { state: 'unintelligible', heard: false, cues: [] },
+    }, 'Uptown')
+
+    expect(receipt.voice).toBeNull()
+  })
   it('does not promise a public update for a hidden post', () => {
-    const receipt = postFeedback({ ...result, post: { ...result.post, hidden: true } }, 'Uptown')
+    const receipt = postFeedback({
+      ...result,
+      post: { ...result.post, hidden: true },
+      voice: { state: 'none', heard: true, cues: ['crowd chatter'] },
+    }, 'Uptown')
     expect(receipt.state).toBe('hidden')
+    expect(receipt.voice).toBeNull()
     expect(feedbackMessage(receipt)).toBe('Post received. It is not shown publicly.')
   })
   it('distinguishes a delayed update from a failed post', () => {

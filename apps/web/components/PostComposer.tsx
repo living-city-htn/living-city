@@ -31,6 +31,7 @@ export type PostResult = {
   post: { id: string; community_id: string; status: 'pending' | 'analyzed'; hidden: boolean }
   balance?: number
   points_earned?: number
+  voice?: { state: string; heard: boolean; cues: string[] } | null
 }
 
 export default function PostComposer({

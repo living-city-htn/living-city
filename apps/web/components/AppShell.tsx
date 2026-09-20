@@ -358,6 +358,14 @@ export default function AppShell() {
           <h2 id="post-confirmation-title">{confirmationPresentation(notice).title}</h2>
           {notice.points !== null && notice.points > 0 && <span className="reward">+{notice.points} points earned</span>}
           <p className="confirmation-detail">{feedbackMessage(notice)}</p>
+          {notice.voice && <div className="omni-proof" aria-label="OMNI Live voice analysis complete">
+            <p className="omni-proof-eyebrow">OMNI Live · Voice &amp; sound analyzed</p>
+            <p className="omni-proof-detail">
+              {notice.voice.cues.length > 0
+                ? <>Heard: {notice.voice.cues.join(' · ')}</>
+                : 'Your voice note was understood and added to this city signal.'}
+            </p>
+          </div>}
         </div>
         <div className="confirmation-actions">
           {notice.state !== 'hidden' && <button className="form-button" onClick={() => {

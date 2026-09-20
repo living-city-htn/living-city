@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildingAsset, waterCell, decorationAsset, vegetationAsset, plazaDecorations } from './asset-layout'
+import { buildingAsset, heroAssetId, waterCell, decorationAsset, vegetationAsset, plazaDecorations } from './asset-layout'
 import type { Cell } from '@living-city/modeling'
 const cell: Cell = { x: 0, y: 0, size: 10, kind: 'building', category: 'residential', storeys: 2, variant: 0.7 }
 const ring: Array<[number, number]> = [[-10, -10], [10, -10], [10, 10], [-10, 10]]
@@ -9,6 +9,11 @@ describe('city asset assignment', () => {
     expect(buildingAsset({ ...cell, storeys: 6 })).toBe('apartment-02')
     expect(buildingAsset({ ...cell, category: 'office', storeys: 6 })).toBe('office-02')
     expect(buildingAsset({ ...cell, category: 'campus_industrial' }, true)).toBe('campus-01')
+  })
+  it('turns an accepted plan landmark into its curated asset, never model geometry', () => {
+    expect(heroAssetId({ tag: 'university_hall', prominence: 3 })).toBe('campus-01')
+    expect(heroAssetId({ tag: 'ferris_wheel', prominence: 1 })).toBe('sculpture')
+    expect(heroAssetId(null)).toBeNull()
   })
   it('only reserves fitted water terrain where geography permits, clear of placement slots', () => {
     expect(waterCell([cell], ring, false, [])).toBe(-1)

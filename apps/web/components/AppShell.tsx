@@ -19,7 +19,7 @@ import FeedPage from './FeedPage'
 import CommunityPicker from './CommunityPicker'
 import ParticleField from './ParticleField'
 import './shell-feedback.css'
-import { postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
+import { confirmationPresentation, postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
 import './post-confirmation.css'
 import { getAllPlans, getCity, getMe, getMyPlacements, getPlan, getShopCatalog } from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
@@ -332,6 +332,7 @@ export default function AppShell() {
         active={tab === 'mine'}
         onBrowseShop={() => setTab('shop')}
         selectedName={selected?.name}
+        communityId={selectedId}
         slots={city?.slots.filter(slot => slot.community_id === selectedId) ?? []}
         onSlotTap={(communityId, slotId) => void slotTapped(communityId, slotId)}
         snapshot={myCity}
@@ -348,15 +349,28 @@ export default function AppShell() {
         onRefresh={() => void refreshMyCity()}
         onHeight={setSheetHeight}
       />
-      {notice && <section className="post-confirmation" aria-label="Post confirmation">
-        <div role="status">
+      {notice && <section className="post-confirmation" data-state={notice.state} aria-labelledby="post-confirmation-title">
+        <div className="confirmation-copy" role="status">
+          <div className="confirmation-title-row">
+            <span className="confirmation-status-dot" aria-hidden="true" />
+            <p className="confirmation-eyebrow">{confirmationPresentation(notice).eyebrow}</p>
+          </div>
+          <h2 id="post-confirmation-title">{confirmationPresentation(notice).title}</h2>
           {notice.points !== null && notice.points > 0 && <span className="reward">+{notice.points} points earned</span>}
-          <p>{feedbackMessage(notice)}</p>
+          <p className="confirmation-detail">{feedbackMessage(notice)}</p>
+          {notice.voice && <div className="omni-proof" aria-label="OMNI Live voice analysis complete">
+            <p className="omni-proof-eyebrow">OMNI Live · Voice &amp; sound analyzed</p>
+            <p className="omni-proof-detail">
+              {notice.voice.cues.length > 0
+                ? <>Heard: {notice.voice.cues.join(' · ')}</>
+                : 'Your voice note was understood and added to this city signal.'}
+            </p>
+          </div>}
         </div>
         <div className="confirmation-actions">
           {notice.state !== 'hidden' && <button className="form-button" onClick={() => {
             setSelectedId(notice.communityId); setTab('city'); setNotice(null)
-          }}>View community</button>}
+          }}>View on map</button>}
           <button className="form-button" onClick={() => { setTab('shop'); setNotice(null) }}>Visit shop</button>
           <button className="form-button" onClick={() => setNotice(null)}>Dismiss</button>
         </div>

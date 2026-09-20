@@ -109,7 +109,12 @@ h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 .app-header h1 { font-size: 22px; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; }
 .app-header p { margin: 6px 0 0; font-size: 13px; color: var(--label); }
 .app-header-balance { flex-shrink: 0; color: var(--label); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.points-label { font-size: inherit; }
+/* Points wear a spark rather than the abbreviation "pts". components/Points.tsx */
+.points { display: inline-flex; align-items: center; gap: .28em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.points .spark { flex-shrink: 0; color: var(--accent); }
+.points-value { font-variant-numeric: tabular-nums; }
+/* On a filled button the spark rides the button's own colour, not the accent. */
+.shop-buy .points .spark { color: currentColor; }
 .tabbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; display: grid; grid-template-columns: repeat(5, minmax(0, 120px)); justify-content: center; height: var(--tabbar-h); padding: 6px 6px env(safe-area-inset-bottom); gap: 3px; background: var(--surface); border-top: 1px solid var(--hair); }
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; min-height: 48px; margin: 2px 0 6px; padding: 6px 2px; border: 0; border-radius: 8px; background: transparent; color: var(--label); font-weight: 400; font-size: 11px; cursor: pointer; }
 .tab[data-active='true'] { color: var(--accent); }
@@ -330,6 +335,39 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 .qr-paused h1 { color: var(--label); }
 .qr-paused p { margin: 8px 0 0; color: var(--label); }
 
+/* --- government desk --------------------------------------------------- */
+
+.gov-page { max-width: 920px; margin: 0 auto; padding: 32px 16px 72px; }
+.gov-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.gov-kicker { margin: 0 0 6px; color: var(--label); font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.gov-head h1 { font-size: clamp(26px, 5vw, 38px); }
+.gov-lede { max-width: 48ch; margin: 8px 0 0; color: var(--label); }
+.gov-alert, .gov-state { margin: 0; padding: 16px; border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--fill); }
+.gov-alert { display: flex; flex-direction: column; gap: 4px; }
+.gov-alert span { color: var(--label); }
+.gov-list { display: grid; gap: 14px; list-style: none; margin: 0; padding: 0; }
+.gov-card { display: grid; grid-template-columns: minmax(88px, 156px) 1fr; gap: 16px; padding: 16px; border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--surface); }
+.gov-thumb { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: var(--fill); }
+.gov-card-body { min-width: 0; }
+.gov-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.gov-type { margin: 0; font-size: 17px; font-weight: 600; }
+.gov-community { margin: 2px 0 0; color: var(--label); font: 12px/1.4 var(--mono); }
+.gov-status { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; font: 600 11px/1 var(--mono); text-transform: uppercase; }
+.gov-status-reported { background: #fff3d6; color: #805600; }
+.gov-status-verified { background: #e3f4e7; color: #1f6f38; }
+.gov-post { margin: 14px 0; }
+.gov-meta { display: flex; flex-wrap: wrap; gap: 14px 24px; margin: 0 0 16px; }
+.gov-meta div { min-width: 0; }
+.gov-meta dt { color: var(--label); font: 11px/1.2 var(--mono); text-transform: uppercase; }
+.gov-meta dd { margin: 3px 0 0; font-size: 13px; }
+.gov-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 520px) {
+  .gov-head { flex-direction: column; }
+  .gov-head .op-btn { width: 100%; }
+  .gov-card { grid-template-columns: 1fr; }
+  .gov-thumb { max-height: 200px; }
+}
+
 .post-head { align-items: center; gap: 9px; padding-bottom: 10px; }
 .post-avatar {
   width: 30px; height: 30px; border-radius: 999px; flex: 0 0 auto;
@@ -362,7 +400,7 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
   transition: opacity var(--fast) var(--ease), background var(--fast) var(--ease);
 }
 .capture-primary {
-  padding: 17px; background: var(--accent); color: #fff; font-size: 17px; font-weight: 600;
+  padding: 17px; border: 0; background: var(--accent); color: #fff; font: inherit; font-size: 17px; font-weight: 600;
 }
 .capture-secondary {
   padding: 15px; background: var(--fill); color: var(--ink); font-size: 16px;
@@ -372,6 +410,11 @@ button:disabled, fieldset:disabled .file-button { opacity: .5; cursor: default; 
 }
 .capture-primary:active, .capture-secondary:active { opacity: 0.8; }
 .capture-primary input, .capture-secondary input { display: none; }
+
+.camera-capture { justify-content: flex-start; padding-top: 24px; }
+.camera-preview { position: relative; width: min(100%, 480px); aspect-ratio: 4 / 3; overflow: hidden; border-radius: 14px; background: #111; color: #fff; }
+.camera-preview video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.camera-preview span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; }
 
 /* Step two. */
 .composer-head {

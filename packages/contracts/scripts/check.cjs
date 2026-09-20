@@ -28,7 +28,12 @@ const run = (name, schema, value) => {
   for (const i of r.error.issues.slice(0, 4)) console.log(`        ${i.path.join('.')}: ${i.message}`)
 }
 
-const city = strip(read('city.fallback.json'))
+// The city is Map's processed data, not a Product fixture: city.fallback.json
+// was dropped in 3d72b60 so the two could not drift. Slots live beside it.
+const M = path.join(__dirname, '..', '..', 'map', 'data', 'processed')
+const readMap = (f) => JSON.parse(fs.readFileSync(path.join(M, f), 'utf8'))
+const city = strip(readMap('city.json'))
+city.slots = strip(readMap('slots.json'))
 const plans = strip(read('plans.fallback.json'))
 const seed = strip(read('posts.seed.json'))
 

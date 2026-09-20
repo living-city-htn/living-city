@@ -21,14 +21,31 @@ export type Serialized = {
   posts: unknown[]
   users: unknown[]
   likes: string[]
+  /**
+   * Legacy name for like-credit history. Keep reading and writing it while
+   * older rehearsal rows exist; `likeCredits` is the current name.
+   */
+  rewardedLikes?: string[]
+  /** Likes that have already awarded their one-time points credit. */
+  likeCredits?: string[]
+  /** Legacy posts whose past like-credit history cannot be reconstructed. */
+  likeCreditBlockedPostIds?: string[]
   balances: Array<[string, number]>
   inventory: Array<[string, Array<[string, number]>]>
   placements: unknown[]
+  /** Optional: rows written before the private-building layer lack it. */
+  buildings?: unknown[]
   plans: Array<[string, unknown]>
   incidents: unknown[]
   updatedAt: string
   seq: number
   qrPaused: boolean
+  /**
+   * Stamps of the most recent writes, oldest first. A retry looks for its own
+   * stamp here to tell a lost response from a rejected version check. Optional:
+   * rows written before `write` started stamping them do not carry it.
+   */
+  recentWrites?: string[]
 }
 
 const connectionString = () =>

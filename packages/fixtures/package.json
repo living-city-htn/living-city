@@ -11,7 +11,7 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "node scripts/validate.mjs",
+    "test": "vitest run --passWithNoTests && node scripts/validate.mjs",
     "lint": "echo \"(lint not configured)\"",
     "validate": "node scripts/validate.mjs"
   },

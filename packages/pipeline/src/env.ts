@@ -89,6 +89,42 @@ export const env = {
   /** The city's wall clock, used to build time_context. */
   cityTimezone: () => str('CITY_TIMEZONE', 'America/Toronto'),
 
+  // ---- The building call (private map). Off until a key is set. ----------
+
+  /**
+   * Absolute base for resolving root-relative image paths. Shared with Call
+   * A's image resolver; on Vercel this is the deploy URL.
+   */
+  publicBaseUrl: () => str('PUBLIC_BASE_URL', ''),
+
+  /**
+   * Vision is required: the photograph is the evidence and the description is
+   * only context, so the small tier is not enough here. This is the one place
+   * the building call costs more than Call A.
+   */
+  buildingModel: () => (providerName() === 'gemini'
+    ? str('GEMINI_MODEL_BUILDING', 'gemini-2.5-pro')
+    : str('OPENAI_MODEL_BUILDING', 'gpt-4.1')),
+  /** Longer than Call A: the user is watching a spinner they asked for. */
+  buildingTimeoutMs: () => num('BUILDING_TIMEOUT_MS', 25000),
+  buildingMaxAttempts: () => num('BUILDING_MAX_ATTEMPTS', 2),
+
+  /**
+   * The reference lookup. Not a model and not a second provider (AGENTS.md):
+   * a plain JSON search endpoint, so pointing it elsewhere is config. With no
+   * key the model's first answer ships unrevised, which is a supported state.
+   */
+  searchApiKey: () => process.env.BUILDING_SEARCH_KEY ?? '',
+  searchUrl: () => str('BUILDING_SEARCH_URL', 'https://api.tavily.com/search').replace(/\/$/, ''),
+  /** Short. This is latency inside a request the user is standing through. */
+  searchTimeoutMs: () => num('BUILDING_SEARCH_TIMEOUT_MS', 5000),
+  /**
+   * Answer the lookup from canned fixtures instead of the network. Read only
+   * when no search key is set, so it cannot shadow a real search - the same
+   * fence `voiceFixtures` uses.
+   */
+  searchFixtures: () =>
+    process.env.BUILDING_SEARCH_FIXTURES === '1' && !process.env.BUILDING_SEARCH_KEY,
   // ---- Aggregator tuning. docs/02 section 4.3, docs/04 moment 4. ----------
 
   /**

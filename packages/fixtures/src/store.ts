@@ -36,6 +36,29 @@ export type Incident = {
   updated_at: string
 }
 
+/**
+ * A building the user described and the model specified, standing on their
+ * own map only.
+ *
+ * `spec` is deliberately opaque here. It is a `BuildingSpec` from
+ * `@living-city/pipeline`, but this package is a dependency of that one, so
+ * naming the type would close a cycle. The web seam validates it on the way
+ * in and types it on the way out - the same trade `Incident` already makes by
+ * widening `type` to string.
+ */
+export type UserBuilding = {
+  id: string
+  user_id: string
+  community_id: string
+  /** Null until the user puts it somewhere. A spec can exist unplaced. */
+  slot_id: string | null
+  name: string
+  spec: unknown
+  /** The photograph the user supplied, for the card in the panel. */
+  image_url: string | null
+  created_at: string
+}
+
 type State = {
   posts: SeedPost[]
   users: SeedUser[]
@@ -43,6 +66,8 @@ type State = {
   balances: Map<string, number>
   inventory: Map<string, Map<string, number>>         // user -> item_tag -> qty
   placements: Array<{ id: string; user_id: string; community_id: string; slot_id: string; item_tag: string; created_at: string }>
+  /** AI-described buildings. Private, like placements: see `buildingsOf`. */
+  buildings: UserBuilding[]
   plans: Map<string, CommunityPlan>
   incidents: Incident[]
   updatedAt: string
@@ -86,6 +111,7 @@ export function reset(): void {
     balances: new Map(seedUsers.map((u) => [u.id, u.balance])),
     inventory: new Map(),
     placements: [],
+    buildings: [],
     plans: new Map(fallbackPlans.map((p) => [p.community_id, p])),
     incidents: seedIncidents(seedPosts),
     updatedAt: new Date().toISOString(),
@@ -103,6 +129,7 @@ const serialize = (s: State): Serialized => ({
   balances: [...s.balances],
   inventory: [...s.inventory].map(([user, items]) => [user, [...items]] as [string, Array<[string, number]>]),
   placements: s.placements,
+  buildings: s.buildings,
   plans: [...s.plans],
   incidents: s.incidents,
   updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused,
@@ -115,6 +142,8 @@ const deserialize = (d: Serialized): State => ({
   balances: new Map(d.balances),
   inventory: new Map(d.inventory.map(([user, items]) => [user, new Map(items)])),
   placements: d.placements as State['placements'],
+  // Older rows predate this field; an absent one is an empty list, not a crash.
+  buildings: (d.buildings ?? []) as UserBuilding[],
   plans: new Map(d.plans as Array<[string, CommunityPlan]>),
   incidents: d.incidents as Incident[],
   updatedAt: d.updatedAt, seq: d.seq, qrPaused: d.qrPaused,
@@ -266,6 +295,37 @@ export function place(userId: string, communityId: string, slotId: string, itemT
   return { ok: true as const, placement }
 }
 
+/**
+ * Private, exactly like `placementsOf`. No route returns another user's
+ * buildings, and nothing here can reach a public plan or a block's geometry
+ * (AGENTS.md, "Respect the two layers").
+ */
+export const buildingsOf = (userId: string): UserBuilding[] =>
+  state.buildings.filter((b) => b.user_id === userId)
+
+export function addBuilding(input: Omit<UserBuilding, 'id' | 'created_at'>) {
+  const building: UserBuilding = {
+    ...input,
+    id: `bld-${state.buildings.length + 1}`,
+    created_at: new Date().toISOString(),
+  }
+  state.buildings.push(building)
+  return { ok: true as const, building }
+}
+
+/** Move one onto a slot, or off it with null. Owner only. */
+export function placeBuilding(userId: string, id: string, slotId: string | null) {
+  const building = state.buildings.find((b) => b.id === id && b.user_id === userId)
+  if (!building) return { ok: false as const, reason: 'not found' }
+  building.slot_id = slotId
+  return { ok: true as const, building }
+}
+
+export function removeBuilding(userId: string, id: string) {
+  const before = state.buildings.length
+  state.buildings = state.buildings.filter((b) => !(b.id === id && b.user_id === userId))
+  return { ok: state.buildings.length < before }
+}
 export function removePlacement(userId: string, placementId: string) {
   const idx = state.placements.findIndex((p) => p.id === placementId && p.user_id === userId)
   if (idx < 0) return { ok: false as const, reason: 'not found' }

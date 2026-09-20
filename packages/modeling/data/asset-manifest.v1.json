@@ -1,0 +1,85 @@
+{
+  "_readme": "Gate 0 manifest. `kind: glb` assets are the selected, CC0 Kenney models under assets/kenney and require KHR_draco_mesh_compression. Material and procedural entries are deterministic renderer aliases, never AI geometry. See assets/kenney/ASSET-SOURCES.md.",
+  "version": "1.0",
+  "assets": {
+    "building.lowrise": { "kind": "glb", "file": "assets/kenney/buildings/suburban-a.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.campus": { "kind": "glb", "file": "assets/kenney/buildings/suburban-b.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.row": { "kind": "glb", "file": "assets/kenney/buildings/suburban-c.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.corner": { "kind": "glb", "file": "assets/kenney/buildings/suburban-d.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.midrise": { "kind": "glb", "file": "assets/kenney/buildings/commercial-e.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.market": { "kind": "glb", "file": "assets/kenney/buildings/commercial-f.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.tower": { "kind": "glb", "file": "assets/kenney/buildings/commercial-g.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "building.landmark": { "kind": "glb", "file": "assets/kenney/buildings/commercial-h.glb", "category": "building", "license": "CC0-1.0", "draco": true },
+    "green.tree": { "kind": "glb", "file": "assets/kenney/decor/tree-large.glb", "category": "vegetation", "license": "CC0-1.0", "draco": true },
+    "green.shrub": { "kind": "glb", "file": "assets/kenney/decor/tree-small.glb", "category": "vegetation", "license": "CC0-1.0", "draco": true },
+    "decor.planter": { "kind": "glb", "file": "assets/kenney/decor/planter.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.fence": { "kind": "glb", "file": "assets/kenney/decor/fence-low.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.path": { "kind": "glb", "file": "assets/kenney/decor/path-stones-long.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.barrier": { "kind": "glb", "file": "assets/kenney/decor/construction-barrier.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.cone": { "kind": "glb", "file": "assets/kenney/decor/construction-cone.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.construction_fence": { "kind": "glb", "file": "assets/kenney/decor/construction-fence.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.light": { "kind": "glb", "file": "assets/kenney/decor/light-square.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.sign": { "kind": "glb", "file": "assets/kenney/decor/road-sign-street.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.traffic": { "kind": "glb", "file": "assets/kenney/decor/traffic-light.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "decor.parasol": { "kind": "glb", "file": "assets/kenney/decor/parasol.glb", "category": "decoration", "license": "CC0-1.0", "draco": true },
+    "people.walk": { "kind": "glb", "file": "assets/kenney/people/resident-a.glb", "category": "people", "license": "CC0-1.0", "draco": true },
+    "people.gather": { "kind": "glb", "file": "assets/kenney/people/resident-b.glb", "category": "people", "license": "CC0-1.0", "draco": true },
+    "green.ground": { "kind": "material", "role": "lawn or planter ground material" },
+    "decor.marker": { "kind": "alias", "target": "decor.planter", "role": "generic small decoration" },
+    "decor.stage": { "kind": "procedural", "primitive": "box", "role": "stage" },
+    "effect.fireflies": { "kind": "procedural", "primitive": "sprite", "role": "fireflies" },
+    "effect.music_notes": { "kind": "procedural", "primitive": "sprite", "role": "music notes" },
+    "effect.sparkles": { "kind": "procedural", "primitive": "sprite", "role": "sparkles" },
+    "hero.landmark": { "kind": "alias", "target": "building.landmark", "role": "hero landmark" },
+    "palette.warm": { "kind": "material", "role": "warm palette" },
+    "palette.cool": { "kind": "material", "role": "cool palette" },
+    "palette.night": { "kind": "alias", "target": "palette.cool", "role": "night palette" },
+    "palette.green": { "kind": "material", "role": "green palette" },
+    "palette.grey": { "kind": "alias", "target": "palette.cool", "role": "neutral palette" },
+    "palette.sunset": { "kind": "alias", "target": "palette.warm", "role": "sunset palette" },
+    "palette.blue": { "kind": "alias", "target": "palette.cool", "role": "blue palette" },
+    "palette.brick": { "kind": "alias", "target": "palette.warm", "role": "brick palette" },
+    "palette.candy": { "kind": "material", "role": "festival palette" },
+    "palette.default": { "kind": "alias", "target": "palette.cool", "role": "default palette" }
+  },
+  "enum_mappings": {
+    "archetype": {
+      "residential_quiet": "building.lowrise", "residential_lively": "building.lowrise", "commercial_core": "building.midrise", "nightlife_district": "building.market", "creative_quarter": "building.market", "green_retreat": "green.tree", "campus_hub": "building.campus", "waterfront_leisure": "green.tree", "civic_center": "building.campus", "transit_hub": "building.midrise", "maker_industrial": "building.midrise", "market_street": "building.market", "mixed_use_default": "building.midrise"
+    },
+    "mood": {
+      "cozy": "palette.warm", "vibrant": "palette.candy", "serene": "palette.green", "busy": "palette.grey", "gritty": "palette.brick", "festive": "palette.candy", "melancholic": "palette.cool", "focused": "palette.default", "playful": "palette.candy", "elegant": "palette.warm"
+    },
+    "palette": {
+      "warm_pastel": "palette.warm", "cool_pastel": "palette.cool", "neon_night": "palette.night", "earthy_green": "palette.green", "soft_grey": "palette.grey", "sunset_orange": "palette.sunset", "ocean_blue": "palette.blue", "brick_red": "palette.brick", "candy_pop": "palette.candy", "default_city": "palette.default"
+    },
+    "identity_tags": {
+      "modern": "building.midrise", "historic": "building.lowrise", "brick": "palette.brick", "glass": "building.tower", "wood": "building.row", "colorful": "palette.candy", "minimal": "palette.grey", "industrial": "building.corner", "cozy": "palette.warm", "upscale": "building.landmark", "student": "building.campus", "family": "building.lowrise", "tourist": "hero.landmark", "bohemian": "building.market"
+    },
+    "vegetation_types": {
+      "street_trees": "green.tree", "mature_trees": "green.tree", "park_lawn": "green.ground", "flower_beds": "decor.planter", "hedges": "green.shrub", "wild_meadow": "green.ground", "planters": "decor.planter", "rooftop_green": "green.shrub"
+    },
+    "behaviors": {
+      "walking": "people.walk", "sitting": "people.gather", "jogging": "people.walk", "dancing": "people.gather", "cycling": "people.walk", "dining": "people.gather", "shopping": "people.walk", "performing": "decor.stage", "dog_walking": "people.walk", "skateboarding": "people.walk", "studying": "people.gather", "queueing": "people.gather"
+    },
+    "decorations": {
+      "string_lights": "decor.light", "banners": "decor.sign", "mural": "decor.marker", "sculpture": "decor.marker", "fountain": "decor.marker", "food_trucks": "decor.parasol", "market_stalls": "decor.parasol", "benches": "decor.marker", "bike_racks": "decor.fence", "neon_signs": "decor.sign", "outdoor_seating": "decor.parasol", "playground": "decor.marker", "sports_court": "decor.path", "stage": "decor.stage", "kiosks": "decor.parasol", "flags": "decor.sign", "lanterns": "decor.light", "graffiti": "decor.marker", "construction_barriers": "decor.barrier", "bus_shelter": "decor.traffic"
+    },
+    "lighting_accents": {
+      "streetlamps_warm": "decor.light", "streetlamps_cool": "decor.light", "window_glow": "decor.light", "neon": "decor.light", "string_lights": "decor.light", "lanterns": "decor.light", "spotlights": "decor.light"
+    },
+    "effects": {
+      "fireflies": "effect.fireflies", "confetti": "effect.sparkles", "music_notes": "effect.music_notes", "falling_leaves": "effect.sparkles", "rain": "effect.sparkles", "snow": "effect.sparkles", "fog": "effect.sparkles", "sparkles": "effect.sparkles", "steam": "effect.sparkles", "birds": "effect.sparkles", "fireworks": "effect.sparkles", "heart_particles": "effect.sparkles"
+    },
+    "hero_asset": {
+      "clock_tower": "hero.landmark", "stadium": "hero.landmark", "ferris_wheel": "hero.landmark", "museum": "hero.landmark", "market_hall": "hero.landmark", "concert_hall": "hero.landmark", "giant_tree": "green.tree", "fountain_plaza": "decor.marker", "lighthouse": "hero.landmark", "university_hall": "hero.landmark", "transit_station": "hero.landmark", "observation_deck": "hero.landmark"
+    }
+  },
+  "shop_items": [
+    { "item_tag": "benches", "price": 20, "category": "decoration", "label": "Park bench" },
+    { "item_tag": "planters", "price": 20, "category": "vegetation", "label": "Flower planter" },
+    { "item_tag": "string_lights", "price": 40, "category": "decoration", "label": "String lights" },
+    { "item_tag": "food_trucks", "price": 60, "category": "decoration", "label": "Food truck" },
+    { "item_tag": "fountain", "price": 80, "category": "decoration", "label": "Fountain" },
+    { "item_tag": "sculpture", "price": 80, "category": "decoration", "label": "Sculpture" }
+  ]
+}

@@ -17,6 +17,7 @@ import AppHeader from './AppHeader'
 import BlockPanel from './BlockPanel'
 import FeedPage from './FeedPage'
 import CommunityPicker from './CommunityPicker'
+import CityMessage from './CityMessage'
 import ParticleField from './ParticleField'
 import './shell-feedback.css'
 import { confirmationPresentation, postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
@@ -141,7 +142,7 @@ export default function AppShell() {
           delete planningTimers.current[id]
         }
         setPlanningIds((ids) => ids.filter((id) => !done.has(id)))
-        setNotice(current => current && current.state !== 'hidden' && done.has(current.communityId) ? { ...current, state: 'updated' } : current)
+        setNotice(current => current && current.state !== 'hidden' && done.has(current.watchedId) ? { ...current, state: 'updated' } : current)
       } catch {
         // A missed poll is not worth telling anyone about; the next one is in
         // five seconds and the city on screen is still valid.
@@ -235,20 +236,26 @@ export default function AppShell() {
     const community = city?.communities.find(c => c.community_id === result.post.community_id)
     if (typeof result.balance === 'number') setBalance(result.balance)
     else void getMe().then(me => setBalance(me.balance)).catch(() => {})
-    setNotice(postFeedback(result, community?.name ?? 'your community'))
-    const marked = result.post.community_id
+    const watched = city?.communities.find(c => c.community_id === (result.city_event ?? result.post.community_id))
+    const feedback = postFeedback(result, community?.name ?? 'your community', watched?.name)
+    setNotice(feedback)
+    // The block that is about to change, which is the one the post went to
+    // unless the server said otherwise. Watch that one, mark that one, and
+    // frame that one — a judge told the city is changing should be looking at
+    // the block that changes.
+    const marked = feedback.watchedId
     // Hidden posts must never promise a public city update.
     if (!result.post.hidden) {
       setPlanningIds(ids => ids.includes(marked) ? ids : [...ids, marked])
       clearTimeout(planningTimers.current[marked])
       planningTimers.current[marked] = setTimeout(() => {
         setPlanningIds(ids => ids.filter(id => id !== marked))
-        setNotice(current => current?.communityId === marked && current.state !== 'hidden'
+        setNotice(current => current?.watchedId === marked && current.state !== 'hidden'
           ? { ...current, state: 'unavailable' } : current)
         delete planningTimers.current[marked]
       }, PLANNING_GIVES_UP_AFTER)
     }
-    setSelectedId(result.post.community_id); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
+    setSelectedId(marked); setPanelVersion(v => v + 1); setTab('city'); setPickingLocation(false)
   }
 
   const selected = city?.communities.find((c) => c.community_id === selectedId) ?? null
@@ -305,6 +312,12 @@ export default function AppShell() {
           />
         )}
         </div>
+        {/*
+          Over the city, and only while the city owes the poster a change. It
+          fades the moment the plan lands, which is the moment the block starts
+          rebuilding underneath it.
+        */}
+        <CityMessage active={planningIds.length > 0} />
       </div>
 
       {/*
@@ -378,7 +391,7 @@ export default function AppShell() {
         </div>
         <div className="confirmation-actions">
           {notice.state !== 'hidden' && <button className="form-button" onClick={() => {
-            setSelectedId(notice.communityId); setTab('city'); setNotice(null)
+            setSelectedId(notice.watchedId); setTab('city'); setNotice(null)
           }}>View on map</button>}
           <button className="form-button" onClick={() => { setTab('shop'); setNotice(null) }}>Visit shop</button>
           <button className="form-button" onClick={() => setNotice(null)}>Dismiss</button>

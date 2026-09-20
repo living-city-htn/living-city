@@ -1,0 +1,46 @@
+/*
+ * Sits over the city, not in it: above the canvas, below the sheets, and never
+ * a hit target, so it cannot eat a tap meant for the block underneath it.
+ */
+.city-message {
+  /* Above the canvas, below every sheet: z-index 1 beats `.city-layer`, which
+     has none, and loses to the panel and the composer, which are at 3. */
+  position: absolute; z-index: 1; top: 16px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 9px;
+  max-width: calc(100% - 32px); margin: 0;
+  padding: 9px 16px 9px 13px;
+  background: var(--sheet); backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--hair); border-radius: 999px;
+  box-shadow: 0 6px 20px #18324b14;
+  font-size: 14px; font-weight: 600; white-space: nowrap;
+  pointer-events: none;
+  animation: city-message-in var(--base) var(--ease);
+  transition: opacity 520ms var(--ease), transform 520ms var(--ease);
+}
+
+/* The plan landed. Get out of the way of the block that is rebuilding. */
+.city-message[data-leaving='true'] {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.city-message-dot {
+  width: 8px; height: 8px; flex: 0 0 auto;
+  border-radius: 50%; background: var(--accent);
+  animation: city-message-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes city-message-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(calc(-1 * var(--rise))); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes city-message-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (max-width: 359px) {
+  .city-message { font-size: 13px; padding: 8px 13px 8px 11px; }
+}

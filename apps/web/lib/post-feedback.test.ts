@@ -9,6 +9,20 @@ describe('post confirmation', () => {
     expect(receipt.state).toBe('planning')
     expect(feedbackMessage(receipt)).toContain('Waiting for the next city update')
   })
+  it('watches the block the post was saved to, unless the server named another', () => {
+    expect(postFeedback(result, 'University District')).toMatchObject({
+      watchedId: 'kw:a', watchedName: 'University District',
+    })
+  })
+  it('credits the post to where it went and the change to where it happened', () => {
+    const receipt = {
+      ...postFeedback({ ...result, city_event: 'kw:uw' }, 'Laurelwood', 'UW Northwest Campus'),
+      state: 'updated' as const,
+    }
+    expect(receipt).toMatchObject({ communityId: 'kw:a', watchedId: 'kw:uw' })
+    expect(feedbackMessage(receipt)).toBe('Post saved to Laurelwood. UW Northwest Campus has a new city plan.')
+    expect(confirmationPresentation(receipt).title).toBe('UW Northwest Campus has a new city plan')
+  })
   it('shows only server-confirmed points and distinguishes pending analysis', () => {
     const receipt = postFeedback({ ...result, points_earned: 20, post: { ...result.post, status: 'pending' } }, 'Uptown')
     expect(receipt.points).toBe(20)

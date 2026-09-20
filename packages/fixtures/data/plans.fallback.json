@@ -136,7 +136,7 @@
       "taxonomy_version": "0.0.0-fallback",
       "community_id": "kw:uw-northwest-campus",
       "plan_id": "kw:uw-northwest-campus:2026-09-18T12:00:00Z",
-      "summary": "E7 atrium is hosting a student festival: lights, music, and fireworks make the campus event visible from across the city.",
+      "summary": "Glass engineering buildings around the E7 atrium. Busy on a weekday, quiet after dark.",
       "archetype": "campus_hub",
       "identity_tags": [
         "modern",
@@ -161,55 +161,46 @@
         ]
       },
       "activity": {
-        "pedestrian_density": 5,
-        "crowd_clusters": 4,
+        "pedestrian_density": 3,
+        "crowd_clusters": 1,
         "vehicle_traffic": 1,
         "behaviors": [
           "walking",
-          "dancing",
-          "performing",
+          "cycling",
+          "studying",
           "sitting"
         ]
       },
       "decorations": [
         {
-          "tag": "string_lights",
-          "prominence": 3
-        },
-        {
-          "tag": "stage",
-          "prominence": 2
-        },
-        {
           "tag": "benches",
+          "prominence": 1
+        },
+        {
+          "tag": "bike_racks",
           "prominence": 1
         }
       ],
-      "mood": "festive",
-      "palette": "sunset_orange",
+      "mood": "focused",
+      "palette": "soft_grey",
       "lighting": {
-        "signature_time": "night",
-        "intensity": 5,
-        "color_temp": "warm",
+        "signature_time": "day",
+        "intensity": 3,
+        "color_temp": "neutral",
         "accents": [
-          "string_lights",
-          "spotlights"
+          "window_glow"
         ]
       },
-      "effects": [
-        "fireworks",
-        "music_notes",
-        "sparkles"
-      ],
+      "effects": [],
       "hero_asset": null,
       "stability": {
-        "change_magnitude": "moderate",
+        "change_magnitude": "none",
         "retained_from_previous": [],
         "reasons": [
-          "E7 festival demonstration state"
+          "the venue block at rest, so a post about the event can change it"
         ]
       },
-      "confidence": 90
+      "confidence": 55
     },
     {
       "schema_version": "1.0",

@@ -16,8 +16,9 @@
  * `read`/`write` will see whatever this instance happened to load last.
  */
 import { durable, load, overwrite, save, type Serialized } from './persist'
+import { eventCommunityFor, eventPlan } from './city-events'
 import {
-  DEMO_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
+  DEMO_COMMUNITY_ID, VENUE_COMMUNITY_ID, communities, fallbackPlans, presetFestivalPlan,
   seedPosts, seedUsers, shopItems, slots,
   type CommunityPlan, type SeedPost, type SeedUser,
 } from './index'
@@ -554,6 +555,25 @@ export function applyPresetFestival(): CommunityPlan {
   state.plans.set(DEMO_COMMUNITY_ID, plan)
   touch()
   return plan
+}
+
+/**
+ * A post that announces an event, applied to the block that event is in.
+ *
+ * The stub's whole answer to "what does a post do to the city". Returns null
+ * for a post that announces nothing, which is almost all of them, and then
+ * nothing is written and no plan id moves. See `city-events.ts` for why this
+ * is a fixed word list and not a model.
+ */
+export function applyEventFromPost(post: { text: string; community_id: string }): CommunityPlan | null {
+  const target = eventCommunityFor(post, VENUE_COMMUNITY_ID)
+  if (!target) return null
+  const previous = state.plans.get(target)
+  if (!previous) return null
+  const next = eventPlan(previous, `${target}:event:${Date.now()}`)
+  state.plans.set(target, next)
+  touch()
+  return next
 }
 
 /**

@@ -16,6 +16,7 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
+import SpecBuilding from './SpecBuilding'
 import { buildingAsset, decorationAsset, heroAssetId, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
 import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
@@ -24,7 +25,7 @@ import { blockVisualState } from './visual-state'
 import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
-import type { CitySceneProps } from '@/components/city/types'
+import type { CitySceneProps, SceneBuilding } from '@/components/city/types'
 import type { CommunityGeo, CommunityPlan } from '@living-city/fixtures'
 
 /**
@@ -50,6 +51,10 @@ const GROW_MS = 230
  * enough to throw away everything memoised behind it.
  */
 const NO_SLOTS: ReadonlyArray<{ slot_id: string; x: number; y: number }> = []
+
+/** Where a described building stands: a free slot's position on its block. */
+type BuildingHome = { id: string; spec: SceneBuilding['spec']; x: number; y: number }
+const NO_HOMES: readonly BuildingHome[] = []
 
 type Palette = { ground: string; wall: string[]; roof: string; foliage: string; accent: string }
 
@@ -699,7 +704,7 @@ function TornadoDrill({ position }: { position: [number, number] }) {
 
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 const Block = memo(function Block({
-  community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
+  community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, homes, placements, onHover, onSelect, onPick, onSlotTap,
 }: {
   scale: number
   community: CommunityGeo
@@ -710,6 +715,7 @@ const Block = memo(function Block({
   planning: boolean
   drillActive: boolean
   terrainSlots: ReadonlyArray<{ x: number; y: number }>
+  homes: readonly BuildingHome[]
   slots: ReadonlyArray<{ slot_id: string; x: number; y: number }>
   placements: Map<string, string>
   onHover: (id: string | null) => void
@@ -894,6 +900,18 @@ const Block = memo(function Block({
         )
       })}
 
+      {/* The viewer's own described buildings. Private, and on a slot, never in the grid. */}
+      {homes.map((home) => (
+        <group key={home.id} position={[home.x * halfW * 0.62, 0.27, -home.y * halfH * 0.62]}>
+          <SpecBuilding
+            spec={home.spec}
+            colours={{ wall: paletteOf(home.spec.palette).wall[0]!, roof: paletteOf(home.spec.palette).roof, accent: paletteOf(home.spec.palette).accent }}
+            renderProp={(tag) => <Decoration tag={tag} palette={paletteOf(home.spec.palette)} />}
+            reducedMotion={reducedMotion}
+          />
+        </group>
+      ))}
+
       {/* Slots sit on a fraction of the block's own extent, like the flat scene. */}
       {slots.map((slot) => {
         const held = placements.get(`${community.community_id}/${slot.slot_id}`)
@@ -939,7 +957,7 @@ function useShellColours() {
 }
 
 export default function CityScene({
-  city, plans, placements, mode, selectedId, planningIds, focusTick,
+  city, plans, placements, buildings, mode, selectedId, planningIds, focusTick,
   onBlockHover, onBlockSelect, onBlockPick, onSlotTap,
   drillCommunityId = null,
 }: CitySceneProps) {
@@ -1004,6 +1022,25 @@ export default function CityScene({
     }
     return byCommunity
   }, [city.slots])
+
+  /*
+   * Each described building takes a slot nobody has placed an item on, from the
+   * last one back so the first slots stay free for the shop's items. Private
+   * layer: nothing here is drawn outside My City.
+   */
+  const homesFor = useMemo(() => {
+    const out = new Map<string, BuildingHome[]>()
+    if (mode !== 'mine') return out
+    for (const b of buildings ?? []) {
+      const free = (slotsFor.get(b.community_id) ?? []).filter((s) => !held.has(`${b.community_id}/${s.slot_id}`))
+      const list = out.get(b.community_id) ?? []
+      const slot = free[free.length - 1 - list.length]
+      if (!slot) continue
+      list.push({ id: b.id, spec: b.spec, x: slot.x, y: slot.y })
+      out.set(b.community_id, list)
+    }
+    return out
+  }, [buildings, mode, slotsFor, held])
 
   /**
    * The middle of the city's extent, not the average of its centroids. Averaging
@@ -1120,6 +1157,7 @@ export default function CityScene({
           planning={planningIds.includes(community.community_id)}
           drillActive={drillActive}
           terrainSlots={slotsFor.get(community.community_id) ?? NO_SLOTS}
+          homes={homesFor.get(community.community_id) ?? NO_HOMES}
           slots={
             mode === 'mine'
               && (community.community_id === selectedId || holding.has(community.community_id))

@@ -36,7 +36,30 @@ export type Placement = {
   id?: string
 }
 
+/**
+ * A building the viewer described, as the scene needs it. Private layer: the
+ * scene draws these in `mine` mode only, on a decoration slot, and they never
+ * touch a plan or a block's geometry (AGENTS.md, "Respect the two layers").
+ * Structural rather than imported so this seam does not depend on pipeline.
+ */
+export type SceneBuilding = {
+  id: string
+  community_id: string
+  spec: {
+    name: string
+    kind: string
+    height: string
+    storeys: number
+    palette: string
+    mood: string
+    identity_tags: string[]
+    features: string[]
+  }
+}
+
 export type CitySceneProps = {
+  /** The viewer's own described buildings. Optional, so the flat fallback ignores it. */
+  buildings?: SceneBuilding[]
   /** docs/roles/3d.md prop `city`. */
   city: CityPayload
   /** docs/roles/3d.md prop `plans`. Public layer, one accepted plan per block. */

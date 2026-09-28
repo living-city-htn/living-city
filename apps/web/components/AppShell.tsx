@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommunityPlan } from '@living-city/fixtures'
-import { CityScene, type CityPayload, type Placement } from './city'
+import { CityScene, type CityPayload, type IncidentMarker, type Placement } from './city'
 import PostComposer, { type PostLocation, type PostResult } from './PostComposer'
 import ShopPanel from './ShopPanel'
 import MyCityPanel from './MyCityPanel'
@@ -21,7 +21,10 @@ import ParticleField from './ParticleField'
 import './shell-feedback.css'
 import { confirmationPresentation, postFeedback, feedbackMessage, type PostFeedback } from '@/lib/post-feedback'
 import './post-confirmation.css'
-import { getAllPlans, getCity, getMe, getMyPlacements, getPlan, getShopCatalog } from '@/lib/api'
+import {
+  getAllPlans, getCity, getIncidentMarkers, getMe, getMyPlacements, getPlan, getShopCatalog, getWeather,
+  type WeatherReport,
+} from '@/lib/api'
 import { loadMyCity, placeItem, removePlacement, type MyCitySnapshot } from '@/lib/placement'
 import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '@/lib/live'
 
@@ -35,6 +38,11 @@ import { POLL_MS, changedPlanIds, getCityVersion, mergePlans, planIdsOf } from '
  * no mark — it promises a change the city may never make.
  */
 const PLANNING_GIVES_UP_AFTER = 45_000
+
+/** Incident markers change when staff act; a quarter-minute is soon enough. */
+const INCIDENTS_POLL_MS = 15_000
+/** The server caches weather for ten minutes, so asking more often gains nothing. */
+const WEATHER_POLL_MS = 10 * 60_000
 import type { ShopItem } from '@living-city/fixtures'
 
 const SCREEN_TITLE: Record<Tab, string> = {
@@ -79,6 +87,10 @@ export default function AppShell() {
   plansRef.current = plans
   const [sheetHeight, setSheetHeight] = useState(0)
   const [planningIds, setPlanningIds] = useState<string[]>([])
+  const [incidents, setIncidents] = useState<IncidentMarker[]>([])
+  const [weather, setWeather] = useState<WeatherReport | null>(null)
+  const [named, setNamed] = useState(true)
+  const [feedKey, setFeedKey] = useState(0)
 
   useEffect(() => {
     let live = true
@@ -97,6 +109,7 @@ export default function AppShell() {
       setPlans(loadedPlans)
       setPlacements(mine)
       setBalance(me?.balance ?? null)
+      setNamed(me?.named ?? true)
     })().catch(() => { if (live) setCityError(true) })
     return () => {
       live = false
@@ -106,6 +119,26 @@ export default function AppShell() {
   useEffect(() => {
     const timers = planningTimers.current
     return () => { for (const t of Object.values(timers)) clearTimeout(t) }
+  }, [])
+
+  /*
+   * The two overlays (docs/01 section 8.10). Each has its own slow poll and
+   * each failure leaves the last good value on screen: a missed poll must not
+   * blink every pin off the map, and a weather outage must not blank the city.
+   */
+  useEffect(() => {
+    let live = true
+    const load = () => getIncidentMarkers().then((rows) => { if (live) setIncidents(rows) }).catch(() => {})
+    void load()
+    const id = setInterval(load, INCIDENTS_POLL_MS)
+    return () => { live = false; clearInterval(id) }
+  }, [])
+  useEffect(() => {
+    let live = true
+    const load = () => getWeather().then((w) => { if (live) setWeather(w) }).catch(() => {})
+    void load()
+    const id = setInterval(load, WEATHER_POLL_MS)
+    return () => { live = false; clearInterval(id) }
   }, [])
 
   /**
@@ -297,6 +330,8 @@ export default function AppShell() {
             planningIds={planningIds}
             focusTick={focusTick}
             drillCommunityId={drillCommunityId}
+            incidents={incidents}
+            weather={weather}
             onBlockSelect={setSelectedId}
             onBlockPick={(id, point) => {
               if (tab !== 'post' || !pickingLocation) return
@@ -314,6 +349,14 @@ export default function AppShell() {
           rebuilding underneath it.
         */}
         <CityMessage active={planningIds.length > 0} />
+        {weather && (
+          <div className="weather-chip" role="status" aria-label={`Weather in Kitchener–Waterloo: ${weather.label}`}
+            style={{ ['--dot' as string]: weather.sky[0] }}>
+            <span className="weather-dot" aria-hidden="true" />
+            <span>{weather.label}</span>
+            {weather.temperature_c !== null && <span className="weather-temp">{Math.round(weather.temperature_c)}°C</span>}
+          </div>
+        )}
       </div>
 
       {/*
@@ -334,7 +377,8 @@ export default function AppShell() {
       )}
 
       <FeedPage active={tab === 'feed'} communities={city?.communities ?? []} onLiked={setBalance}
-        onCommunity={id => { setSelectedId(id); setTab('city') }} />
+        onCommunity={id => { setSelectedId(id); setTab('city') }}
+        named={named} onNamed={() => { setNamed(true); setFeedKey(v => v + 1) }} refreshKey={feedKey} />
 
       {city && (
         <PostComposer

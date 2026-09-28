@@ -34,5 +34,5 @@ export const isFallbackScene = typeof provided !== 'function'
 
 export const CityScene = (isFallbackScene ? FlatCityScene : provided) as ComponentType<CitySceneProps>
 
-export type { CitySceneProps, CityPayload, Placement } from './types'
+export type { CitySceneProps, CityPayload, CityWeather, IncidentMarker, Placement } from './types'
 export default CityScene

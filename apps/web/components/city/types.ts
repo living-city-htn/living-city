@@ -11,6 +11,26 @@
  */
 import type { CommunityGeo, CommunityPlan, DecorationSlot } from '@living-city/fixtures'
 
+/**
+ * An open incident as the public map shows it: where, what, and whether staff
+ * have verified it. No reporter, no text. docs/01 section 8.10.
+ */
+export type IncidentMarker = {
+  id: string
+  community_id: string
+  type: string
+  status: 'reported' | 'verified'
+}
+
+/** Live weather, the part the scene draws. docs/01 section 8.10. */
+export type CityWeather = {
+  condition: string
+  effect: 'rain' | 'snow' | 'fog' | null
+  intensity: number
+  is_day: boolean
+  sky: [string, string]
+}
+
 /** Exactly the body of `GET /api/city` (docs/02 section 8). */
 export type CityPayload = {
   communities: CommunityGeo[]
@@ -95,4 +115,15 @@ export type CitySceneProps = {
    * rather than scene state, for the same reason as the drill above.
    */
   focusTick?: number
+  /**
+   * Open incidents, drawn as pins on their blocks and coloured by status. An
+   * overlay, never part of a plan (docs/01 section 8.6). Optional so the flat
+   * fallback compiles untouched.
+   */
+  incidents?: IncidentMarker[]
+  /**
+   * Live weather over the whole city, or null for none. Overrides any
+   * weather-type effect a plan carries (docs/01 section 8.10).
+   */
+  weather?: CityWeather | null
 }

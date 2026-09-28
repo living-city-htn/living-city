@@ -14,13 +14,18 @@
  */
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef, type MutableRefObject, type RefObject } from 'react'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
-import { Html, OrbitControls } from '@react-three/drei'
+import { Html, OrbitControls, PerformanceMonitor } from '@react-three/drei'
 import { AssetInstances, SceneAsset, type AssetInstance } from './SceneAsset'
 import { buildingAsset, decorationAsset, heroAssetId, waterCell, vegetationAsset, plazaDecorations } from './asset-layout'
 import { poseForSelection, type CameraPose } from './camera-focus'
 import { CIVIC_HALL_COMMUNITY_ID, civicHallCellIndex, isCivicHallDrill } from './civic-hall'
 import { e7EventLabel, isE7FestivalLive } from './e7-event'
 import { blockVisualState } from './visual-state'
+import {
+  blockEffects, budget, groupByCommunity, mix, pinLayout, sceneLighting, weatherParticleCount,
+  type SceneIncident, type SceneWeather,
+} from './overlays'
+import { STATUS_COLORS, incidentLabel } from '@/lib/incident-types'
 import styles from './CivicDrill.module.css'
 import * as THREE from 'three'
 import { getCityAsset, placeBlock, toLocalMetres, type Cell } from '@living-city/modeling'
@@ -50,6 +55,7 @@ const GROW_MS = 230
  * enough to throw away everything memoised behind it.
  */
 const NO_SLOTS: ReadonlyArray<{ slot_id: string; x: number; y: number }> = []
+const NO_INCIDENTS: SceneIncident[] = []
 
 type Palette = { ground: string; wall: string[]; roof: string; foliage: string; accent: string }
 
@@ -458,9 +464,9 @@ function Fireworks({ spread, seed }: { spread: number; seed: string }) {
 }
 
 /** Floating particles over a block, one instanced mesh per effect. */
-function Effect({ tag, spread, seed }: { tag: string; spread: number; seed: string }) {
+function Effect({ tag, spread, seed, reduced = false }: { tag: string; spread: number; seed: string; reduced?: boolean }) {
   const look = EFFECT_LOOK[tag] ?? EFFECT_LOOK.sparkles!
-  const COUNT = 14
+  const COUNT = budget(14, reduced)
   const parts = useMemo(() => {
     const r = seeded(`fx:${tag}:${seed}`)
     return Array.from({ length: COUNT }, () => ({
@@ -697,9 +703,113 @@ function TornadoDrill({ position }: { position: [number, number] }) {
   </group>
 }
 
+/** The name and mood of the block under the pointer. PRD 8.12. */
+function HoverLabel({ name, mood }: { name: string; mood: string | null }) {
+  return <Html position={[0, 1.25, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+    <div className="scene-hover-label" role="tooltip">
+      <strong>{name}</strong>
+      {mood && <span>{mood}</span>}
+    </div>
+  </Html>
+}
+
+/**
+ * Pins for a block's open incidents, coloured by status: amber while
+ * unverified, red once staff verify it. Gone when resolved, because resolved
+ * incidents never reach the scene. docs/01 section 8.10.
+ */
+function IncidentPins({ incidents, spread }: { incidents: SceneIncident[]; spread: number }) {
+  const reducedMotion = useReducedMotion()
+  const group = useRef<THREE.Group>(null)
+  const { pins, overflow } = useMemo(() => pinLayout(incidents, spread), [incidents, spread])
+  useFrame(({ clock }) => {
+    if (!group.current || reducedMotion) return
+    group.current.position.y = Math.sin(clock.elapsedTime * 2.2) * 0.03
+  })
+  return <group ref={group}>
+    {pins.map((pin) => (
+      <group key={pin.id} position={[pin.x, 0.27, pin.z]}>
+        <mesh position={[0, 0.34, 0]} castShadow raycast={() => {}}>
+          <cylinderGeometry args={[0.012, 0.012, 0.5, 6]} />
+          <meshLambertMaterial color="#3a4048" />
+        </mesh>
+        <mesh position={[0, 0.66, 0]} raycast={() => {}}>
+          <sphereGeometry args={[0.085, 12, 12]} />
+          <meshBasicMaterial color={STATUS_COLORS[pin.status]} />
+        </mesh>
+        <Html position={[0, 0.66, 0]} center zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+          <span className="scene-incident-pin" data-status={pin.status}
+            aria-label={`${incidentLabel(pin.type)}, ${pin.status === 'verified' ? 'verified' : 'unverified'}`}>!</span>
+        </Html>
+      </group>
+    ))}
+    {overflow > 0 && (
+      <Html position={[pins.at(-1)!.x + 0.22, 0.95, pins.at(-1)!.z]} center zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+        <span className="scene-incident-more">+{overflow}</span>
+      </Html>
+    )}
+  </group>
+}
+
+/**
+ * Live weather across the whole city: rain streaks, snowflakes, or low fog
+ * banks. One instanced mesh, so it costs the same however many blocks there
+ * are. Reduced motion freezes it in place rather than hiding it.
+ */
+function WeatherLayer({ weather, radius, reduced }: { weather: SceneWeather; radius: number; reduced: boolean }) {
+  const reducedMotion = useReducedMotion()
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  const count = weatherParticleCount(weather, reduced)
+  const parts = useMemo(() => {
+    const r = seeded(`weather:${weather.effect}:${count}`)
+    return Array.from({ length: count }, () => ({
+      x: (r() * 2 - 1) * radius, z: (r() * 2 - 1) * radius, offset: r(), sway: r() * Math.PI * 2,
+    }))
+  }, [weather.effect, count, radius])
+  const HEIGHT = 7
+  useFrame(({ clock }) => {
+    const m = mesh.current
+    if (!m) return
+    const t = reducedMotion ? 0 : clock.elapsedTime
+    const speed = weather.effect === 'rain' ? 0.9 : weather.effect === 'snow' ? 0.12 : 0.01
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i]!
+      const fall = ((p.offset - t * speed) % 1 + 1) % 1
+      if (weather.effect === 'fog') {
+        dummy.position.set(p.x + Math.sin(t * 0.1 + p.sway) * 0.8, 0.5 + p.offset * 0.6, p.z)
+        dummy.rotation.set(-Math.PI / 2, 0, p.sway)
+        dummy.scale.set(4.5, 3, 1)
+      } else if (weather.effect === 'snow') {
+        dummy.position.set(p.x + Math.sin(t + p.sway) * 0.25, fall * HEIGHT, p.z)
+        dummy.rotation.set(t + p.sway, p.sway, 0)
+        dummy.scale.setScalar(0.05)
+      } else {
+        dummy.position.set(p.x, fall * HEIGHT, p.z)
+        dummy.rotation.set(0.12, 0, 0)
+        dummy.scale.set(0.012, 0.28, 0.012)
+      }
+      dummy.updateMatrix()
+      m.setMatrixAt(i, dummy.matrix)
+    }
+    m.instanceMatrix.needsUpdate = true
+  })
+  if (count === 0) return null
+  return <instancedMesh key={`${weather.effect}:${count}`} ref={mesh} args={[undefined, undefined, count]} raycast={() => {}}>
+    {weather.effect === 'fog' ? <planeGeometry args={[1, 1]} /> : weather.effect === 'snow' ? <octahedronGeometry args={[1, 0]} /> : <boxGeometry args={[1, 1, 1]} />}
+    <meshBasicMaterial
+      color={weather.effect === 'rain' ? '#8fa6bd' : '#ffffff'}
+      transparent
+      opacity={weather.effect === 'fog' ? 0.18 : weather.effect === 'rain' ? 0.55 : 0.9}
+      depthWrite={false}
+      side={weather.effect === 'fog' ? THREE.DoubleSide : THREE.FrontSide}
+    />
+  </instancedMesh>
+}
+
 /** A block: slab, its buildings, its planting, and whatever is in its slots. */
 const Block = memo(function Block({
   community, plan, origin, cells, scale, state, planning, drillActive, slots, terrainSlots, placements, onHover, onSelect, onPick, onSlotTap,
+  incidents = NO_INCIDENTS, weather = null, reduced = false,
 }: {
   scale: number
   community: CommunityGeo
@@ -716,6 +826,9 @@ const Block = memo(function Block({
   onSelect: (id: string) => void
   onPick: (id: string, point: [number, number]) => void
   onSlotTap?: (communityId: string, slotId: string) => void
+  incidents?: SceneIncident[]
+  weather?: SceneWeather | null
+  reduced?: boolean
 }) {
   const reducedMotion = useReducedMotion()
   const group = useRef<THREE.Group>(null)
@@ -763,10 +876,10 @@ const Block = memo(function Block({
    * little on top, capped so a busy block stays readable rather than becoming
    * a smear. A plan with no activity at all draws nobody.
    */
-  const crowdCount = Math.min(
+  const crowdCount = budget(Math.min(
     20,
     Math.round((plan?.activity.pedestrian_density ?? 0) * 2.4 + (plan?.activity.crowd_clusters ?? 0) * 1.6),
-  )
+  ), reduced)
 
   /*
    * An open cell is where a decoration goes. The plan names them in priority
@@ -854,10 +967,12 @@ const Block = memo(function Block({
           colour={palette.roof}
         />
       )}
-      {(plan?.effects ?? []).slice(0, 3).map((tag) => tag === 'fireworks'
+      {blockEffects(plan?.effects, weather).slice(0, 3).map((tag) => tag === 'fireworks'
         ? <Fireworks key={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />
-        : <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} />,
+        : <Effect key={tag} tag={tag} spread={Math.min(halfW, halfH) * 0.7} seed={community.community_id} reduced={reduced} />,
       )}
+      {incidents.length > 0 && <IncidentPins incidents={incidents} spread={Math.min(halfW, halfH)} />}
+      {state === 'hovered' && <HoverLabel name={community.name} mood={plan?.mood ?? null} />}
 
       {Array.from(assetGroups, ([assetId, group]) => <AssetInstances key={assetId} assetId={assetId} instances={group.instances}
         fallback={<>{group.indices.map((i) => proceduralCell(cells[i]!, i))}</>} />)}
@@ -941,7 +1056,7 @@ function useShellColours() {
 export default function CityScene({
   city, plans, placements, mode, selectedId, planningIds, focusTick,
   onBlockHover, onBlockSelect, onBlockPick, onSlotTap,
-  drillCommunityId = null,
+  drillCommunityId = null, incidents, weather = null,
 }: CitySceneProps) {
   // R3F cannot render on the server, so wait for the client.
   const [ready, setReady] = useState(false)
@@ -949,6 +1064,19 @@ export default function CityScene({
   const shell = useShellColours()
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const focusActive = useRef(true)
+  /*
+   * Reduced detail (PRD 8.1): below 30 fps the city drops its pixel ratio,
+   * its shadows, and half its people and particles. Sticky once tripped, so it
+   * does not flap back and forth, and forced with `?detail=low` for testing on
+   * a laptop that never drops a frame.
+   */
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('detail') === 'low') setReduced(true)
+  }, [])
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const incidentsFor = useMemo(() => groupByCommunity(incidents ?? NO_INCIDENTS), [incidents])
+  const lighting = sceneLighting(weather)
   // The rehearsal is read here, never started here. The operator runs it from
   // their own panel: a control floating over the city put an operator button in
   // front of the judges and covered the block it was talking about.
@@ -974,7 +1102,10 @@ export default function CityScene({
   const cityRef = useRef<THREE.Group>(null)
 
   // Stable, so a block is not re-rendered merely by a new closure.
-  const hover = useCallback((id: string | null) => onBlockHover?.(id), [onBlockHover])
+  const hover = useCallback((id: string | null) => {
+    setHoveredId(id)
+    onBlockHover?.(id)
+  }, [onBlockHover])
   const select = useCallback((id: string) => onBlockSelect?.(id), [onBlockSelect])
   const pick = useCallback(
     (id: string, point: [number, number]) => onBlockPick?.(id, point),
@@ -1072,11 +1203,12 @@ export default function CityScene({
     <Canvas
       flat
       shadows
-      dpr={[1, 1.8]}
+      dpr={reduced ? 1 : [1, 1.8]}
       camera={{ position: [0, 17, 23], fov: 40 }}
       style={{ width: '100%', height: '100%' }}
     >
-      <color attach="background" args={[shell.background]} />
+      <color attach="background" args={[mix(shell.background, lighting.tint, lighting.wash)]} />
+      <PerformanceMonitor flipflops={1} onDecline={() => setReduced(true)} onFallback={() => setReduced(true)} />
       {/*
         No fog. The camera distance changes with the viewport shape, so a fixed
         fog band that looked like haze on a laptop bleached the whole city on a
@@ -1088,12 +1220,12 @@ export default function CityScene({
         orange. Lighting is a property of a plan, so a festive block carries its
         own warm light below instead.
       */}
-      <ambientLight intensity={0.9} color="#ffffff" />
+      <ambientLight intensity={lighting.ambient} color="#ffffff" />
       <directionalLight
         position={[14, 22, 10]}
-        intensity={1.35}
+        intensity={lighting.sun}
         color="#ffffff"
-        castShadow
+        castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
 
@@ -1116,7 +1248,7 @@ export default function CityScene({
           origin={origin}
           cells={cells}
           scale={scale}
-          state={selectedId === community.community_id ? 'selected' : 'idle'}
+          state={selectedId === community.community_id ? 'selected' : hoveredId === community.community_id ? 'hovered' : 'idle'}
           planning={planningIds.includes(community.community_id)}
           drillActive={drillActive}
           terrainSlots={slotsFor.get(community.community_id) ?? NO_SLOTS}
@@ -1131,9 +1263,13 @@ export default function CityScene({
           onSelect={select}
           onPick={pick}
           onSlotTap={onSlotTap}
+          incidents={incidentsFor.get(community.community_id) ?? NO_INCIDENTS}
+          weather={weather}
+          reduced={reduced}
         />
       ))}
       </group>
+      {weather?.effect && <WeatherLayer weather={weather} radius={CITY_UNITS * 0.55} reduced={reduced} />}
 
       {/* Tap empty space to deselect (PRD 8.12). */}
       <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} onClick={() => onBlockSelect?.(null)} receiveShadow>

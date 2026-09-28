@@ -1,4 +1,5 @@
 import './globals.css'
+import '@/components/prd-features.css'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import RegisterServiceWorker from '@/components/RegisterServiceWorker'

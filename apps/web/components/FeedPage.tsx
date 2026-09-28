@@ -4,10 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getFeed, type PostRow } from '@/lib/api'
 import type { CityPayload } from './city'
 import PostList from './PostList'
+import NameCard from './NameCard'
 import './journey.css'
 
-export default function FeedPage({ communities, onCommunity, onLiked, active = true, refreshKey = 0 }: {
+export default function FeedPage({ communities, onCommunity, onLiked, active = true, refreshKey = 0, named = true, onNamed }: {
   active?: boolean
+  /** False until the person has chosen how their posts are signed. */
+  named?: boolean
+  onNamed?: () => void
   communities: CityPayload['communities']
   onCommunity: (id: string) => void
   onLiked: (balance: number) => void
@@ -40,6 +44,7 @@ export default function FeedPage({ communities, onCommunity, onLiked, active = t
       <button className="form-button" disabled={loading} onClick={() => void refresh()}>Refresh feed</button>
     </header>
     <div className="feed-layout"><div className="feed-stream" aria-busy={loading}>
+      {!named && onNamed && <NameCard onSaved={onNamed} />}
       {loading && <div className="journey-state" role="status">Gathering moments from the city…</div>}
       {error && <div className="journey-state"><p role="alert">We couldn’t load the latest posts. Check your connection and try again.</p><button className="form-button" onClick={() => void refresh()}>Try again</button></div>}
       {(posts.length > 0 || (!loading && !error)) && <PostList posts={posts} onLiked={onLiked} communities={names} onCommunity={onCommunity} empty="Your city’s story starts here. Share a moment from the Post tab." />}

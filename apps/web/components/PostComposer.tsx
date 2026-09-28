@@ -16,6 +16,7 @@
  * fallback, and never resending a request whose outcome is unknown.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { INCIDENT_LABELS, INCIDENT_TYPES, type IncidentType } from '@/lib/incident-types'
 import type { CityPayload } from './city'
 import { cameraErrorMessage, canUseLiveCamera } from '@/lib/post-camera'
 import { preparePhoto } from '@/lib/post-photo'
@@ -67,6 +68,13 @@ export default function PostComposer({
   const [recState, setRecState] = useState<RecorderState>('idle')
   const [recording, setRecording] = useState<Recording | null>(null)
   const [elapsed, setElapsed] = useState(0)
+  /*
+   * The incident report (docs/01 section 8.10): the same form with a toggle and
+   * a type. It still posts normally; the server also files an incident marked
+   * "reported by user", which shows on the map as unverified until staff act.
+   */
+  const [reporting, setReporting] = useState(false)
+  const [incidentType, setIncidentType] = useState<IncidentType>('fallen_tree')
   const submitting = useRef(false)
   const locationRequest = useRef(0)
   const cameraInput = useRef<HTMLInputElement>(null)
@@ -279,6 +287,7 @@ export default function PostComposer({
         body: JSON.stringify({
           text: text.trim(), image_url: withoutPhoto ? null : photo, audio_url: audio,
           community_id: location.community_id, lon: location.lon, lat: location.lat,
+          ...(reporting ? { is_incident_report: true, incident_type: incidentType } : {}),
         }),
       })
       const data = await response.json()
@@ -293,6 +302,7 @@ export default function PostComposer({
       setNotice(data.voice?.notice ?? voiceNotice(data.voice?.state ?? 'none') ?? '')
       setText('')
       setPhoto(null)
+      setReporting(false)
       setPhotoUnavailable(false)
       discardRecording()
       setStep('choose')
@@ -510,6 +520,29 @@ export default function PostComposer({
                   </button>
                 </div>
                 {location && <p className="muted" role="status">{location.label}</p>}
+              </div>
+
+              <div className="composer-incident">
+                <label className="incident-toggle">
+                  <input type="checkbox" checked={reporting} onChange={(e) => setReporting(e.target.checked)} />
+                  <span>
+                    Report an incident
+                    <small>Flooding, a fallen tree, a blocked road, an outage…</small>
+                  </span>
+                </label>
+                {reporting && (
+                  <>
+                    <label className="field-label incident-type" htmlFor="post-incident-type">What kind?</label>
+                    <select id="post-incident-type" value={incidentType}
+                      onChange={(e) => setIncidentType(e.target.value as IncidentType)}>
+                      {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{INCIDENT_LABELS[t]}</option>)}
+                    </select>
+                    <p className="incident-note">
+                      City staff will see it. It shows on the map as unverified until they check it.
+                      This is not an emergency line — call 911 if anyone is in danger.
+                    </p>
+                  </>
+                )}
               </div>
             </fieldset>
 

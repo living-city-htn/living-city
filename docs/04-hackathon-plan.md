@@ -137,6 +137,8 @@ Screenshots, video, Devpost, README, submission.
 
 These are in the PRD and stay there. None of them appear in the script, so none of them are built before Gate 3, and most not at all. If an AI assistant or a teammate starts one, stop and point here.
 
+> **Update, after the event (Sept 2026).** Branch `product/prd-complete` builds the product items below that the PRD requires: comments, daily caps and the first-post bonus with a points ledger, incident status through resolved with staff notes, filters and CSV export, computed trend panels, live weather from Open-Meteo, the incident report toggle with map markers, a hover label, reduced-detail mode and chosen display names. The list stays as the record of what the weekend deliberately left out. Still not built: a ledger history page, a separate inventory screen, the time slider, a second city, polygon simplification, and the breadth caps.
+
 - Comments. Likes carry engagement.
 - Daily caps on points. Nobody farms in a demo.
 - Ledger history page. The balance is enough.

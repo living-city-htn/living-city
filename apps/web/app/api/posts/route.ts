@@ -71,6 +71,7 @@ export async function POST(req: Request) {
       lat: body.lat ?? selected?.centroid[1] ?? 0,
       community_id: assigned,
       is_incident_report: body.is_incident_report,
+      incident_type: body.incident_type,
     })
     return { post, balance: balance(user.id), points_earned: balance(user.id) - before }
   })

@@ -1,27 +1,13 @@
-import { listIncidents, listPosts, read } from '@living-city/fixtures/store'
+import { read } from '@living-city/fixtures/store'
 import { json, requireGovernment } from '@/lib/stub'
+import { filtersFrom } from '@/lib/civic'
+import { incidentRows } from '@/lib/civic-incidents'
 
-// GET /api/civic/incidents?community=&type=&status=
-// Role-gated to government in the real build; the gate is Civic's, from Stage 1.
+// GET /api/civic/incidents?community=&type=&status=&range=24h|7d|30d&from=&to=
+// Government only. docs/01 section 8.9.
 export async function GET(req: Request) {
   const user = requireGovernment(req)
   if (user instanceof Response) return user
-  const { searchParams } = new URL(req.url)
-  const filters = {
-    community: searchParams.get('community') ?? undefined,
-    type: searchParams.get('type') ?? undefined,
-    status: searchParams.get('status') ?? undefined,
-  }
-  return json({
-    incidents: await read(() => listIncidents(filters).map((incident) => {
-      const post = listPosts({ includeHidden: true }).find((candidate) => candidate.id === incident.post_id)
-      return {
-        ...incident,
-        post: post ? {
-          text: post.text,
-          image_url: post.image_url,
-        } : null,
-      }
-    })),
-  })
+  const filters = filtersFrom(new URL(req.url).searchParams)
+  return json({ incidents: await read(() => incidentRows(filters)) })
 }

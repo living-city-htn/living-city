@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PostRow } from '@/lib/api'
 import { toggleLike } from '@/lib/api'
+import Comments from './Comments'
 
 const when = (iso: string) => {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -26,6 +27,7 @@ function Post({ post, onLiked, community, onCommunity }: { post: PostRow; onLike
   const [broken, setBroken] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [comments, setComments] = useState(post.comments ?? 0)
   const inFlight = useRef(false)
 
   // A feed refresh can reflect a like made from the community inspector.
@@ -80,6 +82,7 @@ function Post({ post, onLiked, community, onCommunity }: { post: PostRow; onLike
         </svg>
         <span>{likes} {likes === 1 ? 'like' : 'likes'}</span>
       </button>
+      <Comments postId={post.id} count={comments} onCount={setComments} onBalance={onLiked} />
     </div>
   )
 

@@ -37,3 +37,11 @@ not exist yet.
 
 To replace one, drop a new file in `apps/web/public/seed` and update the row
 in `posts.seed.json` plus this table.
+
+## Drill illustration
+
+`drill-simulation-city-hall.svg` — drawn for the repo, not a photograph. It is
+attached only to the government account's drill post (`p-114`, `scenario: "drill"`)
+and is stamped "SIMULATION" and "illustration, not a photo" inside the area both
+the feed (4:3) and the city inspector (16:10) crops keep, so it cannot pass for a
+resident's evidence photo.

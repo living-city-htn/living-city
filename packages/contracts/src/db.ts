@@ -27,6 +27,15 @@ export const post = z.object({
 
 export const like = z.object({ user_id: z.string(), post_id: z.string(), created_at: z.string() })
 
+/** One level, text only. docs/01 section 8.3. */
+export const comment = z.object({
+  id: z.string(),
+  post_id: z.string(),
+  user_id: z.string(),
+  text: z.string().min(1).max(500),
+  created_at: z.string(),
+})
+
 export const pointsLedgerEntry = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -67,8 +76,8 @@ export const incident = z.object({
   location_hint: z.string().nullable(),
   reported_at: z.string(),
   source: z.string(),
-  /** "resolved" is product scope, not built this weekend. docs/02 section 4.7. */
-  status: z.enum(['reported', 'verified']),
+  /** reported -> verified -> resolved. Resolved incidents leave the public map. */
+  status: z.enum(['reported', 'verified', 'resolved']),
   staff_note: z.string().nullable(),
   updated_at: z.string(),
 })
@@ -87,6 +96,7 @@ export const POINTS = {
 
 export type User = z.infer<typeof user>
 export type Post = z.infer<typeof post>
+export type Comment = z.infer<typeof comment>
 export type Incident = z.infer<typeof incident>
 export type Placement = z.infer<typeof placement>
 export type ShopItem = z.infer<typeof shopItem>

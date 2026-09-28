@@ -1,0 +1,140 @@
+/*
+ * Comments, the weather chip, the name card, the hover label and incident
+ * pins. Same tokens as globals.css: white surfaces, hairlines, one accent.
+ */
+
+/* --- comments ------------------------------------------------------------ */
+.post-actions { flex-wrap: wrap; }
+.comments { display: contents; }
+.comments-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; min-width: 44px; padding: 8px 12px;
+  border: 0; border-radius: 14px; background: transparent; color: var(--label); cursor: pointer;
+}
+.comments-toggle span { font: 600 12px/1 var(--mono); }
+.comments-toggle:hover, .comments-toggle[aria-expanded='true'] { background: var(--fill); color: var(--ink); }
+.comments-body { flex: 1 0 100%; padding: 6px 4px 2px; }
+.comment-list { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.comment { font-size: 14px; line-height: 1.45; }
+.comment strong { font-weight: 600; margin-right: 4px; }
+.comment[data-mine='true'] strong { color: var(--accent); }
+.comment-form { display: flex; gap: 8px; align-items: center; }
+.comment-form input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 10px 12px;
+  background: var(--fill); border: 1px solid transparent; border-radius: var(--r-card);
+  font-size: 16px; /* under 16px iOS zooms on focus */
+}
+.comment-form input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.comment-earned { margin: 6px 0 0; font: 600 12px/1.2 var(--mono); color: #1a7f37; }
+
+/* --- weather chip over the city ------------------------------------------- */
+.weather-chip {
+  position: absolute; left: 16px; top: calc(var(--header-h) + 8px); z-index: 3;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92); border: 1px solid var(--hair);
+  font-size: 13px; color: var(--ink); pointer-events: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.weather-chip .weather-temp { font: 600 12px/1 var(--mono); color: var(--label); }
+.weather-chip .weather-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--dot, #8ec5ff); }
+.viewport[data-shown='false'] .weather-chip { display: none; }
+
+/* --- name card on the feed ------------------------------------------------ */
+.name-card {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px;
+  padding: 14px 16px; margin-bottom: 18px;
+  border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--surface);
+}
+.name-card p { margin: 0; flex: 1 1 220px; font-size: 14px; color: var(--label); }
+.name-card p strong { color: var(--ink); font-weight: 600; }
+.name-card form { display: flex; gap: 8px; flex: 1 1 260px; }
+.name-card input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 10px 12px; font-size: 16px;
+  background: var(--fill); border: 1px solid transparent; border-radius: var(--r-card);
+}
+.name-card input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.name-card .form-error { flex-basis: 100%; margin: 0; }
+
+/* --- in-scene labels ------------------------------------------------------ */
+.scene-hover-label {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 6px 10px; border-radius: 10px; white-space: nowrap;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid var(--hair);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-size: 12px; line-height: 1.25; color: var(--ink); transform: translateY(-6px);
+}
+.scene-hover-label strong { font-size: 13px; font-weight: 600; }
+.scene-hover-label span { color: var(--label); text-transform: capitalize; }
+.scene-incident-pin {
+  display: grid; place-items: center; width: 16px; height: 16px;
+  font: 800 11px/1 -apple-system, BlinkMacSystemFont, sans-serif; color: #fff;
+}
+.scene-incident-pin[data-status='reported'] { color: #1d1d1f; }
+.scene-incident-more {
+  padding: 1px 6px; border-radius: 999px; background: #1d1d1f; color: #fff;
+  font: 600 11px/1.5 var(--mono);
+}
+
+/* --- incident report on the composer -------------------------------------- */
+.incident-toggle {
+  display: flex; align-items: center; gap: 12px; min-height: 48px;
+  padding: 10px 14px; border-radius: var(--r-card); background: var(--fill); cursor: pointer;
+}
+.incident-toggle input { width: 20px; height: 20px; accent-color: #d93025; flex: 0 0 auto; }
+.incident-toggle span { font-size: 15px; }
+.incident-toggle small { display: block; color: var(--label); font-size: 13px; }
+.incident-type { margin-top: 10px; }
+.incident-note { margin: 8px 2px 0; font-size: 13px; color: var(--label); }
+
+/* --- civic desk ----------------------------------------------------------- */
+.gov-weather {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 12px 16px; margin-bottom: 16px;
+  border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--surface); font-size: 14px;
+}
+.gov-weather .weather-dot { width: 10px; height: 10px; border-radius: 999px; }
+.gov-weather-note { color: var(--label); font: 12px/1.3 var(--mono); }
+.gov-filters {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;
+  align-items: end; margin-bottom: 16px;
+}
+.gov-filters label { display: flex; flex-direction: column; gap: 6px; }
+.gov-filters label > span { color: var(--label); font: 11px/1.2 var(--mono); text-transform: uppercase; }
+.gov-filters select { padding-top: 10px; padding-bottom: 10px; }
+.gov-filter-actions { display: flex; gap: 8px; }
+.gov-filter-actions .op-btn { flex: 1; text-align: center; text-decoration: none; color: inherit; }
+.gov-summary { margin: 0 0 14px; color: var(--label); font: 12px/1.4 var(--mono); }
+.gov-status-resolved { background: #eceef1; color: #4a5260; }
+.gov-thumb-empty { display: grid; place-items: center; color: var(--label); font: 11px/1 var(--mono); }
+.gov-meta-wide { flex-basis: 100%; }
+.gov-note { display: flex; gap: 8px; margin-bottom: 12px; }
+.gov-note input {
+  flex: 1; min-width: 0; min-height: 40px; padding: 8px 12px; font-size: 16px;
+  background: var(--fill); border: 1px solid transparent; border-radius: 10px;
+}
+.gov-note input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+.gov-trends { margin-top: 40px; }
+.gov-trends-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.gov-trends-head h2 { font-size: 22px; }
+.gov-trends-head select { width: auto; }
+.trend-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.trend-row {
+  display: grid; grid-template-columns: minmax(140px, 1fr) minmax(160px, 240px) minmax(200px, 1.4fr);
+  gap: 12px 20px; align-items: start;
+  padding: 14px 16px; border: 1px solid var(--hair); border-radius: var(--r-card); background: var(--surface);
+}
+.trend-name { display: flex; flex-direction: column; gap: 2px; }
+.trend-mood { color: var(--label); font-size: 13px; text-transform: capitalize; }
+.trend-chart { margin: 0; }
+.trend-axis { stroke: var(--hair); stroke-width: 1; }
+.trend-bar { fill: var(--accent); }
+.trend-stats { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; }
+.trend-stats dt { color: var(--label); font: 11px/1.2 var(--mono); text-transform: uppercase; }
+.trend-stats dd { margin: 3px 0 0; font-size: 14px; }
+.trend-wide { flex-basis: 100%; }
+.trend-change { font: 600 12px/1 var(--mono); color: var(--label); }
+.trend-note { grid-column: 1 / -1; margin: 0; color: var(--label); font-size: 12px; }
+@media (max-width: 720px) {
+  .trend-row { grid-template-columns: 1fr; }
+}

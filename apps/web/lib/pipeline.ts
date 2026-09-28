@@ -23,7 +23,7 @@ import {
   resolveImage, runCommunityCycle, type AggregatablePost, type CommunityCycleState,
   type VoiceResult,
 } from '@living-city/pipeline'
-import { listCommunities, listPosts, likeCount } from '@living-city/fixtures/store'
+import { commentCount, listCommunities, listPosts, likeCount } from '@living-city/fixtures/store'
 
 /**
  * The one switch. Product's stub owns every request while this is false.
@@ -181,7 +181,8 @@ const aggregatableFor = (communityId: string): AggregatablePost[] => {
       hidden: post.hidden,
       status: post.status,
       analysis,
-      engagement: likeCount(post.id),
+      // docs/02 section 7: likes + 2 x comments.
+      engagement: likeCount(post.id) + 2 * commentCount(post.id),
     })
   }
   return out

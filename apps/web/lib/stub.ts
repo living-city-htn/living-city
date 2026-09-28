@@ -21,8 +21,7 @@
  * docs/02 section 8 exactly; the body is throwaway, the contract is not.
  */
 import { NextResponse } from 'next/server'
-import { seedUsers } from '@living-city/fixtures'
-import { getState, likeCount } from '@living-city/fixtures/store'
+import { commentCount, displayNameOf, getState, likeCount } from '@living-city/fixtures/store'
 import {
   AUTHENTICITY_GATE, authenticityOf, isUnverified, type Authenticity,
 } from './authenticity'
@@ -71,6 +70,7 @@ export type PostWithMeta = {
   author_name: string
   likes: number
   liked: boolean
+  comments: number
   [key: string]: unknown
 }
 
@@ -78,10 +78,10 @@ export function withPostMeta<T extends { id: string; user_id: string }>(posts: T
   author_name: string
   likes: number
   liked: boolean
+  comments: number
   authenticity: Authenticity | null
   unverified: boolean
 }> {
-  const names = new Map(seedUsers.map((u) => [u.id, u.display_name]))
   const likes = getState().likes
   return posts.map((p) => {
     // Advisory, and absent entirely when the gate is off. A null score means
@@ -89,9 +89,10 @@ export function withPostMeta<T extends { id: string; user_id: string }>(posts: T
     const authenticity = AUTHENTICITY_GATE ? authenticityOf(p.id) : null
     return {
       ...p,
-      author_name: names.get(p.user_id) ?? 'Resident',
+      author_name: displayNameOf(p.user_id) ?? 'Resident',
       likes: likeCount(p.id),
       liked: likes.has(`${viewerId}:${p.id}`),
+      comments: commentCount(p.id),
       authenticity,
       unverified: isUnverified(authenticity),
     }

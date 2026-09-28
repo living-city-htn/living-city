@@ -1,6 +1,10 @@
+import { INCIDENT_TYPES, type IncidentType } from './incident-types'
+
 type PostInput = {
   text: string; image_url: string | null; audio_url: string | null; community_id?: string
   lon?: number; lat?: number; is_incident_report?: boolean
+  /** Only present on an incident report. docs/01 section 8.10. */
+  incident_type?: IncidentType
 }
 
 /**
@@ -38,7 +42,14 @@ export function parsePostInput(value: unknown, communities: string[]):
   if (hasCoordinates && (typeof b.lon !== 'number' || !Number.isFinite(b.lon) || Math.abs(b.lon) > 180 ||
       typeof b.lat !== 'number' || !Number.isFinite(b.lat) || Math.abs(b.lat) > 90)) return fail('That location is not valid. Choose a block instead.')
   if (!id && !hasCoordinates) return fail('Choose where this happened.')
+  const isReport = b.is_incident_report === true
+  const type = b.incident_type
+  if (isReport && type !== undefined
+      && !(typeof type === 'string' && (INCIDENT_TYPES as readonly string[]).includes(type))) {
+    return fail('Choose what kind of incident this is.')
+  }
   return { ok: true, value: { text, image_url: image as string | null, audio_url: audio,
     community_id: id as string | undefined, lon: b.lon as number | undefined,
-    lat: b.lat as number | undefined, is_incident_report: b.is_incident_report === true } }
+    lat: b.lat as number | undefined, is_incident_report: isReport,
+    ...(isReport ? { incident_type: (type as IncidentType | undefined) ?? 'other' } : {}) } }
 }

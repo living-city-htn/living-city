@@ -23,4 +23,13 @@ describe('post input', () => {
     const result = parsePostInput({ text: ' Hello ', lon: -80.54, lat: 43.47 }, ids)
     expect(result.ok && result.value).toMatchObject({ text: 'Hello', lon: -80.54, lat: 43.47 })
   })
+  it('carries an incident type only on an incident report', () => {
+    const report = parsePostInput({ text: 'Tree down', community_id: ids[0], is_incident_report: true, incident_type: 'fallen_tree' }, ids)
+    expect(report.ok && report.value).toMatchObject({ is_incident_report: true, incident_type: 'fallen_tree' })
+    const untyped = parsePostInput({ text: 'Something', community_id: ids[0], is_incident_report: true }, ids)
+    expect(untyped.ok && untyped.value.incident_type).toBe('other')
+    const plain = parsePostInput({ text: 'Nice day', community_id: ids[0], incident_type: 'fire' }, ids)
+    expect(plain.ok && 'incident_type' in plain.value).toBe(false)
+    expect(parsePostInput({ text: 'x', community_id: ids[0], is_incident_report: true, incident_type: 'meteor' }, ids).ok).toBe(false)
+  })
 })

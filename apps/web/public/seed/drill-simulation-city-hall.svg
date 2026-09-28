@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" width="1280" height="960" role="img" aria-labelledby="t d">
+  <title id="t">Simulation: tornado drill at City Hall</title>
+  <desc id="d">An illustration, not a photograph. A low-poly City Hall under a grey sky with a stylised funnel cloud and an alert beacon, stamped SIMULATION.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5d6773"/>
+      <stop offset="0.55" stop-color="#8d96a0"/>
+      <stop offset="1" stop-color="#c3c8cd"/>
+    </linearGradient>
+    <linearGradient id="funnel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4a525c"/>
+      <stop offset="0.5" stop-color="#6b737d"/>
+      <stop offset="1" stop-color="#4a525c"/>
+    </linearGradient>
+    <pattern id="hatch" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="14" height="28" fill="#f2b705"/>
+      <rect x="14" width="14" height="28" fill="#1d1d1f"/>
+    </pattern>
+  </defs>
+
+  <!-- sky and cloud deck -->
+  <rect width="1280" height="960" fill="url(#sky)"/>
+  <path d="M0 150 Q160 100 320 150 T640 140 T960 150 T1280 135 V0 H0 Z" fill="#4a525c"/>
+  <path d="M0 210 Q200 160 400 205 T820 195 T1280 200 V120 H0 Z" fill="#59616b" opacity="0.8"/>
+
+  <!-- funnel cloud: a stylised shape, deliberately not photographic -->
+  <path d="M780 190 C800 300 850 360 872 470 C884 540 900 600 912 660 L936 660 C934 600 944 540 958 470 C984 360 1030 300 1060 190 Z" fill="url(#funnel)" opacity="0.92"/>
+  <g stroke="#9aa2ab" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.7">
+    <path d="M810 250 Q920 275 1030 250"/>
+    <path d="M840 340 Q920 360 1000 340"/>
+    <path d="M868 440 Q922 456 972 440"/>
+    <path d="M892 540 Q924 552 952 540"/>
+  </g>
+  <!-- debris -->
+  <g fill="#3a4048">
+    <rect x="860" y="640" width="14" height="8" transform="rotate(20 867 644)"/>
+    <rect x="968" y="610" width="10" height="10" transform="rotate(-30 973 615)"/>
+    <rect x="990" y="660" width="16" height="6" transform="rotate(12 998 663)"/>
+    <rect x="842" y="600" width="8" height="8"/>
+  </g>
+
+  <!-- ground -->
+  <rect y="700" width="1280" height="260" fill="#9aa29a"/>
+  <rect y="700" width="1280" height="10" fill="#848c84"/>
+  <rect y="790" width="1280" height="70" fill="#6e747a"/>
+  <g fill="#e7e3d4">
+    <rect x="40" y="821" width="90" height="8"/><rect x="220" y="821" width="90" height="8"/>
+    <rect x="400" y="821" width="90" height="8"/><rect x="580" y="821" width="90" height="8"/>
+    <rect x="760" y="821" width="90" height="8"/><rect x="940" y="821" width="90" height="8"/>
+    <rect x="1120" y="821" width="90" height="8"/>
+  </g>
+
+  <!-- neighbouring blocks -->
+  <rect x="60" y="520" width="150" height="190" fill="#b9b3a7"/>
+  <rect x="60" y="520" width="150" height="16" fill="#a39d91"/>
+  <rect x="1090" y="560" width="140" height="150" fill="#b9b3a7"/>
+  <rect x="1090" y="560" width="140" height="14" fill="#a39d91"/>
+  <g fill="#8f8a80">
+    <rect x="80" y="560" width="30" height="40"/><rect x="160" y="560" width="30" height="40"/>
+    <rect x="80" y="630" width="30" height="40"/><rect x="160" y="630" width="30" height="40"/>
+    <rect x="1110" y="600" width="28" height="36"/><rect x="1180" y="600" width="28" height="36"/>
+  </g>
+
+  <!-- City Hall: low-poly landmark, same read as the scene's civic asset -->
+  <rect x="330" y="470" width="560" height="240" fill="#e4dfd3"/>
+  <rect x="330" y="470" width="560" height="22" fill="#cfc9bb"/>
+  <rect x="520" y="380" width="180" height="330" fill="#d9d3c5"/>
+  <polygon points="500,380 610,320 720,380" fill="#b8b1a2"/>
+  <rect x="580" y="610" width="60" height="100" fill="#6f7d8c"/>
+  <g fill="#7d8b99">
+    <rect x="360" y="520" width="44" height="60"/><rect x="424" y="520" width="44" height="60"/>
+    <rect x="752" y="520" width="44" height="60"/><rect x="816" y="520" width="44" height="60"/>
+    <rect x="360" y="610" width="44" height="60"/><rect x="424" y="610" width="44" height="60"/>
+    <rect x="752" y="610" width="44" height="60"/><rect x="816" y="610" width="44" height="60"/>
+    <rect x="545" y="420" width="40" height="56"/><rect x="635" y="420" width="40" height="56"/>
+    <rect x="545" y="510" width="40" height="56"/><rect x="635" y="510" width="40" height="56"/>
+  </g>
+
+  <!-- alert beacon on the roof -->
+  <rect x="603" y="296" width="14" height="26" fill="#3a4048"/>
+  <circle cx="610" cy="286" r="16" fill="#ff3b30"/>
+  <circle cx="610" cy="286" r="34" fill="none" stroke="#ff3b30" stroke-width="5" opacity="0.55"/>
+
+  <!-- trees bending -->
+  <g fill="#5f7a5a">
+    <ellipse cx="270" cy="660" rx="34" ry="44" transform="rotate(-14 270 660)"/>
+    <ellipse cx="960" cy="664" rx="32" ry="42" transform="rotate(-16 960 664)"/>
+  </g>
+  <g fill="#6b5a48"><rect x="264" y="690" width="10" height="22"/><rect x="954" y="694" width="10" height="18"/></g>
+
+  <!-- the label: inside the 16:10 crop the city inspector uses -->
+  <rect x="0" y="84" width="1280" height="24" fill="url(#hatch)"/>
+  <rect x="0" y="838" width="1280" height="26" fill="url(#hatch)"/>
+  <g transform="translate(640 180)">
+    <rect x="-400" y="-62" width="800" height="124" rx="18" fill="#1d1d1f" opacity="0.9"/>
+    <text x="0" y="-4" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="800" letter-spacing="10" fill="#ffffff">SIMULATION</text>
+    <text x="0" y="40" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="600" letter-spacing="3" fill="#f2b705">TORNADO DRILL · ILLUSTRATION, NOT A PHOTO</text>
+  </g>
+</svg>

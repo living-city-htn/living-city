@@ -11,6 +11,7 @@
  */
 import { processedCity } from '@living-city/map'
 import incidentsRaw from '../data/incidents.mock.json'
+import analysesRaw from '../data/post-analysis.mock.json'
 import postsRaw from '../data/posts.seed.json'
 import plansRaw from '../data/plans.fallback.json'
 import shopRaw from '../data/shop.fallback.json'
@@ -52,6 +53,19 @@ export const incidentMocks: Incident[] = clean(incidentsRaw.incidents) as Incide
 export const fallbackPlans: CommunityPlan[] = clean(plansRaw.plans) as CommunityPlan[]
 export const presetFestivalPlan: CommunityPlan = clean(plansRaw.preset_festival) as CommunityPlan
 export const shopItems: ShopItem[] = clean(shopRaw.items) as ShopItem[]
+
+/**
+ * Call A's output for the seed posts, as Pipeline's fixture. Fixture mode has
+ * no Call A, so the civic trend panel reads these for the seed and nothing for
+ * new posts (which then count toward volume only).
+ */
+export type MockAnalysis = {
+  post_id: string
+  valence: number | null
+  dimensions: Record<string, number | null>
+  tags: string[]
+}
+export const postAnalysisMocks: MockAnalysis[] = clean(analysesRaw.analyses) as unknown as MockAnalysis[]
 
 /** The block the demo script builds around. Kept sparse on purpose. docs/04 section 8. */
 export const DEMO_COMMUNITY_ID = 'kw:laurelwood'

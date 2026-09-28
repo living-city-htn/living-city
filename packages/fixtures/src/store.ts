@@ -32,10 +32,89 @@ export type Incident = {
   location_hint: string | null
   reported_at: string
   source: string
-  status: 'reported' | 'verified'
+  /**
+   * reported -> verified -> resolved, or reported -> resolved. A resolved
+   * incident leaves the public map; it stays on the government page.
+   */
+  status: IncidentStatus
   staff_note: string | null
   updated_at: string
 }
+
+export type IncidentStatus = 'reported' | 'verified' | 'resolved'
+export const INCIDENT_STATUSES: IncidentStatus[] = ['reported', 'verified', 'resolved']
+
+/**
+ * The incident types a resident can pick in the report form. The same list as
+ * the contract's INCIDENT_TYPE minus `none`; kept here because fixtures cannot
+ * import values from contracts without widening its build.
+ */
+export const REPORTABLE_INCIDENT_TYPES = [
+  'flooding', 'fallen_tree', 'road_blocked', 'power_outage', 'fire', 'accident',
+  'infrastructure_damage', 'snow_ice', 'sanitation', 'safety_concern', 'noise', 'other',
+] as const
+export type ReportableIncidentType = (typeof REPORTABLE_INCIDENT_TYPES)[number]
+
+/**
+ * Points values from docs/01 section 8.8, mirrored from
+ * `@living-city/contracts` POINTS so the store has no runtime dependency on
+ * it. A test keeps the two equal.
+ */
+export const POINTS = {
+  post: 10,
+  post_with_photo: 20,
+  comment_given: 3,
+  like_given: 1,
+  like_received: 2,
+  comment_received: 4,
+  first_post_in_community_today: 5,
+  verified_incident_report: 25,
+} as const
+
+/**
+ * How many likes and comments a day earn points for the person giving them.
+ * docs/01 section 8.8: "Daily caps on likes given and comments given to blunt
+ * farming". Past the cap the like or comment still happens; it just pays
+ * nobody, the author included, so two accounts cannot farm each other.
+ */
+export const DAILY_CAPS = { like_given: 20, comment_given: 10 } as const
+
+/** Every credit and debit, with why and against what. docs/01 section 8.8. */
+export type PointsReason =
+  | 'post' | 'post_with_photo' | 'first_post_in_community_today'
+  | 'like_given' | 'like_received' | 'comment_given' | 'comment_received'
+  | 'verified_incident_report' | 'purchase' | 'adjustment'
+
+export type LedgerEntry = {
+  id: string
+  user_id: string
+  delta: number
+  reason: PointsReason
+  ref_id: string | null
+  created_at: string
+}
+
+/** One level, no threading. docs/01 section 8.3. */
+export type Comment = {
+  id: string
+  post_id: string
+  user_id: string
+  text: string
+  created_at: string
+}
+
+export const COMMENT_MAX_LENGTH = 500
+export const DISPLAY_NAME_MAX_LENGTH = 32
+
+/**
+ * The calendar day an instant falls on in the demo city. "Today" for the daily
+ * caps and the first-post bonus is Kitchener-Waterloo's day, not UTC's, so the
+ * caps do not reset at 8 pm local time.
+ */
+const DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit',
+})
+export const cityDay = (iso: string | Date): string => DAY.format(new Date(iso))
 
 /**
  * A building the user described and the model specified, standing on their
@@ -75,6 +154,11 @@ export type FixtureState = {
   buildings: UserBuilding[]
   plans: Map<string, CommunityPlan>
   incidents: Incident[]
+  /** Append-only points history. `balances` is its running total. */
+  ledger: LedgerEntry[]
+  comments: Comment[]
+  /** Names people chose for themselves. Seed users carry theirs in `users`. */
+  names: Map<string, string>
   updatedAt: string
   seq: number
   /** Stamps of recent saves, so a retry can tell whether its write committed. */
@@ -201,6 +285,9 @@ export function reset(): void {
     buildings: [],
     plans: new Map(fallbackPlans.map((p) => [p.community_id, p])),
     incidents: seedIncidents(seedPosts),
+    ledger: [],
+    comments: [],
+    names: new Map(),
     updatedAt: new Date().toISOString(),
     seq: highestPostSeq(seedPosts),
     recentWrites: [],
@@ -224,6 +311,9 @@ const serialize = (s: FixtureState): Serialized => ({
   buildings: s.buildings,
   plans: [...s.plans],
   incidents: s.incidents,
+  ledger: s.ledger,
+  comments: s.comments,
+  names: [...s.names],
   updatedAt: s.updatedAt, seq: s.seq, qrPaused: s.qrPaused, recentWrites: s.recentWrites,
   drillCommunityId: s.drillCommunityId,
 })
@@ -270,6 +360,11 @@ export const deserializeState = (d: Serialized): FixtureState => {
     buildings: (d.buildings ?? []) as UserBuilding[],
     plans: new Map(d.plans as Array<[string, CommunityPlan]>),
     incidents: d.incidents as Incident[],
+    // Rows written before the ledger, comments and chosen names existed load
+    // with none of each; balances already carry what the ledger would total.
+    ledger: (d.ledger ?? []) as LedgerEntry[],
+    comments: (d.comments ?? []) as Comment[],
+    names: new Map(d.names ?? []),
     updatedAt: d.updatedAt,
     // Heal existing durable rows that were written before post ids were made
     // collision-safe, while keeping placements on the shared sequence.
@@ -392,6 +487,8 @@ export const listPosts = (
 export function createPost(input: {
   user_id: string; text: string; image_url?: string | null
   lon: number; lat: number; community_id: string; is_incident_report?: boolean
+  /** Set by the report form. Only read when `is_incident_report` is true. */
+  incident_type?: ReportableIncidentType
 }): SeedPost {
   const post: SeedPost = {
     id: nextPostId(),
@@ -410,10 +507,51 @@ export function createPost(input: {
     hidden: false,
     hidden_reason: null,
   }
+  // Ask before the post is added, or it would find itself.
+  const firstHereToday = !state.posts.some((p) =>
+    p.user_id === input.user_id
+    && p.community_id === input.community_id
+    && !p.scenario
+    && cityDay(p.created_at) === cityDay(post.created_at))
   state.posts.unshift(post)
-  credit(input.user_id, input.image_url ? 20 : 10)
+  if (input.image_url) credit(input.user_id, POINTS.post_with_photo, 'post_with_photo', post.id)
+  else credit(input.user_id, POINTS.post, 'post', post.id)
+  if (firstHereToday) {
+    credit(input.user_id, POINTS.first_post_in_community_today, 'first_post_in_community_today', post.id)
+  }
+  if (post.is_incident_report) reportIncident(post, input.incident_type ?? 'other')
   touch()
   return post
+}
+
+/**
+ * The report form's incident. docs/01 section 8.10: "a normal post plus an
+ * incident record marked reported by user". Deterministic: the resident chose
+ * the type, nothing inferred it.
+ */
+function reportIncident(post: SeedPost, type: ReportableIncidentType): Incident {
+  const incident: Incident = {
+    id: nextIncidentId(),
+    post_id: post.id,
+    community_id: post.community_id,
+    type,
+    severity: 2,
+    location_hint: null,
+    reported_at: post.created_at,
+    source: 'user_report',
+    status: 'reported',
+    staff_note: null,
+    updated_at: post.created_at,
+  }
+  state.incidents.unshift(incident)
+  return incident
+}
+
+const nextIncidentId = (): string => {
+  const taken = new Set(state.incidents.map((i) => i.id))
+  let n = state.incidents.length + 1
+  while (taken.has(`inc-${String(n).padStart(3, '0')}`)) n += 1
+  return `inc-${String(n).padStart(3, '0')}`
 }
 
 export function hidePost(postId: string, reason: 'auto' | 'operator'): SeedPost | null {
@@ -448,10 +586,65 @@ export const STARTING_BALANCE = 60
  * account with no entry at all is new.
  */
 export const balance = (userId: string) => state.balances.get(userId) ?? STARTING_BALANCE
-export function credit(userId: string, delta: number): number {
+
+/**
+ * The only way a balance moves. Every call leaves a ledger row, so a balance
+ * can always be explained. The starting balance is the one amount with no row:
+ * it is what an account is before anything happened to it.
+ */
+export function credit(
+  userId: string, delta: number, reason: PointsReason = 'adjustment', refId: string | null = null,
+): number {
   const next = balance(userId) + delta
   state.balances.set(userId, next)
+  state.ledger.push({
+    id: `lg-${state.ledger.length + 1}`,
+    user_id: userId, delta, reason, ref_id: refId,
+    created_at: new Date().toISOString(),
+  })
   return next
+}
+
+/** Newest first. */
+export const ledgerOf = (userId: string): LedgerEntry[] =>
+  state.ledger.filter((e) => e.user_id === userId).reverse()
+
+/** How many times today `reason` paid this user. */
+const paidToday = (userId: string, reason: PointsReason): number => {
+  const today = cityDay(new Date())
+  return state.ledger.filter((e) =>
+    e.user_id === userId && e.reason === reason && cityDay(e.created_at) === today).length
+}
+
+/** Whether a like or comment given now still earns points today. */
+export const underDailyCap = (userId: string, reason: keyof typeof DAILY_CAPS): boolean =>
+  paidToday(userId, reason) < DAILY_CAPS[reason]
+
+/* --- names ---------------------------------------------------------------- */
+
+/** What an account is called: its chosen name, its seeded name, or null. */
+export const displayNameOf = (userId: string): string | null =>
+  state.names.get(userId) ?? state.users.find((u) => u.id === userId)?.display_name ?? null
+
+export type SetNameResult = { ok: true; display_name: string } | { ok: false; reason: string }
+
+export function setDisplayName(userId: string, raw: string): SetNameResult {
+  const name = raw.replace(/\s+/g, ' ').trim()
+  if (name.length < 2) return { ok: false, reason: 'Use at least 2 characters.' }
+  if (name.length > DISPLAY_NAME_MAX_LENGTH) {
+    return { ok: false, reason: `Keep it under ${DISPLAY_NAME_MAX_LENGTH} characters.` }
+  }
+  // Seeded residents and staff keep the names the seed gave them, and nobody
+  // may take a staff account's name.
+  if (state.users.some((u) => u.id === userId)) return { ok: false, reason: 'This account’s name is fixed.' }
+  const lower = name.toLowerCase()
+  const staff = state.users.filter((u) => u.role === 'government').map((u) => u.display_name.toLowerCase())
+  if (staff.includes(lower) || /\b(staff|city of)\b/i.test(name)) {
+    return { ok: false, reason: 'That name is reserved for city staff.' }
+  }
+  state.names.set(userId, name)
+  touch()
+  return { ok: true, display_name: name }
 }
 
 /**
@@ -485,9 +678,13 @@ export function toggleLike(userId: string, postId: string): ToggleLikeResult {
   }
   state.likes.add(key)
   // Points are earned for the relationship, not for repeatedly flipping it.
+  // The daily cap is checked against the giver: past it the like still lands
+  // but pays neither side, and it counts as settled so it never pays later.
   if (!state.likeCredits.has(key) && !state.likeCreditBlockedPostIds.has(postId)) {
-    credit(userId, 1)                                 // like given: 1. docs/01 section 8.8.
-    credit(post.user_id, 2)                           // like received: 2.
+    if (underDailyCap(userId, 'like_given')) {
+      credit(userId, POINTS.like_given, 'like_given', postId)
+      credit(post.user_id, POINTS.like_received, 'like_received', postId)
+    }
     state.likeCredits.add(key)
     state.rewardedLikes.add(key)
   }
@@ -503,7 +700,7 @@ export function buy(userId: string, itemTag: string): { ok: boolean; reason?: st
   const item = shopItems.find((s) => s.item_tag === itemTag)
   if (!item) return { ok: false, reason: 'unknown item', balance: balance(userId) }
   if (balance(userId) < item.price) return { ok: false, reason: 'insufficient balance', balance: balance(userId) }
-  credit(userId, -item.price)
+  credit(userId, -item.price, 'purchase', itemTag)
   const inv = state.inventory.get(userId) ?? new Map<string, number>()
   inv.set(itemTag, (inv.get(itemTag) ?? 0) + 1)
   state.inventory.set(userId, inv)
@@ -661,22 +858,122 @@ export const cityVersion = () => ({
   updated_at: state.updatedAt,
 })
 
-export const listIncidents = (f: { community?: string; type?: string; status?: string } = {}) =>
-  state.incidents.filter(
-    (i) =>
-      (!f.community || i.community_id === f.community) &&
-      (!f.type || i.type === f.type) &&
-      (!f.status || i.status === f.status),
-  )
+export type IncidentFilters = {
+  community?: string
+  type?: string
+  status?: string
+  /** Inclusive ISO bounds on `reported_at`. */
+  from?: string
+  to?: string
+}
 
-export function verifyIncident(id: string, staffNote?: string) {
+export const listIncidents = (f: IncidentFilters = {}) => {
+  const from = f.from ? Date.parse(f.from) : null
+  const to = f.to ? Date.parse(f.to) : null
+  return state.incidents.filter((i) => {
+    const at = Date.parse(i.reported_at)
+    return (!f.community || i.community_id === f.community)
+      && (!f.type || i.type === f.type)
+      && (!f.status || i.status === f.status)
+      && (from === null || Number.isNaN(from) || at >= from)
+      && (to === null || Number.isNaN(to) || at <= to)
+  })
+}
+
+/**
+ * What everybody sees on the map: open incidents only, and nothing about who
+ * reported them. docs/01 section 8.10, "removed when resolved".
+ */
+export const publicIncidents = () =>
+  state.incidents
+    .filter((i) => i.status !== 'resolved')
+    .filter((i) => !state.posts.find((p) => p.id === i.post_id)?.hidden)
+    .map(({ id, community_id, type, status, reported_at }) => ({ id, community_id, type, status, reported_at }))
+
+export type IncidentUpdate =
+  | { ok: true; incident: Incident }
+  | { ok: false; reason: 'not found' | 'invalid transition' }
+
+/**
+ * Staff move an incident forward: reported -> verified -> resolved, or straight
+ * from reported to resolved. Nothing moves backwards, and repeating a status is
+ * a no-op, so a double click cannot pay the reporter twice.
+ */
+export function setIncidentStatus(
+  id: string, status: 'verified' | 'resolved', staffNote?: string,
+): IncidentUpdate {
+  const inc = state.incidents.find((i) => i.id === id)
+  if (!inc) return { ok: false, reason: 'not found' }
+  const order: Record<IncidentStatus, number> = { reported: 0, verified: 1, resolved: 2 }
+  if (order[status] < order[inc.status]) return { ok: false, reason: 'invalid transition' }
+  if (staffNote !== undefined) inc.staff_note = staffNote
+  if (inc.status !== status) {
+    const verifiedNow = status === 'verified'
+    inc.status = status
+    inc.updated_at = new Date().toISOString()
+    // verified incident report: 25. docs/01 section 8.8. Once per incident,
+    // checked against the ledger rather than the status.
+    const post = state.posts.find((p) => p.id === inc.post_id)
+    const paid = state.ledger.some((e) => e.reason === 'verified_incident_report' && e.ref_id === inc.id)
+    if (verifiedNow && post && !paid) {
+      credit(post.user_id, POINTS.verified_incident_report, 'verified_incident_report', inc.id)
+    }
+  }
+  touch()
+  return { ok: true, incident: inc }
+}
+
+/** A staff note on its own, whatever the status. */
+export function setIncidentNote(id: string, staffNote: string): Incident | null {
   const inc = state.incidents.find((i) => i.id === id)
   if (!inc) return null
-  inc.status = 'verified'
-  if (staffNote !== undefined) inc.staff_note = staffNote
+  inc.staff_note = staffNote.trim() || null
   inc.updated_at = new Date().toISOString()
-  // verified incident report: 25. docs/01 section 8.8.
-  const post = state.posts.find((p) => p.id === inc.post_id)
-  if (post) credit(post.user_id, 25)
+  touch()
   return inc
 }
+
+/** Kept for existing callers: verification is `setIncidentStatus(id, 'verified')`. */
+export function verifyIncident(id: string, staffNote?: string) {
+  const result = setIncidentStatus(id, 'verified', staffNote)
+  return result.ok ? result.incident : null
+}
+
+/* --- comments -------------------------------------------------------------- */
+
+export type AddCommentResult =
+  | { ok: true; comment: Comment; balance: number; points_earned: number }
+  | { ok: false; reason: 'post not found' | 'empty' | 'too long' }
+
+/**
+ * One level, text only. docs/01 section 8.3. Pays 3 to the commenter and 4 to
+ * the author (section 8.8), except on your own post and past the commenter's
+ * daily cap. Hidden posts cannot be commented on.
+ */
+export function addComment(userId: string, postId: string, raw: string): AddCommentResult {
+  const post = state.posts.find((p) => p.id === postId && !p.hidden)
+  if (!post) return { ok: false, reason: 'post not found' }
+  const text = raw.trim()
+  if (!text) return { ok: false, reason: 'empty' }
+  if (text.length > COMMENT_MAX_LENGTH) return { ok: false, reason: 'too long' }
+  state.seq += 1
+  const comment: Comment = {
+    id: `c-${state.seq}`, post_id: postId, user_id: userId, text,
+    created_at: new Date().toISOString(),
+  }
+  state.comments.push(comment)
+  const before = balance(userId)
+  if (post.user_id !== userId && underDailyCap(userId, 'comment_given')) {
+    credit(userId, POINTS.comment_given, 'comment_given', comment.id)
+    credit(post.user_id, POINTS.comment_received, 'comment_received', comment.id)
+  }
+  touch()
+  return { ok: true, comment, balance: balance(userId), points_earned: balance(userId) - before }
+}
+
+/** Oldest first, as a conversation reads. */
+export const commentsOf = (postId: string): Comment[] =>
+  state.comments.filter((c) => c.post_id === postId)
+
+export const commentCount = (postId: string): number =>
+  state.comments.reduce((n, c) => n + (c.post_id === postId ? 1 : 0), 0)

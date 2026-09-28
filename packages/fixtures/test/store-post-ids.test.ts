@@ -156,8 +156,9 @@ describe('a save that commits but reports failure', () => {
     const opening = balance(AUTHOR)
     db.lieOnSave = 1
     await write(() => post(1))
-    // createPost credits 10 for a text-only post. docs/01 section 8.8.
-    expect(balance(AUTHOR)).toBe(opening + 10)
+    // createPost credits 10 for a text-only post, plus 5 for the author's first
+    // post in that community today. docs/01 section 8.8.
+    expect(balance(AUTHOR)).toBe(opening + 10 + 5)
   })
 
   it('is not fooled by another writer committing in between', async () => {

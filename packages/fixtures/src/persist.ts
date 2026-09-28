@@ -37,6 +37,12 @@ export type Serialized = {
   buildings?: unknown[]
   plans: Array<[string, unknown]>
   incidents: unknown[]
+  /** Optional: rows written before the points ledger lack it. */
+  ledger?: unknown[]
+  /** Optional: rows written before comments lack them. */
+  comments?: unknown[]
+  /** Optional: chosen display names, `[user_id, name]`. */
+  names?: Array<[string, string]>
   updatedAt: string
   seq: number
   qrPaused: boolean
